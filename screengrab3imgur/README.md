@@ -1,6 +1,6 @@
 # screengrab3imgur
 
-Press print screen -> select area -> wait a few seconds -> image has been uploaded to imgur and its link has been pasted to your clipboard.
+Press print screen -> select area -> wait a few seconds -> image has been uploaded to imgur and its link has been pasted to your clipboard. It's magic!
 
 ## Requirements
 
