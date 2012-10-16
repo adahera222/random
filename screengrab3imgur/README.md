@@ -7,5 +7,9 @@ Press print screen -> select area -> wait a few seconds -> image has been upload
 * Windows
 * Python 2.7
 * [pycURL](http://www.lfd.uci.edu/~gohlke/pythonlibs/)
+* [wxPython](http://wxpython.org/)
+* [pywin32](http://sourceforge.net/projects/pywin32/)
+* [PIL](http://www.pythonware.com/products/pil/)
+* [pyHook](http://sourceforge.net/apps/mediawiki/pyhook/index.php?title=Main_Page)
 
 If you happen to find this and use it, please get your own key for the [imgur API](https://imgur.com/register/api_anon) and add it to line 12 of [upload.py](https://github.com/adonaac/random/blob/master/screengrab3imgur/upload/upload.py).
