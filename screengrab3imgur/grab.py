@@ -1,6 +1,7 @@
 import win32gui, win32ui, win32con, win32api
 import Image
 import sys, os
+from globals import globals
 
 def grab():
 
@@ -14,17 +15,14 @@ def grab():
     srcdc = win32ui.CreateDCFromHandle(hwindc)
     memdc = srcdc.CreateCompatibleDC()
     bmp = win32ui.CreateBitmap()
-    bmp.CreateCompatibleBitmap(srcdc, width, height)
+    bmp.CreateCompatibleBitmap(srcdc, (globals.rectangle[2] - globals.rectangle[0]), (globals.rectangle[3] - globals.rectangle[1]))
     memdc.SelectObject(bmp)
-    memdc.BitBlt((0, 0), (width, height), srcdc, (left, top), win32con.SRCCOPY)
-    bmp.SaveBitmapFile(memdc, os.path.join(sys.argv[1], 's.bmp'))
+    memdc.BitBlt((0, 0), ((globals.rectangle[2] - globals.rectangle[0]), (globals.rectangle[3] - globals.rectangle[1])), srcdc, (globals.rectangle[0], globals.rectangle[1]), win32con.SRCCOPY)
+    bmp.SaveBitmapFile(memdc, os.path.join(globals.ppath, 's.bmp'))
 
     # Convert to PNG
-    im = Image.open(os.path.join(sys.argv[1], 's.bmp'))
-    im.save(os.path.join(sys.argv[1], 's.png') , 'PNG')
+    im = Image.open(os.path.join(globals.ppath, 's.bmp'))
+    im.save(os.path.join(globals.ppath, 's.png') , 'PNG')
 
     # Remove BMP
-    os.remove(os.path.join(sys.argv[1], 's.bmp'))
-
-if __name__ == "__main__":
-    grab()
+    os.remove(os.path.join(globals.ppath, 's.bmp'))

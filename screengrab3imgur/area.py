@@ -1,44 +1,95 @@
 import wx
+import grab
+import sys
+from globals import globals
 
 class Frame(wx.Frame):
     def __init__(self, width, height, x, y, i):
         style = (wx.STAY_ON_TOP | wx.NO_BORDER | wx.FRAME_NO_TASKBAR)
         wx.Frame.__init__(self, None, style=style, size=(width, height), pos=(x, y))
-        self.SetTransparent(55)
+        self.SetTransparent(25)
+
+        self.panel = wx.Panel(self, pos=(x, y), size=(width, height))
+        self.panel.Bind(wx.EVT_MOTION, self.onMouseMove)
+        self.panel.Bind(wx.EVT_LEFT_DOWN, self.onMouseDown)
+        self.panel.Bind(wx.EVT_LEFT_UP, self.onMouseUp)
+        self.panel.Bind(wx.EVT_PAINT, self.onPaint)
+
+        self.SetCursor(wx.StockCursor(wx.CURSOR_CROSS))
+
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
         self.i = i
-        self.ix = 0
-        self.iy = 0
-        self.fx = 0
-        self.fy = 0
 
-        self.Bind(wx.EVT_LEFT_DOWN, self.on_left_down)
-        self.Bind(wx.EVT_LEFT_UP, self.on_left_up)
+        self.left_down = False
 
-        if self.i == 0:
-            self.on_timer()
+        # Initial and final positions - mouse left down and mouse left up.
+        self.ci = None
+        self.cf = None
+        self.mx = 0
+        self.my = 0
+        self.pix = 0
+        self.piy = 0
+        self.pfx = 0
+        self.pfy = 0
 
-    def on_timer(self):
-        mx, my = wx.GetMousePosition()
-        # print mx, my
-        wx.CallLater(20, self.on_timer)
+        # Screen boundaries: (x1, y1, x2, y2)
+        self.bounds = (x, y, x + width, y + height)
 
-    def on_left_down(self, event):
-        self.ix, self.iy = wx.GetMousePosition()
-        print self.ix, self.iy
+        self.onTimer()
 
-    def on_left_up(self, event):
-        self.fx, self.fy = wx.GetMousePosition()
-        print self.fx, self.fy
+    def InBounds(self, x, y):
+        if (x >= self.bounds[0] and y >= self.bounds[1] and 
+            x <= self.bounds[2] and y <= self.bounds[3]):
+            return True
+        else: return False 
 
+    def ClampPointer(self, x, y):
+        if x <= self.bounds[0]: self.WarpPointer(self.x, y)
+        elif x >= self.bounds[2]: self.WarpPointer(self.x + self.width, y)
+        if y <= self.bounds[1]: self.WarpPointer(x, self.y)
+        elif y >= self.bounds[3]: self.WarpPointer(x, self.y + self.height)
 
-if __name__ == '__main__':
+    def onTimer(self):
+        self.mx, self.my = wx.GetMousePosition()
+
+        if self.InBounds(self.mx, self.my) == False:
+            self.ClampPointer(self.mx, self.my)
+        wx.CallLater(1, self.onTimer)
+
+    def onMouseMove(self, event):
+        if event.LeftIsDown():
+            self.cf = event.GetPosition()
+            self.pfx, self.pfy = wx.GetMousePosition()
+            self.Refresh()
+
+    def onMouseDown(self, event):
+        self.ci = event.GetPosition()
+        self.pix, self.piy = wx.GetMousePosition()
+        self.left_down = True
+
+    def onMouseUp(self, event):
+        self.cf = event.GetPosition()
+        self.left_down = False
+        globals.rectangle = (self.pix, self.piy, self.pfx, self.pfy)
+        grab.grab()
+        sys.exit()
+
+    def onPaint(self, event):
+        if self.ci is None or self.cf is None: return
+        
+        dc = wx.PaintDC(self.panel)
+        dc.SetPen(wx.Pen('black', 1))
+        dc.SetBrush(wx.Brush('grey'))
+        dc.DrawRectangle(self.pix, self.piy, self.pfx - self.pix, self.pfy - self.piy)
+
+def run():
     app = wx.App()
 
     displays = (wx.Display(i) for i in range(wx.Display.GetCount()))
     sizes = [display.GetGeometry() for display in displays]
-    frames = (Frame(sizes[i].width, sizes[i].height, sizes[i].x, sizes[i].y, i) for i in range(len(sizes)))
-
-    for frame in frames:
-        frame.Show()
-
+    frame = Frame(sizes[0].width, sizes[0].height, sizes[0].x, sizes[0].y, 0)
+    frame.Show()
     app.MainLoop()
