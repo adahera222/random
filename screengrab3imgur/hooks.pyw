@@ -1,6 +1,6 @@
 import pythoncom, pyHook
 import sys
-import area
+import area, grab
 from globals import globals
 
 def OnKeyboardEvent(event):
@@ -15,12 +15,17 @@ def OnKeyboardEvent(event):
     print '---'
     """
 
-    if event.Ascii == 113: sys.exit()
+    if globals.working == False:
+        ctrl_pressed = pyHook.GetKeyState(162)
+        if ctrl_pressed and pyHook.HookConstants.IDToName(event.KeyID) == 'Snapshot':
+            globals.areaSelect = False
+            globals.working = True
+            grab.grab()
 
-    ctrl_pressed = pyHook.GetKeyState(162)
-
-    if ctrl_pressed and pyHook.HookConstants.IDToName(event.KeyID) == 'Snapshot':
-        area.run()
+        elif event.Key == 'Snapshot':
+            globals.areaSelect = True
+            globals.working = True
+            area.run()
 
     return True
 

@@ -7,13 +7,14 @@ class Frame(wx.Frame):
     def __init__(self, width, height, x, y, i):
         style = (wx.STAY_ON_TOP | wx.NO_BORDER | wx.FRAME_NO_TASKBAR)
         wx.Frame.__init__(self, None, style=style, size=(width, height), pos=(x, y))
-        self.SetTransparent(25)
+        self.SetTransparent(1)
 
         self.panel = wx.Panel(self, pos=(x, y), size=(width, height))
         self.panel.Bind(wx.EVT_MOTION, self.onMouseMove)
         self.panel.Bind(wx.EVT_LEFT_DOWN, self.onMouseDown)
         self.panel.Bind(wx.EVT_LEFT_UP, self.onMouseUp)
-        self.panel.Bind(wx.EVT_PAINT, self.onPaint)
+        # self.panel.Bind(wx.EVT_PAINT, self.onPaint)
+        self.panel.Bind(wx.EVT_CLOSE, self.onClose)
 
         self.SetCursor(wx.StockCursor(wx.CURSOR_CROSS))
 
@@ -55,8 +56,11 @@ class Frame(wx.Frame):
     def onTimer(self):
         self.mx, self.my = wx.GetMousePosition()
 
+        """
         if self.InBounds(self.mx, self.my) == False:
             self.ClampPointer(self.mx, self.my)
+        """
+
         wx.CallLater(1, self.onTimer)
 
     def onMouseMove(self, event):
@@ -73,10 +77,12 @@ class Frame(wx.Frame):
     def onMouseUp(self, event):
         self.cf = event.GetPosition()
         self.left_down = False
+        self.pfx, self.pfy = wx.GetMousePosition()
         globals.rectangle = (self.pix, self.piy, self.pfx, self.pfy)
         grab.grab()
-        sys.exit()
+        self.Close(True)
 
+    """
     def onPaint(self, event):
         if self.ci is None or self.cf is None: return
         
@@ -84,12 +90,17 @@ class Frame(wx.Frame):
         dc.SetPen(wx.Pen('black', 1))
         dc.SetBrush(wx.Brush('grey'))
         dc.DrawRectangle(self.pix, self.piy, self.pfx - self.pix, self.pfy - self.piy)
+    """
+
+    def onClose(self, event):
+        wx.Stop()
+        self.Destroy()
+        return True
 
 def run():
-    app = wx.App()
+    frames = [Frame(globals.sizes[i].width, globals.sizes[i].height, globals.sizes[i].x, globals.sizes[i].y, i) for i in range(len(globals.sizes))]
 
-    displays = (wx.Display(i) for i in range(wx.Display.GetCount()))
-    sizes = [display.GetGeometry() for display in displays]
-    frame = Frame(sizes[0].width, sizes[0].height, sizes[0].x, sizes[0].y, 0)
-    frame.Show()
-    app.MainLoop()
+    for frame in frames:
+        frame.Show()
+
+    globals.app.MainLoop()
