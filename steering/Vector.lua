@@ -91,10 +91,10 @@ function Vector.dot(a, b)
     return a.x*b.x + a.y*b.y
 end
 
-function Vector:min(a)
-    assert(type(a) == "number", "min: wrong argument type (<number> expected)")
-    local s = a/self:len()
-    if s < 1 then s = 1 end
+function Vector:min(max_length)
+    assert(type(max_length) == "number", "min: wrong argument type (<number> expected)")
+    local s = max_length/self:len()
+    if s >= 1 then s = 1 end
     return Vector.new(self.x*s, self.y*s)
 end
 

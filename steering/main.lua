@@ -4,7 +4,7 @@ function love.load()
     love.graphics.setBackgroundColor(255, 255, 255)
     love.graphics.setColor(0, 0, 0)
 
-    seeker1 = Entity(20, 20, Vector(400, 300), Vector(0, 0), 0.5, 300, 100)
+    seeker1 = Entity(20, 20, Vector(400, 300), Vector(0, 0), 1, 100, 50)
 end
 
 function love.update(dt)
