@@ -11,6 +11,7 @@ function Entity.new(w, h, p, v, mass, max_v, max_f)
         mass = mass,
         acceleration = Vector(0, 0),
         steering = Vector(0, 0),
+        steering_force = Vector(0, 0),
         max_velocity = max_v or 0,
         max_force = max_f or 0,
         width = w, height = h
@@ -19,11 +20,11 @@ end
 
 -- target: Vector
 function Entity:update(dt, target)
-    self:seek(target)
+    self:arrival(target, 200)
 
     -- Base
-    local steering_force = self.steering:min(self.max_force)
-    self.acceleration = steering_force/self.mass
+    self.steering_force = self.steering:min(self.max_force)
+    self.acceleration = self.steering_force/self.mass
     self.velocity = (self.velocity + self.acceleration*dt):min(self.max_velocity)
     self.position = self.position + self.velocity*dt
 end
@@ -35,6 +36,17 @@ end
 
 function Entity:flee(target)
     self.desired_velocity = (self.position - target):normalized()*self.max_velocity
+    self.steering = self.desired_velocity - self.velocity
+end
+
+function Entity:arrival(target, slowingRadius)
+    self.desired_velocity = (target - self.position)
+    local distance = self.desired_velocity:len()
+
+    if distance < slowingRadius then
+        self.desired_velocity = self.desired_velocity:normalized()*self.max_velocity*(distance/slowingRadius)
+    else self.desired_velocity = self.desired_velocity:normalized()*self.max_velocity end
+
     self.steering = self.desired_velocity - self.velocity
 end
 
@@ -59,7 +71,7 @@ function Entity:draw()
     -- Draw steering vector
     love.graphics.setColor(0, 0, 255)
     love.graphics.line(self.position.x, self.position.y,
-    self.position.x + self.steering.x, self.position.y + self.steering.y)
+    self.position.x + self.acceleration.x, self.position.y + self.acceleration.y)
 
     love.graphics.setColor(0, 0, 0)
 end

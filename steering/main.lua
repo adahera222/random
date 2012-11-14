@@ -4,13 +4,15 @@ function love.load()
     love.graphics.setBackgroundColor(255, 255, 255)
     love.graphics.setColor(0, 0, 0)
 
-    seeker1 = Entity(20, 20, Vector(400, 300), Vector(0, 0), 1, 100, 50)
+    seeker1 = Entity(20, 20, Vector(400, 300), Vector(0, 0), 1, 100, 200)
+    seeker2 = Entity(20, 20, Vector(200, 100), Vector(0, 0), 1, 100, 200)
 end
 
 function love.update(dt)
     x, y = love.mouse.getPosition()
 
     seeker1:update(dt, Vector(x, y))
+    seeker2:update(dt, Vector(x, y))
 end
 
 function love.draw()
@@ -20,6 +22,7 @@ function love.draw()
     love.graphics.circle('fill', x, y, 10, 360)
 
     seeker1:draw()
+    seeker2:draw()
 end
 
 function love.keypressed(key)
