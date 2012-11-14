@@ -53,19 +53,19 @@ def timeToNumber(time):
         return None, None, None
 
 def getDayAndTimeFromLine(line):
-    if line[0] == '[':
+    if line[0] == '[' and line[3] == '/' and line[20] == ']':
         return line[1:11], line[12:20]
     else:
         return None, None
 
 def getPersonFromLine(line):
-    if line[0] == '[':
+    if line[0] == '[' and line[3] == '/' and line[20] == ']':
         return line[22:line.find(':', 22, line.__len__())]
     else:
         return None
 
 def getMessageFromLine(line):
-    if line[0] == '[':
+    if line[0] == '[' and line[3] == '/' and line[20] == ']':
         return line[line.find(':', 22, line.__len__())+2:]
     else: 
         return line

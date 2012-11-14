@@ -2,7 +2,7 @@
 -- http://nova-fusion.com/2011/06/30/lua-metatables-tutorial/
 
 local assert = assert
-local sqrt, cos, sin = math.sqrt, math.cos, math.sin
+local sqrt, cos, sin, atan = math.sqrt, math.cos, math.sin, math.atan2
 
 Vector = {}
 Vector.__index = Vector
@@ -96,6 +96,11 @@ function Vector:min(max_length)
     local s = max_length/self:len()
     if s >= 1 then s = 1 end
     return Vector.new(self.x*s, self.y*s)
+end
+
+function Vector:angle() 
+    local t = atan(self.y, self.x)
+    return t
 end
 
 setmetatable(Vector, {__call = function(_, ...) return Vector.new(...) end})
