@@ -4,11 +4,12 @@ function love.load()
     love.graphics.setBackgroundColor(255, 255, 255)
     love.graphics.setColor(0, 0, 0)
 
-    seeker1 = Entity:new(20, 20, Vector(400, 300), Vector(0, 0), 1, 100, 200)
-    arrivalSlowingRadius = 200
+    seeker1 = Entity:new(20, 20, Vector(400, 300), Vector(0, 0), 1, 150, 100)
+    arrivalSlowingRadius = 100
+    fleeRadius = 100
     slowing = false
     current_behavior = 'seek'
-    font = love.graphics.newFont('visitor1.ttf', 36)
+    font = love.graphics.newFont('visitor1.ttf', 24)
     love.graphics.setFont(font)
 end
 
@@ -29,7 +30,7 @@ function love.draw()
         love.graphics.circle('fill', x, y, 10, 360)
     end
 
-    if current_behavior == 'arrival' then
+    if current_behavior == 'arrival' or current_behavior == 'flee' then
         -- Draw slowing radius
         if slowing then love.graphics.setColor(255, 0, 0)
         else love.graphics.setColor(0, 0, 0) end

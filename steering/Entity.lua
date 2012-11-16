@@ -33,8 +33,20 @@ function Entity:seek(target)
     self.steering = self.desired_velocity - self.velocity
 end
 
-function Entity:flee(target)
-    self.desired_velocity = (self.position - target):normalized()*self.max_velocity
+function Entity:flee(target, fleeRadius)
+    self.desired_velocity = (self.position - target)
+    local distance = self.desired_velocity:len()
+
+    if distance < fleeRadius then
+        slowing = true
+        self.desired_velocity = 
+        self.desired_velocity:normalized()*self.max_velocity*(1-(distance/fleeRadius))
+
+    else 
+        slowing = false
+        self.desired_velocity = Vector(0, 0)
+    end
+
     self.steering = self.desired_velocity - self.velocity
 end
 
