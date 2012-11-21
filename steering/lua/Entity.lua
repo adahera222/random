@@ -1,25 +1,26 @@
 require 'Vector'
-require 'middleclass'
 
-Entity = class('Entity')
+Entity = {}
+Entity.__index = Entity
 
-function Entity:initialize(w, h, p, v, mass, max_v, max_f)
-    self.position = p or Vector(0, 0) 
-    self.velocity = v or Vector(0, 0)
-    self.desired_velocity = Vector(0, 0)
-    self.mass = mass
-    self.acceleration = Vector(0, 0)
-    self.steering = Vector(0, 0)
-    self.steering_force = Vector(0, 0)
-    self.max_velocity = max_v or 0
-    self.max_force = max_f or 0
-    self.width = w 
-    self.height = h
+function Entity.new(w, h, p, v, mass, max_v, max_f)
+    return setmetatable({
+        position = p or Vector(0, 0),
+        velocity = v or Vector(0, 0),
+        desired_velocity = Vector(0, 0),
+        mass = mass,
+        acceleration = Vector(0, 0),
+        steering = Vector(0, 0),
+        steering_force = Vector(0, 0),
+        max_velocity = max_v or 0,
+        max_force = max_f or 0,
+        width = w,
+        height = h
+    }, Entity)
 end
 
--- target: Vector
 function Entity:update(dt, target)
-    self[current_behavior](self, target, arrivalSlowingRadius)
+    self[current.behavior](self, target, current.radius)
 
     -- Base
     self.steering_force = self.steering:min(self.max_force)
@@ -50,14 +51,14 @@ function Entity:flee(target, fleeRadius)
     self.steering = self.desired_velocity - self.velocity
 end
 
-function Entity:arrival(target, slowingRadius)
+function Entity:arrival(target, arrivalRadius)
     self.desired_velocity = (target - self.position)
     local distance = self.desired_velocity:len()
 
-    if distance < slowingRadius then
+    if distance < arrivalRadius then
         slowing = true
         self.desired_velocity = 
-        self.desired_velocity:normalized()*self.max_velocity*(distance/slowingRadius)
+        self.desired_velocity:normalized()*self.max_velocity*(distance/arrivalRadius)
     else 
         slowing = false
         self.desired_velocity = 
@@ -105,3 +106,5 @@ function Entity:draw()
     love.graphics.setLineWidth(1)
     love.graphics.setColor(0, 0, 0)
 end
+
+setmetatable(Entity, {__call = function(_, ...) return Entity.new(...) end})
