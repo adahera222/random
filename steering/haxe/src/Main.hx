@@ -4,7 +4,7 @@ import com.haxepunk.HXP;
 class Main extends Engine
 {
 
-	public static inline var kScreenWidth:Int = 640;
+	public static inline var kScreenWidth:Int = 600;
 	public static inline var kScreenHeight:Int = 480;
 	public static inline var kFrameRate:Int = 60;
 	public static inline var kClearColor:Int = 0xffffff;
@@ -27,6 +27,14 @@ class Main extends Engine
 		HXP.screen.scale = 1;
 		HXP.world = new worlds.GameWorld();
 	}
+
+    override public function focusGained() {
+        HXP.world.active = true;
+    }
+
+    override public function focusLost() {
+        HXP.world.active = false;
+    }
 
 	public static function main() {
 		new Main();

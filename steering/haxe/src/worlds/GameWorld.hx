@@ -1,6 +1,7 @@
 package worlds;
 
 import com.haxepunk.World;
+import com.haxepunk.HXP;
 
 class GameWorld extends World {
 

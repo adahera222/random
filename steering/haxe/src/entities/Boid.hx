@@ -27,6 +27,7 @@ class Boid extends Entity {
     public var fleeRadius:Float;
     public var inCircle:Bool;
     public var bArrival:Bool;
+    public var bSeek:Bool;
 
     public function new(x:Int, y:Int, mass_:Float, max_velocity_:Float, max_force_:Float) {
         super(x, y);
@@ -44,28 +45,33 @@ class Boid extends Entity {
         fleeRadius = 100;
         inCircle = false;
         bArrival = false;
+        bSeek = true;
     }
 
     override public function update() {
         super.update();
-        target.x = Input.mouseX;
-        target.y = Input.mouseY;
+        target.x = HXP.stage.mouseX;
+        target.y = HXP.stage.mouseY;
 
 
-        if (bArrival) {
-            if (sub(target, position).length <= arrivalRadius) {
-                inCircle = true;
-            } else { 
-                inCircle = false; 
-            }
-            steering = arrival(target);
+        if (bSeek) {
+            steering = seek(target);
         } else {
-            if (sub(target, position).length <= fleeRadius) {
-                inCircle = true;
-            } else { 
-                inCircle = false; 
+            if (bArrival) {
+                if (sub(target, position).length <= arrivalRadius) {
+                    inCircle = true;
+                } else { 
+                    inCircle = false; 
+                }
+                steering = arrival(target);
+            } else {
+                if (sub(target, position).length <= fleeRadius) {
+                    inCircle = true;
+                } else { 
+                    inCircle = false; 
+                }
+                steering = flee(target);
             }
-            steering = flee(target);
         }
 
         steering = truncate(steering, max_force);
@@ -93,10 +99,12 @@ class Boid extends Entity {
             sprite.graphics.lineStyle(1.5, 0x000000);
         }
 
-        if (bArrival) {
-            sprite.graphics.drawCircle(target.x, target.y, arrivalRadius);
-        } else {
-            sprite.graphics.drawCircle(target.x, target.y, fleeRadius);
+        if (bSeek == false) {
+            if (bArrival) {
+                sprite.graphics.drawCircle(target.x, target.y, arrivalRadius);
+            } else {
+                sprite.graphics.drawCircle(target.x, target.y, fleeRadius);
+            }
         }
 
         sprite.graphics.lineStyle(1.5, 0x00ff00);
