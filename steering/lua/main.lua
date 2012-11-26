@@ -7,11 +7,13 @@ function love.load()
     love.graphics.setFont(font)
 
     gArrivalRadius = 200
-    gFleeRadius = 100
+    gFleeRadius = 200
     slowing = false
+    debug_draw = true
 
     entity = Entity(20, 20, Vector(400, 300), Vector(0, 0), 1, 150, 100, gFleeRadius, gArrivalRadius)
-    pursue_evade_entity = Entity(10, 10, Vector(500, 400), Vector(0, 0), 1, 150, 100, gFleeRadius, gArrivalRadius)
+    fast_pursue_evade_entity = Entity(10, 10, Vector(500, 400), Vector(0, 0), 1, 300, 200, gFleeRadius, gArrivalRadius)
+    slow_pursue_evade_entity = Entity(10, 10, Vector(500, 400), Vector(0, 0), 1, 100, 100, gFleeRadius, gArrivalRadius)
 
     -- Global behavior settings
     current = {
@@ -33,9 +35,12 @@ function love.update(dt)
         entity.behavior = 'seek'
         entity.seek_flee_arrival_target = Vector(x, y) 
         entity:update(dt)
-        pursue_evade_entity.behavior = current.behavior
-        pursue_evade_entity.pursue_evade_entity = current.target_entity 
-        pursue_evade_entity:update(dt)
+        fast_pursue_evade_entity.behavior = current.behavior
+        fast_pursue_evade_entity.pursue_evade_entity = current.target_entity 
+        fast_pursue_evade_entity:update(dt)
+        slow_pursue_evade_entity.behavior = current.behavior
+        slow_pursue_evade_entity.pursue_evade_entity = current.target_entity 
+        slow_pursue_evade_entity:update(dt)
     end
 end
 
@@ -43,7 +48,8 @@ function love.draw()
     entity:draw()
 
     if equalsAny(current.behavior, 'pursue', 'evade') then
-        pursue_evade_entity:draw()
+        fast_pursue_evade_entity:draw()
+        slow_pursue_evade_entity:draw()
     end
 
     -- Draw mouse position
@@ -62,9 +68,11 @@ function love.draw()
 end
     
 function love.keypressed(key)
+    if key == 'd' then debug_draw = not debug_draw end
     if key == 'q' then love.event.push('quit') end
     if key == '1' then current.behavior = 'seek' end
     if key == '2' then current.behavior = 'flee'; current.radius = gFleeRadius end
     if key == '3' then current.behavior = 'arrival'; current.radius = gArrivalRadius end
     if key == '4' then current.behavior = 'pursue'; current.target_entity = entity end
+    if key == '5' then current.behavior = 'evade'; current.target_entity = entity end
 end

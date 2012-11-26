@@ -49,14 +49,14 @@ function Entity:seek(target)
 end
 
 -- target: Vector
-function Entity:flee(target, fleeRadius)
+function Entity:flee(target)
     self.desired_velocity = (self.position - target)
     local distance = self.desired_velocity:len()
 
-    if distance < fleeRadius then
+    if distance < self.flee_radius then
         slowing = true
         self.desired_velocity = 
-        self.desired_velocity:normalized()*self.max_velocity*(1-(distance/fleeRadius))
+        self.desired_velocity:normalized()*self.max_velocity*(1-(distance/self.flee_radius))
 
     else 
         slowing = false
@@ -67,14 +67,14 @@ function Entity:flee(target, fleeRadius)
 end
 
 -- target: Vector
-function Entity:arrival(target, arrivalRadius)
+function Entity:arrival(target)
     self.desired_velocity = (target - self.position)
     local distance = self.desired_velocity:len()
 
-    if distance < arrivalRadius then
+    if distance < self.arrival_radius then
         slowing = true
         self.desired_velocity = 
-        self.desired_velocity:normalized()*self.max_velocity*(distance/arrivalRadius)
+        self.desired_velocity:normalized()*self.max_velocity*(distance/self.arrival_radius)
     else 
         slowing = false
         self.desired_velocity = 
@@ -86,9 +86,22 @@ end
 
 -- target: Entity
 function Entity:pursue(target)
-    local t = 3
+    local distance = (target.position - self.position):len()
+    local t = distance*0.01
     self.pursue_evade_future_entity_position = target.position + target.velocity*t 
-    self:seek(self.pursue_evade_future_entity_position)
+    self:arrival(self.pursue_evade_future_entity_position)
+end
+
+-- target: Entity
+function Entity:evade(target)
+    local distance = (target.position - self.position):len()
+    local t = distance*0.01
+    self.pursue_evade_future_entity_position = target.position + target.velocity*t 
+    self:flee(self.pursue_evade_future_entity_position)
+end
+
+function Entity:wander()
+    
 end
 
 local function drawEntity(entity, borderColor, fillColor)
@@ -137,14 +150,16 @@ function Entity:draw()
 
     elseif equalsAny(self.behavior, 'pursue', 'evade') then
         drawEntity(self, {50, 12, 25}, {200, 50, 100})
-        drawFutureEntityPosition(self, {200, 50, 100})
+        if debug_draw then drawFutureEntityPosition(self, {200, 50, 100}) end
     end
 
-    love.graphics.setLineWidth(1.2)
-    drawEntityVector(self, 'velocity', {0, 255, 0})
-    drawEntityVector(self, 'desired_velocity', {0, 0, 0})
-    drawEntityVector(self, 'acceleration', {255, 0, 255})
-    love.graphics.setLineWidth(1)
+    if debug_draw then
+        love.graphics.setLineWidth(1.2)
+        drawEntityVector(self, 'velocity', {0, 255, 0})
+        drawEntityVector(self, 'desired_velocity', {0, 0, 0})
+        drawEntityVector(self, 'acceleration', {255, 0, 255})
+        love.graphics.setLineWidth(1)
+    end
 end
 
 setmetatable(Entity, {__call = function(_, ...) return Entity.new(...) end})
