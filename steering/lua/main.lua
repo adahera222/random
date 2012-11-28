@@ -56,13 +56,7 @@ function love.draw()
     love.graphics.setColor(0, 0, 0)
     love.graphics.circle('line', x, y, 5, 360)
 
-    if equalsAny(current.behavior, 'flee', 'arrival') then
-        -- Draw slowing radius for arrival or flee
-        if slowing then love.graphics.setColor(255, 0, 0)
-        else love.graphics.setColor(0, 0, 0) end
-        love.graphics.circle('line', x, y, current.radius, 360)
-    end
-
+    -- Print current behavior
     love.graphics.setColor(0, 0, 0)
     love.graphics.print(current.behavior, 10, 10)
 end
