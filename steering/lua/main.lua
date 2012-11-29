@@ -12,8 +12,7 @@ function love.load()
     debug_draw = true
 
     entity = Entity(20, 20, Vector(400, 300), Vector(0, 0), 1, 150, 100, gFleeRadius, gArrivalRadius)
-    fast_pursue_evade_entity = Entity(10, 10, Vector(500, 400), Vector(0, 0), 1, 300, 200, gFleeRadius, gArrivalRadius)
-    slow_pursue_evade_entity = Entity(10, 10, Vector(500, 400), Vector(0, 0), 1, 100, 100, gFleeRadius, gArrivalRadius)
+    pursue_evade_entity = Entity(10, 10, Vector(500, 400), Vector(0, 0), 1, 300, 200, gFleeRadius, gArrivalRadius)
 
     -- Global behavior settings
     current = {
@@ -35,21 +34,16 @@ function love.update(dt)
         entity.behavior = 'seek'
         entity.seek_flee_arrival_target = Vector(x, y) 
         entity:update(dt)
-        fast_pursue_evade_entity.behavior = current.behavior
-        fast_pursue_evade_entity.pursue_evade_entity = current.target_entity 
-        fast_pursue_evade_entity:update(dt)
-        slow_pursue_evade_entity.behavior = current.behavior
-        slow_pursue_evade_entity.pursue_evade_entity = current.target_entity 
-        slow_pursue_evade_entity:update(dt)
+        pursue_evade_entity.behavior = current.behavior
+        pursue_evade_entity.pursue_evade_entity = current.target_entity 
+        pursue_evade_entity:update(dt)
     end
 end
 
 function love.draw()
     entity:draw()
-
-    if equalsAny(current.behavior, 'pursue', 'evade') then
-        fast_pursue_evade_entity:draw()
-        slow_pursue_evade_entity:draw()
+    if equalsAny(current.behavior, 'pursue', 'evade') then 
+        pursue_evade_entity:draw() 
     end
 
     -- Draw mouse position

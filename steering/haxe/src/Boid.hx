@@ -49,7 +49,7 @@ class Boid extends Entity {
         slowing = false;
         pursue_evade_entity = null;
         pursue_evade_future_entity_position = null;
-        rect = Image.createRect(w, h, 0x3264C8);
+        rect = Image.createRect(w, h, 0xffffff);
         rect_border = Image.createRect(w+2, h+2, 0x0C1932);
         graphic = rect;
     }
@@ -58,14 +58,16 @@ class Boid extends Entity {
         super.update();
         var dt = HXP.elapsed;
 
-        if (Utils.equalsAny(behavior, ["seek", "flee", "arrival"])) {
-            if (behavior == "seek") { 
-                seek(seek_flee_arrival_target);
-            } else if (behavior == "flee") { 
-                flee(seek_flee_arrival_target);
-            } else { 
-                arrival(seek_flee_arrival_target); 
-            }
+        if (behavior == "seek") { 
+            seek(seek_flee_arrival_target);
+        } else if (behavior == "flee") { 
+            flee(seek_flee_arrival_target);
+        } else if (behavior == "arrival") { 
+            arrival(seek_flee_arrival_target); 
+        } else if (behavior == "pursue") {
+            pursue(pursue_evade_entity);
+        } else if (behavior == "evade") {
+            evade(pursue_evade_entity);
         }
 
         steering_force = steering.truncate(max_force);
@@ -118,7 +120,23 @@ class Boid extends Entity {
         steering = desired_velocity.sub(velocity);
     }
 
-    private function drawEntity() {
+    public function pursue(target:Boid) {
+        var distance:Float = target.position.sub(position).length;
+        var t:Float = distance*0.01;
+        pursue_evade_future_entity_position = target.position.add(target.velocity.mul(t));
+        arrival(pursue_evade_future_entity_position);
+    }
+
+    public function evade(target:Boid) {
+        var distance:Float = target.position.sub(position).length;
+        var t:Float = distance*0.01;
+        pursue_evade_future_entity_position = target.position.add(target.velocity.mul(t));
+        flee(pursue_evade_future_entity_position);
+    }
+
+    private function drawEntity(borderColor:Int, fillColor:Int) {
+        rect_border.color = borderColor;
+        rect.color = fillColor;
         rect_border.centerOrigin();
         rect.centerOrigin();
         rect_border.angle = 180 - Utils.radToDeg(velocity.angle());
@@ -131,7 +149,7 @@ class Boid extends Entity {
                     HXP.camera);
     }
 
-    private function drawEntityVector(vector_name, color) {
+    private function drawEntityVector(vector_name:String, color:Int) {
         if (vector_name == "velocity") {
             Draw.linePlus(Std.int(position.x), Std.int(position.y), 
                           Std.int(position.x + velocity.x), 
@@ -167,10 +185,31 @@ class Boid extends Entity {
         }
     }
 
+    private function drawFutureEntityPosition(color:Int) {
+        Draw.circlePlus(Std.int(pursue_evade_future_entity_position.x),
+                        Std.int(pursue_evade_future_entity_position.y),
+                        5, color, 255, false, 2);
+        Draw.linePlus(Std.int(pursue_evade_future_entity_position.x - 10),
+                      Std.int(pursue_evade_future_entity_position.y),
+                      Std.int(pursue_evade_future_entity_position.x + 10),
+                      Std.int(pursue_evade_future_entity_position.y),
+                      color, 255, 2);
+        Draw.linePlus(Std.int(pursue_evade_future_entity_position.x),
+                      Std.int(pursue_evade_future_entity_position.y - 10),
+                      Std.int(pursue_evade_future_entity_position.x),
+                      Std.int(pursue_evade_future_entity_position.y + 10),
+                      color, 255, 2);
+    }
+
     override public function render() {
         if (Utils.equalsAny(behavior, ["seek", "flee", "arrival"])) {
-            drawEntity();
+            drawEntity(0x0c1932, 0x3264c8);
             drawSlowingArea();
+        }
+
+        else if (Utils.equalsAny(behavior, ["pursue", "evade"])) {
+            drawEntity(0x320c19, 0xc83264);
+            if (Utils.debug_draw) { drawFutureEntityPosition(0xc83264); }
         }
 
         if (Utils.debug_draw) {

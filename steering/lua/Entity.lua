@@ -36,7 +36,6 @@ function Entity:update(dt)
         self[self.behavior](self, self.pursue_evade_entity)
     end
 
-    -- Base
     self.steering_force = self.steering:min(self.max_force)
     self.acceleration = self.steering_force/self.mass
     self.velocity = (self.velocity + self.acceleration*dt):min(self.max_velocity)
