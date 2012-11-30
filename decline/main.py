@@ -2,6 +2,7 @@
 # -*- coding: utf8 -*-
 
 import string, os
+from datetime import datetime
 
 # This is a list of tuples with the format:
 # (day, time, person, [message])
@@ -14,10 +15,13 @@ messages = []
 # being < n hours, all those belong to one section. A section
 # will be a tuple with the start/end interval: (start, end)
 sections = []
-section_minutes = 60 # 1 hour defines a section
+section_counter = 0
+section_seconds = 3600 # 1 hour defines a section
 
 def main():
     global messages
+    global sections
+    global section_counter
 
     homedir = os.path.expanduser('~')
     f = open(os.path.join(homedir, 'Desktop', 'tsg.txt'), 'r')
@@ -31,26 +35,47 @@ def main():
             person = getPersonFromLine(line)
             message = getMessageFromLine(line)
             addMessageToDict(day, time, person, message)
-            print day, time, timeToNumber(time)
 
     f.close()
 
-'''
+    findSections()
+    print section_counter
+
 def findSections():
     global messages
     global sections
-    global section_minutes
+    global section_seconds
+    global section_counter
 
+    # Initialize first section's start
+    sections.append((0, None))
 
-# Time format: 'hh/mm/ss'
+    for i in range(0, len(messages)): 
+        # Since we'll always check the difference in time between
+        # i and i+1, ensure we never go out of the array's bounds
+        if i <= len(messages)-2:
+            dt = diffTime(messages[i][1], messages[i+1][1])
+            if dt > section_seconds:
+                # Set current section's end
+                current_tuple_list = list(sections[section_counter])
+                current_tuple_list[1] = i
+                sections[section_counter] = tuple(current_tuple_list)
+                section_counter += 1
+                # Set next section's start
+                sections.append((i+1, None))
+
 def diffTime(time1, time2):
-'''
+    delta = datetime.strptime(time2, '%H:%M:%S') - datetime.strptime(time1, '%H:%M:%S')
+    return delta.seconds
 
-def timeToNumber(time):
-    if time:
-        return int(time[0:2]), int(time[3:5]), int(time[6:8]) 
+def addMessageToDict(day, time, person, message):
+    global messages
+    new_tuple = (day, time, person, [message])
+
+    if day == None and time == None and person == None:
+        messages[-1][3].append(message)
     else:
-        return None, None, None
+        messages.append(new_tuple)
 
 def getDayAndTimeFromLine(line):
     if line[0] == '[' and line[3] == '/' and line[20] == ']':
@@ -69,15 +94,6 @@ def getMessageFromLine(line):
         return line[line.find(':', 22, line.__len__())+2:]
     else: 
         return line
-
-def addMessageToDict(day, time, person, message):
-    global messages
-    new_tuple = (day, time, person, [message])
-
-    if day == None and time == None and person == None:
-        messages[-1][3].append(message)
-    else:
-        messages.append(new_tuple)
 
 if __name__ == '__main__':
     main()
