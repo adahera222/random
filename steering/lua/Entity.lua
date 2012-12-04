@@ -22,6 +22,7 @@ function Entity.new(w, h, p, v, mass, max_v, max_f, flee_r, arrival_r)
         seek_flee_arrival_target = nil,
         flee_radius = flee_r,
         arrival_radius = arrival_r,
+        slowing = false;
         pursue_evade_entity = nil,
         pursue_evade_future_entity_position = nil
     }, Entity)
@@ -29,13 +30,12 @@ end
 
 function Entity:update(dt)
     if equalsAny(self.behavior, 'seek', 'flee', 'arrival') then
-        self[self.behavior](self, self.seek_flee_arrival_target, current.radius)
+        self[self.behavior](self, self.seek_flee_arrival_target)
 
-    elseif equalsAny(current.behavior, 'pursue', 'evade') then
+    elseif equalsAny(self.behavior, 'pursue', 'evade') then
         self[self.behavior](self, self.pursue_evade_entity)
     end
 
-    -- Base
     self.steering_force = self.steering:min(self.max_force)
     self.acceleration = self.steering_force/self.mass
     self.velocity = (self.velocity + self.acceleration*dt):min(self.max_velocity)
@@ -54,12 +54,12 @@ function Entity:flee(target)
     local distance = self.desired_velocity:len()
 
     if distance < self.flee_radius then
-        slowing = true
+        self.slowing = true
         self.desired_velocity = 
         self.desired_velocity:normalized()*self.max_velocity*(1-(distance/self.flee_radius))
 
     else 
-        slowing = false
+        self.slowing = false
         self.desired_velocity = Vector(0, 0)
     end
 
@@ -72,11 +72,11 @@ function Entity:arrival(target)
     local distance = self.desired_velocity:len()
 
     if distance < self.arrival_radius then
-        slowing = true
+        self.slowing = true
         self.desired_velocity = 
         self.desired_velocity:normalized()*self.max_velocity*(distance/self.arrival_radius)
     else 
-        slowing = false
+        self.slowing = false
         self.desired_velocity = 
         self.desired_velocity:normalized()*self.max_velocity 
     end
@@ -98,10 +98,6 @@ function Entity:evade(target)
     local t = distance*0.01
     self.pursue_evade_future_entity_position = target.position + target.velocity*t 
     self:flee(self.pursue_evade_future_entity_position)
-end
-
-function Entity:wander()
-    
 end
 
 local function drawEntity(entity, borderColor, fillColor)
@@ -126,6 +122,23 @@ local function drawEntityVector(entity, vector_name, color)
     love.graphics.setColor(0, 0, 0)
 end
 
+local function drawSlowingArea(entity)
+    love.graphics.setColor(0, 0, 0)
+    if entity.slowing then love.graphics.setColor(255, 0, 0)
+    else love.graphics.setColor(0, 0, 0) end
+    
+    if entity.behavior == 'flee' then
+        love.graphics.circle('line',
+        entity.seek_flee_arrival_target.x,
+        entity.seek_flee_arrival_target.y, entity.flee_radius, 360)
+
+    elseif entity.behavior == 'arrival' then
+        love.graphics.circle('line',
+        entity.seek_flee_arrival_target.x,
+        entity.seek_flee_arrival_target.y, entity.arrival_radius, 360)
+    end
+end
+
 local function drawFutureEntityPosition(entity, color)
     love.graphics.setColor(unpack(color))
     love.graphics.circle('line', 
@@ -147,6 +160,7 @@ end
 function Entity:draw()
     if equalsAny(self.behavior, 'seek', 'flee', 'arrival') then
         drawEntity(self, {12, 25, 50}, {50, 100, 200})
+        drawSlowingArea(self)
 
     elseif equalsAny(self.behavior, 'pursue', 'evade') then
         drawEntity(self, {50, 12, 25}, {200, 50, 100})

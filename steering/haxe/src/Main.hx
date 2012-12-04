@@ -15,17 +15,9 @@ class Main extends Engine
 	}
 
 	override public function init() {
-#if debug
-	#if flash
-		if (flash.system.Capabilities.isDebugger)
-	#end
-		{
-			HXP.console.enable();
-		}
-#end
 		HXP.screen.color = kClearColor;
 		HXP.screen.scale = 1;
-		HXP.world = new worlds.GameWorld();
+		HXP.world = new GameWorld();
 	}
 
     override public function focusGained() {
