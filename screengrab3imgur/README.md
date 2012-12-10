@@ -13,3 +13,7 @@ Press print screen -> select area -> wait a few seconds -> image has been upload
 * [pyHook](http://sourceforge.net/apps/mediawiki/pyhook/index.php?title=Main_Page)
 
 If you happen to find this and use it, please get your own key for the [imgur API](https://imgur.com/register/api_anon) and add it to C:/Users/yourusername/AppData/Local/screengrab3imgur/key.txt.
+
+## Status: unfinished
+
+Found a better program to achieve this task: http://app.prntscr.com/
