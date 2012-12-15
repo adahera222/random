@@ -6,6 +6,7 @@ gl.player_normal = love.graphics.newImage('gfx/player_normal.png')
 gl.animal = love.graphics.newImage('gfx/animal.png')
 gl.person_normal = love.graphics.newImage('gfx/person_normal.png')
 gl.yay = love.graphics.newImage('gfx/yay.png')
+gl.projectile = love.graphics.newImage('gfx/projectile.png')
 
 gl.entity_counter = 0
 gl.entity_id = 

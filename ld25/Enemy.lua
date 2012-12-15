@@ -30,7 +30,7 @@ end
 
 function Enemy:update(dt, player)
     Movable.update(self, dt)
-    self:behavior(dt)
+    self:behavior(dt, player.p)
     self:flee(player.p)
 
     self.steering_force.x = math.min(self.steering.x, 500)
@@ -45,7 +45,7 @@ function Enemy:speak()
     end
 end
 
-function Enemy:behavior(dt)
+function Enemy:behavior(dt, target)
     if self.on_ground then self.speaking = false end
 
     if self.can_jump then
@@ -54,11 +54,13 @@ function Enemy:behavior(dt)
         self.speaking = true
     end
 
-
     if self.jump_t >= self.jump_delay then
         self.can_jump = true
         self.jump_t = 0
-        self.jump_delay = math.random(100, 500)/100
+        if self.fleeing then
+            local distance = math.abs(self.p.x - target.x)
+            self.jump_delay = math.random(distance, 3*distance)/100
+        else self.jump_delay = math.random(100, 500)/100 end
     end
 
     self.jump_t = self.jump_t + dt

@@ -10,6 +10,12 @@ Things to do (in order of importance):
     Entity behavior (flee)
     Gun (projectiles, enemy hit)
 
+    Gun: (done, 15/12/2012 12:40)
+        Mouse angle
+        Create projectile on click
+        Projectile collision with enemies
+        Enemy removal
+
     Entity behavior: (done, 15/12/2012 10:18)
         Enemy class 
         Enemy input (from entity movement)

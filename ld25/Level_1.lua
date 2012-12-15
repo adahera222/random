@@ -21,3 +21,7 @@ function Level_1:keypressed(key)
         beholder.trigger('transition', 'intro')
     end
 end
+
+function Level_1:mousepressed(x, y, button)
+    Level.mousepressed(self, x, y, button)
+end

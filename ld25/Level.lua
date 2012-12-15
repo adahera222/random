@@ -2,6 +2,7 @@ require 'Player'
 require 'Tile'
 require 'Camera'
 require 'Enemy'
+require 'Projectile'
 
 Level = class('Level')
 
@@ -34,6 +35,30 @@ function Level:initialize(name, map)
         w = 'jump',
         up = 'jump'
     }
+
+    beholder:observe('create projectile', 
+        function(x, y)
+            local delta = Vector(x - self.player.p.x + self.camera.p.x,
+                                 y - self.player.p.y + self.camera.p.y)
+            local r = math.atan2(delta.y, delta.x)
+            print(radToDeg(r))
+            local e = Projectile(self.player.p.x, self.player.p.y, r, 200)
+            self:add(e)
+            self.camera:add(e.draw, e)
+        end)
+end
+
+function Level:getInArea(type, point, size)
+    local abs = math.abs
+    local objs = {}    
+    for _, obj in ipairs(self[type]) do
+        local dx = abs(point.x - obj.p.x)
+        local dy = abs(point.y - obj.p.y)
+        if dx <= size and dy <= size then
+            table.insert(objs, obj)
+        end
+    end
+    return objs
 end
 
 function Level:update(dt)
@@ -45,18 +70,31 @@ function Level:update(dt)
 
     for _, tile in ipairs(self.tiles) do
         self.player:collideWith(tile)
+        local entities = self:getInArea('entities', tile.p, 64)
+        for _, entity in ipairs(entities) do
+            entity:collideWith(tile)
+        end
     end
 
     for _, entity in ipairs(self.entities) do 
         if instanceOf(Enemy, entity) then
             entity:update(dt, self.player) 
+            entity:collideWith(self.player)
+            self.player:collideWith(entity)
+            local projectiles = self:getInArea('entities', entity.p, 64)
+            for _, proj in ipairs(projectiles) do
+                if instanceOf(Projectile, proj) then
+                    entity:collideWith(proj)
+                end
+            end
         else entity:update(dt) end
-        entity:collideWith(self.player)
-        for _, tile in ipairs(self.tiles) do
-            entity:collideWith(tile)
+
+        if not entity.alive then 
+            self:remove(entity)
+            self.camera:remove(entity)
         end
-        self.player:collideWith(entity)
     end
+
     self.player:update(dt)
     self.camera:follow(dt, self.player)
     self.camera:update(dt)
@@ -74,6 +112,10 @@ function Level:keypressed(key)
             beholder:trigger(v .. self.player.id)
         end
     end
+end
+
+function Level:mousepressed(x, y, button)
+    self.player:mousepressed(x, y, button)
 end
 
 function Level:add(entity)

@@ -14,3 +14,10 @@ end
 function Player:draw()
     Movable.draw(self)
 end
+
+function Player:mousepressed(x, y, button)
+    if button == 'l' then
+        beholder:trigger('create projectile', x, y) 
+    end
+    
+end

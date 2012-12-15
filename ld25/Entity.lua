@@ -8,6 +8,7 @@ function Entity:initialize(id, x, y, width, height, image)
     self.w = width or 32
     self.h = height or 32
     self.image = image or gl.default_image
+    self.alive = true
 
     self.r_aabb = {
         x1 = self.w/2, y1 = self.h/2,
@@ -34,8 +35,16 @@ function Entity:collideWith(e)
     e:updateAABB()
     
     if self:colliding(e) then
-        local direction, p = self:resolve(e)
-        beholder:trigger('displace movable' .. self.id, direction, p)
+        if instanceOf(Projectile, self) and instanceOf(Tile, e) then
+            self.alive = false
+
+        elseif instanceOf(Enemy, self) and instanceOf(Projectile, e) then
+            self.alive = false
+
+        else
+            local direction, p = self:resolve(e)
+            beholder:trigger('displace movable' .. self.id, direction, p)
+        end
     end
 end
 

@@ -30,6 +30,10 @@ function love.keypressed(key)
     current_level:keypressed(key)
 end
 
+function love.mousepressed(x, y, button)
+    current_level:mousepressed(x, y, button)
+end
+
 function love.run()
     math.randomseed(os.time())
     math.random(); math.random(); math.random();

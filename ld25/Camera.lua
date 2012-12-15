@@ -18,6 +18,15 @@ function Camera:add(draw_function, entity)
     table.insert(self.draw_functions, {f = draw_function, entity = entity})
 end
 
+function Camera:remove(entity)
+    for i, df in ipairs(self.draw_functions) do
+        if df.entity.id == entity.id then
+            table.remove(self.draw_functions, i)
+            return
+        end
+    end
+end
+
 function Camera:set()
     love.graphics.push()
     love.graphics.rotate(-self.r)
