@@ -28,6 +28,7 @@ function Entity:draw()
     love.graphics.draw(self.image, self.p.x - self.w/2, self.p.y - self.h/2)
 end
 
+
 function Entity:collideWith(e)
     self:updateAABB()
     e:updateAABB()

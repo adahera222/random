@@ -1,6 +1,7 @@
 require 'Player'
 require 'Tile'
 require 'Camera'
+require 'Enemy'
 
 Level = class('Level')
 
@@ -12,16 +13,22 @@ function Level:initialize(name, map)
     self.width, self.height = self:loadTiles(map)
     self.camera = Camera({x1 = 0, y1 = 0, x2 = self.width/2, y2 = 0})
 
+    self:add(Enemy('animal', 300, 100, 100))
+    self:add(Enemy('animal', 400, 100, 100))
+    self:add(Enemy('animal', 500, 100, 100))
+    self:add(Enemy('animal', 700, 100, 100))
+    self:add(Enemy('animal', 800, 100, 100))
+
+    for _, tile in ipairs(self.tiles) do self.camera:add(tile.draw, tile) end
+    for _, entity in ipairs(self.entities) do self.camera:add(entity.draw, entity) end
+    self.camera:add(self.player.draw, self.player)
+
     self.down_player_keys = {
         a = 'move left',
         d = 'move right',
         left = 'move left',
         right = 'move right',
     }
-
-    for _, tile in ipairs(self.tiles) do self.camera:add(tile.draw, tile) end
-    for _, entity in ipairs(self.entities) do self.camera:add(entity.draw, entity) end
-    self.camera:add(self.player.draw, self.player)
     
     self.press_player_keys = {
         w = 'jump',
@@ -41,7 +48,13 @@ function Level:update(dt)
     end
 
     for _, entity in ipairs(self.entities) do 
-        entity:update(dt) 
+        if instanceOf(Enemy, entity) then
+            entity:update(dt, self.player) 
+        else entity:update(dt) end
+        entity:collideWith(self.player)
+        for _, tile in ipairs(self.tiles) do
+            entity:collideWith(tile)
+        end
         self.player:collideWith(entity)
     end
     self.player:update(dt)

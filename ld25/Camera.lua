@@ -68,6 +68,7 @@ function Camera:follow(dt, entity)
 end
 
 function Camera:draw()
+    love.graphics.setBackgroundColor(255, 255, 255)
     self:set()
     for _, draw_function in ipairs(self.draw_functions) do 
         draw_function.f(draw_function.entity) 

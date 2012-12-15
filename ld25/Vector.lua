@@ -26,3 +26,21 @@ end
 function Vector:__div(a)
     return Vector(self.x/a, self.y/a)
 end
+
+function Vector:len()
+    return math.sqrt(self.x*self.x + self.y*self.y)
+end
+
+function Vector:clone()
+    return Vector(self.x, self.y)
+end
+
+function Vector:normalize()
+    local l = self:len()
+    if l > 0 then self.x, self.y = self.x/l, self.y/l end
+    return self
+end
+
+function Vector:normalized()
+    return self:clone():normalize()    
+end

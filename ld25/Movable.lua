@@ -2,21 +2,21 @@ require 'Entity'
 
 Movable = class('Movable', Entity)
 
-function Movable:initialize(x, y, w, h, max_v, a, damping, max_jumps)
+function Movable:initialize(x, y, w, h, max_v, a, damping, max_fall, jump_a, max_jumps)
     Entity.initialize(self, gl.entity_id(), x, y, w, h)
 
     self.v = Vector()
     self.max_v = max_v
-    self.max_fall = 200
+    self.max_fall = max_fall
     self.a = a
-    self.jump_a = -200
+    self.jump_a = jump_a
     self.dmp = damping
     self.jump = false
     self.jump_ti = 0
     self.max_jumps = max_jumps
     self.jumps_left = max_jumps
     self.moving = {left = false, right = false}
-    self.jumping = false
+    self.jump_control = false
     self.prev_dir = nil 
     self.on_ground = false
 
@@ -56,10 +56,11 @@ function Movable:move(dt)
         self.direction = 'right'
     end
 
-    if self.jumping then
+    if self.jump_control then
         self.v.y = self.jump_a
         if self.jump_ti >= 1 then
-            self.jumping = false
+            self.jump_control = false
+            self.jump_ti = 0
         end
     end
 
@@ -81,8 +82,8 @@ function Movable:jumpImpulse(dt)
 
     self.jump = false
     self.jumps_left = self.jumps_left - 1 
-    self.jump_ti = love.timer.getTime()
-    self.jumping = true
+    self.jump_ti = self.jump_ti + 1
+    self.jump_control = true
 end
 
 function Movable:onGround()
@@ -94,7 +95,7 @@ function Movable:draw()
 end
 
 function Movable:displace(direction, penetration)
-    if not self.jumping then
+    if not self.jump_control then
         if self.on_ground then
             self.jumps_left = self.max_jumps
         end

@@ -10,6 +10,13 @@ Things to do (in order of importance):
     Entity behavior (flee)
     Gun (projectiles, enemy hit)
 
+    Entity behavior: (done, 15/12/2012 10:18)
+        Enemy class 
+        Enemy input (from entity movement)
+        Enemy jump (random jumps, only when being attacked...)
+        Enemy flee (they won't fight back)
+        Text
+
     Camera: (done, 15/12/2012 08:04)
         Scrolling
         Screen bound
