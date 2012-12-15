@@ -10,13 +10,19 @@ Things to do (in order of importance):
     Entity behavior (flee)
     Gun (projectiles, enemy hit)
 
-    Rectangle collision: (done, 15/12/2012 04:10)
+    Camera: (done, 15/12/2012 08:04)
+        Scrolling
+        Screen bound
+        Follow player
+        Parallax [missing]
 
     Entity movement: (done, 15/12/2012 06:00)
         Create entity class (id, position, width, height, ...)
         Create movement code (acceleration, velocity only for player)
-        Create input code (mixin? should be switchable for AI)
+        Create input code (mixin? should be switchable for AI) [missing]
         Jump!
+
+    Rectangle collision: (done, 15/12/2012 04:10)
 
     Level loading and displaying: (done, 15/12/2012 01:58)
         For each level:

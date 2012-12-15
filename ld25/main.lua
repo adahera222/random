@@ -5,6 +5,8 @@ beholder = require 'beholder'
 
 function love.load()
     love.graphics.setMode(1024, 768, false, false, 0)
+    gl.width = love.graphics.getWidth()
+    gl.height = love.graphics.getHeight()
 
     levels = {
         intro = Intro('intro'),

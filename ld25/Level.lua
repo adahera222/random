@@ -1,5 +1,6 @@
 require 'Player'
 require 'Tile'
+require 'Camera'
 
 Level = class('Level')
 
@@ -8,7 +9,8 @@ function Level:initialize(name, map)
     self.player = Player(200, 100)
     self.tiles = {}
     self.entities = {}
-    self:loadTiles(map)
+    self.width, self.height = self:loadTiles(map)
+    self.camera = Camera({x1 = 0, y1 = 0, x2 = self.width/2, y2 = 0})
 
     self.down_player_keys = {
         a = 'move left',
@@ -16,6 +18,10 @@ function Level:initialize(name, map)
         left = 'move left',
         right = 'move right',
     }
+
+    for _, tile in ipairs(self.tiles) do self.camera:add(tile.draw, tile) end
+    for _, entity in ipairs(self.entities) do self.camera:add(entity.draw, entity) end
+    self.camera:add(self.player.draw, self.player)
     
     self.press_player_keys = {
         w = 'jump',
@@ -39,13 +45,12 @@ function Level:update(dt)
         self.player:collideWith(entity)
     end
     self.player:update(dt)
+    self.camera:follow(dt, self.player)
+    self.camera:update(dt)
 end
 
 function Level:draw()
-    for _, tile in ipairs(self.tiles) do tile:draw() end
-    for _, entity in ipairs(self.entities) do entity:draw() end
-    self.player:draw()
-
+    self.camera:draw()
     love.graphics.print(self.name, 10, 10)
 end
 
@@ -73,7 +78,6 @@ end
 
 function Level:loadTiles(map)
     local data = love.image.newImageData(map)
-
     for i = 0, data:getWidth()-1 do
         for j = 0, data:getHeight()-1 do
             local r, g, b, a = data:getPixel(i, j)
@@ -83,4 +87,5 @@ function Level:loadTiles(map)
             end
         end
     end
+    return data:getWidth()*32, data:getHeight()*32
 end

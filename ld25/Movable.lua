@@ -43,7 +43,6 @@ function Movable:update(dt)
     self.p.y = self.p.y + self.v.y*dt
 
     self.on_ground = self:onGround()
-    print(self.jumps_left)
 end
 
 function Movable:move(dt)
