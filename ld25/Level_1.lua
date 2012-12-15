@@ -15,6 +15,8 @@ function Level_1:draw()
 end
 
 function Level_1:keypressed(key)
+    Level.keypressed(self, key)
+
     if key == 'return' then
         beholder.trigger('transition', 'intro')
     end

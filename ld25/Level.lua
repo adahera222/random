@@ -10,16 +10,21 @@ function Level:initialize(name, map)
     self.entities = {}
     self:loadTiles(map)
 
-    self.player_keys = {
+    self.down_player_keys = {
         a = 'move left',
         d = 'move right',
         left = 'move left',
-        right = 'move right'
+        right = 'move right',
+    }
+    
+    self.press_player_keys = {
+        w = 'jump',
+        up = 'jump'
     }
 end
 
 function Level:update(dt)
-    for k, v in pairs(self.player_keys) do
+    for k, v in pairs(self.down_player_keys) do
         if love.keyboard.isDown(k) then
             beholder:trigger(v .. self.player.id)
         end
@@ -44,6 +49,14 @@ function Level:draw()
     love.graphics.print(self.name, 10, 10)
 end
 
+
+function Level:keypressed(key)
+    for k, v in pairs(self.press_player_keys) do
+        if key == k then
+            beholder:trigger(v .. self.player.id)
+        end
+    end
+end
 
 function Level:add(entity)
     table.insert(self.entities, entity)

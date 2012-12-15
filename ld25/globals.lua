@@ -11,6 +11,6 @@ gl.entity_id =
         return gl.entity_counter
     end
 
-gl.gravity = 90 -- in pixels per second
+gl.gravity = 200 -- in pixels per second
 
 return gl

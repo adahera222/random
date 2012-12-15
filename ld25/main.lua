@@ -4,7 +4,7 @@ gl = require 'globals'
 beholder = require 'beholder'
 
 function love.load()
-    love.graphics.setMode(1024, 768, false, true, 0)
+    love.graphics.setMode(1024, 768, false, false, 0)
 
     levels = {
         intro = Intro('intro'),
@@ -36,7 +36,7 @@ function love.run()
 
     local t = 0
     local dt = 0
-    local fixed_dt = 0.01 
+    local fixed_dt = 1/60 
     local accumulator = 0.0
 
     -- Main loop time

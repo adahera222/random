@@ -3,7 +3,7 @@ require 'Movable'
 Player = class('Player', Movable)
 
 function Player:initialize(x, y)
-    Movable.initialize(self, x, y, 32, 32, 300, Vector(300, 300), 0.85)
+    Movable.initialize(self, x, y, 32, 32, 250, Vector(500, 500), 0.90, 2)
     self.image = gl.player_image
 end
 

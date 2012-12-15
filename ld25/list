@@ -10,19 +10,21 @@ Things to do (in order of importance):
     Entity behavior (flee)
     Gun (projectiles, enemy hit)
 
-    Entity movement:
+    Rectangle collision: (done, 15/12/2012 04:10)
+
+    Entity movement: (done, 15/12/2012 06:00)
         Create entity class (id, position, width, height, ...)
         Create movement code (acceleration, velocity only for player)
         Create input code (mixin? should be switchable for AI)
-        Jump
+        Jump!
 
-    Level loading and displaying: (done, 15/12/2012, 01:58)
+    Level loading and displaying: (done, 15/12/2012 01:58)
         For each level:
             Create a level file (tiles)
             Load level in a level class which holds all tiles and entities
             Level class updates entities, collides them with tiles, etc...
        
-    Transitions: (done, 15/12/2012, 01:19) 
+    Transitions: (done, 15/12/2012 01:19) 
         Each scene is a different level 
         Transitions between levels:
             Receive transition message
