@@ -44,3 +44,9 @@ end
 function Vector:normalized()
     return self:clone():normalize()    
 end
+
+function Vector:min(max_length)
+    local s = max_length/self:len()
+    if s >= 1 then s = 1 end
+    return Vector(self.x*s, self.y*s)
+end

@@ -6,21 +6,29 @@ More things to do (in order of importance):
 
     Game 1:
         Game 1 map (done, 15/12/2012 21:37)
-        Game 1 entities
-        Entity spawner
+        Game 1 entities (done, 16/12/2012 05:04)
+        Entity spawner (done, 16/12/2012 05:04)
         Game 1 tiles (????) (done, 15/12/2012 21:37)
-        More enemy texts
+        More enemy texts (done, 16/12/2012 05:04)
 
-    Scene 1:
+    Game 2:
+        Game 2 map
+        Game 2 entities
+
+    Room 1:
         Room tiles (done, 16/12/2012 02:05)
+
+    Room 2:
+        More tiles (done, 16/12/2012 06:25)
+        NPC conversation (done, 16/12/2012 07:44)
 
     Polish:
         Add particles on death
         Add recoil on shooting (done, 15/12/2012 22:37)
         Add sounds (done, 15/12/2012 22:33)
         Add parallax (done, 15/12/2012 21:37)
-        Add more enemy texts (please don't kill me, noooooo, x.x, have mercy, I just wanna make it to christmas!...)
-        Proper transition (done, 15/12/2012 03:21)
+        Add more enemy texts (please don't kill me, noooooo, x.x, have mercy, I just wanna make it to christmas!...) (done, 16/12/2012 05:04)
+        Proper transition (done, 16/12/2012 03:21)
 
 Started: 15/12/2012, 00:00
 Things to do (in order of importance):

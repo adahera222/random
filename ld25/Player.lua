@@ -9,15 +9,60 @@ function Player:initialize(x, y, weapon)
     self.weapon_image = gl[weapon] or nil
     self.dir = 'right'
     self.r = 0
+    self.shot_t = 0
+    self.current_speech = nil
+    self.current_t = 0
+    self.current_end = 5
+    self.current_count = false
+
+    if weapon == 'gun_1' then
+        self.recoil = 75
+        self.shot_delay = 0.3
+    elseif weapon == 'gun_2' then
+        self.recoil = 150
+        self.shot_delay = 0.2
+    end
+
+    beholder.observe('player speak' .. self.id,
+                     function(times)
+                         print('1', times)
+                         if times == 1 then 
+                             self.current_speech = gl.himom
+                             self.current_count = true
+                         elseif times == 2 then 
+                             self.current_speech = gl.sorry
+                             self.current_count = true
+                         else 
+                             self.current_speech = gl.dots 
+                             self.current_count = true
+                         end
+                     end)
 end
 
 function Player:update(dt, camera)
     Movable.update(self, dt, self.id)
     self:setDirection(camera)
+    self.shot_t = self.shot_t + dt
+    if self.current_count then
+        self.current_t = self.current_t + dt
+    end
+
+    if self.current_t >= self.current_end then
+        self.current_count = false
+        self.current_t = 0
+        self.current_speech = nil
+    end
 end
 
 function Player:draw()
     Movable.draw(self)
+    self:speak()
+end
+
+function Player:speak()
+    if self.current_speech then
+        love.graphics.draw(self.current_speech, self.p.x + self.w/2, self.p.y - self.h)
+    end
 end
 
 function Player:setDirection(camera)
@@ -31,12 +76,15 @@ end
 
 function Player:mousepressed(x, y, button)
     if button == 'l' then
-        beholder:trigger('create projectile', self.r) 
-        if not gl.shot:isStopped() then
-            gl.shot:rewind()
+        if self.shot_t >= self.shot_delay then
+            beholder:trigger('create projectile', self.r) 
+            if not gl.shot:isStopped() then
+                gl.shot:rewind()
+            end
+            love.audio.play(gl.shot)
+            self.v.x = self.v.x - self.recoil*math.cos(self.r)
+            self.v.y = self.v.y - self.recoil*math.sin(self.r)
+            self.shot_t = 0
         end
-        love.audio.play(gl.shot)
-        self.v.x = self.v.x - 200*math.cos(self.r)
-        self.v.y = self.v.y - 200*math.sin(self.r)
     end
 end

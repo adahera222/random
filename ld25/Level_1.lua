@@ -1,23 +1,26 @@
 require 'Level'
 require 'Projectile'
 require 'RotatingTile'
+require 'Spawner'
 
 Level_1 = class('Level_1', Level)
 
 function Level_1:initialize(name, map)
     Level.initialize(self, name, map)
-    self.player = Player(200, 100, 'pistol')
+    self.player = Player(200, 100, 'gun_1')
     self.camera = Camera({x1 = -self.width/6, y1 = -self.height/2, x2 = self.width/2, y2 = self.height/2})
+    self.spawner = Spawner(768, 64)
+    self.camera:add(1, self.spawner.draw, self.spawner)
     self.camera:add(1, self.player.draw, self.player)
 
     self.rotating_tiles = {}
     self:addBackground(1000)
 
-    self:add(Enemy('child', 800, 100, 100))
-    self:add(Enemy('child', 850, 100, 100))
-    self:add(Enemy('child', 900, 100, 100))
-    self:add(Enemy('child', 950, 100, 100))
-    self:add(Enemy('child', 1000, 100, 100))
+    self:add(Enemy('child', 1200, 100, 200, self))
+    self:add(Enemy('child', 1250, 100, 200, self))
+    self:add(Enemy('child', 1300, 100, 200, self))
+    self:add(Enemy('child', 1350, 100, 200, self))
+    self:add(Enemy('child', 1400, 100, 200, self))
 
     for _, tile in ipairs(self.tiles) do self.camera:add(1, tile.draw, tile) end
     for _, entity in ipairs(self.entities) do self.camera:add(1, entity.draw, entity) end
@@ -36,6 +39,9 @@ function Level_1:initialize(name, map)
 
     self.first_lmb = false
     self.everyone_dead = false
+    self.dead_delay = 1
+    self.dead_t = 0
+    self.change = false
 
     beholder:observe('create projectile', 
         function(r)
@@ -43,10 +49,27 @@ function Level_1:initialize(name, map)
             self:add(e)
             self.camera:add(1, e.draw, e)
         end)
+
+    beholder:observe('spawn',
+        function(x, y)
+            local e = Enemy('child', x, y, 300, self)
+            self:add(e)
+            self.camera:add(1, e.draw, e)
+        end)
 end
 
 function Level_1:update(dt)
-    if #self.entities == 0 then self.everyone_dead = true end
+    if #self.entities == 0 then self.everyone_dead = true; self.change = true end
+    if self.everyone_dead then 
+        self.dead_t = self.dead_t + dt
+        if self.dead_t >= self.dead_delay then
+            if self.change then
+                beholder.trigger('transition', 'room_2')
+                self.change = false
+                self.dead_t = 0
+            end
+        end
+    end
 
     for k, v in pairs(self.down_player_keys) do
         if love.keyboard.isDown(k) then
@@ -91,6 +114,7 @@ function Level_1:update(dt)
         end
     end
 
+    if not self.everyone_dead then self.spawner:update(dt) end
     self.player:update(dt, self.camera)
     self.camera:follow(dt, self.player)
     self.camera:update(dt)
@@ -116,10 +140,6 @@ function Level_1:keypressed(key)
         if key == k then
             beholder:trigger(v .. self.player.id)
         end
-    end
-
-    if key == 'return' then
-        beholder.trigger('transition', 'room')
     end
 end
 
