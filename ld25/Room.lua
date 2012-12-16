@@ -34,6 +34,10 @@ function Room:initialize(name, map, to_level, gun)
     self.under_play = false
     self.talked_to_mom = false
     self.times_mom = 0
+    self.mom_talk_delay = 5
+    self.mom_talk_t = 0
+    self.mom_talk_count = false
+    self.mom_can_speak_to = true 
 end
 
 function Room:update(dt)
@@ -60,6 +64,15 @@ function Room:update(dt)
     if self.player.p.x >= 40 and self.player.p.x <= 48+128 then
         self.under_play = true
     else self.under_play = false end
+
+    if self.mom_talk_count then
+        self.mom_talk_t = self.mom_talk_t + dt
+        if self.mom_talk_t >= self.mom_talk_delay then
+            self.mom_talk_count = false
+            self.mom_can_speak_to = true 
+            self.mom_talk_t = 0
+        end
+    end
 end
 
 function Room:draw()
@@ -67,6 +80,7 @@ function Room:draw()
     local t2 = 2*(math.sin(10*love.timer.getTime()))
     love.graphics.draw(gl.play, 48 - self.camera.p.x, self.height - 32*6 + 16 + t - self.camera.p.y)
     self.camera:draw()
+
     love.graphics.print(self.name, 10, 10)
     if self.under_play then
         if self.name == 'room_1' then
@@ -101,12 +115,16 @@ function Room:keypressed(key)
             end
         end
 
-        if not self.talked_to_mom then
-            if self.mom.speaking_mom then
-                if key == 'return' or key == ' ' then
-                    self.times_mom = self.times_mom + 1
-                    beholder.trigger('player speak' .. self.player.id, self.times_mom)
-                    if self.times_mom >= 3 then self.talked_to_mom = true end
+        if self.mom_can_speak_to then
+            if not self.talked_to_mom then
+                if self.mom.speaking_mom then
+                    if key == 'return' or key == ' ' then
+                        self.times_mom = self.times_mom + 1
+                        self.mom_talk_count = true
+                        self.mom_can_speak_to = false
+                        beholder.trigger('player speak' .. self.player.id, self.times_mom)
+                        if self.times_mom >= 3 then self.talked_to_mom = true end
+                    end
                 end
             end
         end

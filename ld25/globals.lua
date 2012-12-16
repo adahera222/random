@@ -23,18 +23,25 @@ gl.sorry = love.graphics.newImage('gfx/sorry.png')
 gl.try = love.graphics.newImage('gfx/try.png')
 gl.really_sorry = love.graphics.newImage('gfx/really_sorry.png')
 gl.dots = love.graphics.newImage('gfx/dots.png')
+gl.behind = love.graphics.newImage('gfx/behind.png')
+gl.santa = love.graphics.newImage('gfx/santa.png')
 
 gl.happy = {
-    {love.graphics.newImage('gfx/yay.png'), 1}
+    {love.graphics.newImage('gfx/yay.png'), 1},
+    {love.graphics.newImage('gfx/santa.png'), 1.5},
+    {love.graphics.newImage('gfx/presents.png'), 1.5}
 }
 
 gl.flee = {
     {love.graphics.newImage('gfx/plsdontkill.png'), 1.5},
-    {love.graphics.newImage('gfx/xx.png'), 1},
     {love.graphics.newImage('gfx/mercy.png'), 1.5},
     {love.graphics.newImage('gfx/christmas.png'), 2.5},
     {love.graphics.newImage('gfx/no.png'), 1},
-    {love.graphics.newImage('gfx/money.png'), 1.5}
+    {love.graphics.newImage('gfx/wheremommy.png'), 1.5},
+    {love.graphics.newImage('gfx/dontwanna.png'), 1.5},
+    {love.graphics.newImage('gfx/help.png'), 1},
+    {love.graphics.newImage('gfx/ah.png'), 1},
+    {love.graphics.newImage('gfx/why.png'), 1}
 }
 
 gl.mom_speak = {

@@ -101,7 +101,6 @@ function Camera:draw()
                 love.graphics.setBlendMode('additive')
                 f.f(f.e)
                 love.graphics.setBlendMode('alpha')
-
             else f.f(f.e) end 
         end
         self:unset()

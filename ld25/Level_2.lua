@@ -123,7 +123,7 @@ function Level_2:draw()
     love.graphics.print(self.name, 10, 10)
 
     if not self.everyone_dead then
-        love.graphics.draw(gl.killeveryone, gl.width/2 - 90, gl.height- 48 + t)
+        love.graphics.draw(gl.behind, gl.width/2 - 129, gl.height- 48 + t)
     else
         love.graphics.draw(gl.goodjob, gl.width/2 - 64, gl.height-48+t)
     end
