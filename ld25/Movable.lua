@@ -32,11 +32,19 @@ function Movable:initialize(x, y, w, h, max_v, a, damping, max_fall, jump_a, max
                      function(direction, p) self:displace(direction, p) end)
 end
 
-function Movable:update(dt)
+function Movable:update(dt, player_id)
     Entity.update(self, dt)
     self:move(dt)
     if self.jumps_left > 0 then
-        if self.jump then self:jumpImpulse(dt) end
+        if self.jump then 
+            self:jumpImpulse(dt)
+            if self.id == player_id then
+                if not gl.jumps[2]:isStopped() then
+                    gl.jumps[2]:rewind()
+                end
+                love.audio.play(gl.jumps[2]) 
+            end
+        end
     end
     self:gravity(dt)
     self.p.x = self.p.x + self.v.x*dt

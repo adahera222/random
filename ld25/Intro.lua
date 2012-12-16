@@ -19,3 +19,7 @@ function Intro:keypressed(key)
         beholder.trigger('transition', 'level_1')
     end
 end
+
+function Intro:mousepressed(x, y, button)
+    
+end

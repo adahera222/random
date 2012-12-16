@@ -1,35 +1,26 @@
-Started: 15/12/2012, 12:41
+Started: 15/12/2012, 17:04
 More things to do (in order of importance):
 
     Game i, scene i for i = 1, 5 (probably won't have enough time for all 5 games and scenes)
     Polish
 
     Game 1:
-        Knife (melee)
-        Holding knife art (left, right)
-        Attacking knife art (left, right)
-        Enemy removal on attack
-        Game 1 map
+        Game 1 map (done, 15/12/2012 21:37)
         Game 1 entities
-        Game 1 tiles (????)
+        Entity spawner
+        Game 1 tiles (????) (done, 15/12/2012 21:37)
         More enemy texts
 
     Scene 1:
-        Room tiles
-        Computer screen art
-        Bed art
-        Books art
-        Room background art
-        Light
+        Room tiles (done, 16/12/2012 02:05)
 
     Polish:
         Add particles on death
-        Add screen shake on shooting
-        Add recoil on shooting
-        Add sounds
-        Add parallax
-        Add more enemy texts (please don't kill me, noooooo, x.x, have mercy, I just wanna make it go christmas!...)
-        Add more player and enemy faces (sad, happy (when killing), normal, scared (for enemies))
+        Add recoil on shooting (done, 15/12/2012 22:37)
+        Add sounds (done, 15/12/2012 22:33)
+        Add parallax (done, 15/12/2012 21:37)
+        Add more enemy texts (please don't kill me, noooooo, x.x, have mercy, I just wanna make it to christmas!...)
+        Proper transition (done, 15/12/2012 03:21)
 
 Started: 15/12/2012, 00:00
 Things to do (in order of importance):

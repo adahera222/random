@@ -26,7 +26,7 @@ function Entity:update(dt)
 end
 
 function Entity:draw()
-    love.graphics.draw(self.image, self.p.x - self.w/2, self.p.y - self.h/2)
+    love.graphics.draw(self.image, self.p.x - self.w/2 - 0.5, self.p.y - self.h/2 - 0.5)
 end
 
 
@@ -40,6 +40,7 @@ function Entity:collideWith(e)
 
         elseif instanceOf(Enemy, self) and instanceOf(Projectile, e) then
             self.alive = false
+            e.alive = false
 
         else
             local direction, p = self:resolve(e)

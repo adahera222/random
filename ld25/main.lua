@@ -1,5 +1,6 @@
 require 'Intro'
 require 'Level_1'
+require 'Room'
 gl = require 'globals'
 beholder = require 'beholder'
 
@@ -8,22 +9,51 @@ function love.load()
     gl.width = love.graphics.getWidth()
     gl.height = love.graphics.getHeight()
 
+    transition_delay = 1
+    transition_c = 0
+    change_level = false
+    to_level = nil
+
+    transition_effect = love.graphics.newPixelEffect[[
+       extern number t;
+       vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
+           vec4 dd = Texel(texture, texture_coords);
+           return dd*t;
+       }
+    ]]
+
     levels = {
-        intro = Intro('intro'),
-        level_1 = Level_1('level_1', 'gfx/level_1.png')
+        level_1 = Level_1('level_1', 'gfx/level_1.png'),
+        room = Room('room', 'gfx/room.png')
     }
 
-    current_level = levels.intro
+    current_level = levels.room
     beholder.observe('transition', 
-                     function(level) current_level = levels[level] end)
+                     function(level) 
+                         change_level = true
+                         to_level = level
+                     end)
 end
 
 function love.update(dt)
+    if change_level then
+        transition_c = transition_c + dt
+    end
+
+    if transition_c >= transition_delay then 
+        transition_c = 0
+        current_level = levels[to_level]
+        change_level = false
+    end
+    
+    transition_effect:send("t", 1-transition_c)
     current_level:update(dt) 
 end
 
 function love.draw()
+    love.graphics.setPixelEffect(transition_effect)
     current_level:draw()
+    love.graphics.setPixelEffect()
 end
 
 function love.keypressed(key)

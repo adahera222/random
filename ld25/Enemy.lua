@@ -3,9 +3,9 @@ require 'Movable'
 Enemy = class('Enemy', Movable)
 
 function Enemy:initialize(enemy_type, x, y, flee_radius)
-    if enemy_type == 'animal' then
+    if enemy_type == 'child' then
         Movable.initialize(self, x, y, 16, 16, 500, Vector(200, 200), 0.90, 400, -200, 1)
-        self.image = gl.animal
+        self.image = gl.child
     else
         Movable.initialize(self, x, y, 32, 32, 200, Vector(400, 400), 0.90, 400, -50, 1)
         self.image = gl.person_normal

@@ -10,27 +10,39 @@ function Camera:initialize(bounds_aabb)
     self.p = Vector()
     self.r = 0
     self.v = Vector()
-    self.draw_functions = {}
     self.bounds = bounds_aabb
+    self.layers = {}
 end
 
-function Camera:add(draw_function, entity)
-    table.insert(self.draw_functions, {f = draw_function, entity = entity})
-end
-
-function Camera:remove(entity)
-    for i, df in ipairs(self.draw_functions) do
-        if df.entity.id == entity.id then
-            table.remove(self.draw_functions, i)
+function Camera:add(ps, draw_function, entity)
+    for _, layer in ipairs(self.layers) do
+        if layer.ps == ps then
+            table.insert(layer.fs, {f = draw_function, e = entity})
             return
+        end
+    end
+
+    self:addLayer(ps)
+    self:add(ps, draw_function, entity)
+end
+
+function Camera:remove(ps, e)
+    for _, layer in ipairs(self.layers) do
+        if layer.ps == ps then
+            for i, f in ipairs(layer.fs) do
+                if f.e.id == e.id then
+                    table.remove(layer.fs, i)
+                    return
+                end
+            end
         end
     end
 end
 
-function Camera:set()
+function Camera:set(ps)
     love.graphics.push()
     love.graphics.rotate(-self.r)
-    love.graphics.translate(-self.p.x, -self.p.y)
+    love.graphics.translate(-self.p.x*ps, -self.p.y*ps)
 end
 
 function Camera:unset()
@@ -57,6 +69,11 @@ function Camera:setY(y)
     self.p.y = math.clamp(y, self.bounds.y1, self.bounds.y2)
 end
 
+function Camera:addLayer(ps)
+    table.insert(self.layers, {ps = ps, fs = {}})
+    table.sort(self.layers, function(a, b) return a.ps < b.ps end)
+end
+
 function Camera:setPosition(x, y)
     if x then self:setX(x) end
     if y then self:setY(y) end
@@ -77,10 +94,16 @@ function Camera:follow(dt, entity)
 end
 
 function Camera:draw()
-    love.graphics.setBackgroundColor(255, 255, 255)
-    self:set()
-    for _, draw_function in ipairs(self.draw_functions) do 
-        draw_function.f(draw_function.entity) 
+    for _, layer in ipairs(self.layers) do
+        self:set(layer.ps)
+        for _, f in ipairs(layer.fs) do 
+            if instanceOf(RotatingTile, f.e) then
+                love.graphics.setBlendMode('additive')
+                f.f(f.e)
+                love.graphics.setBlendMode('alpha')
+
+            else f.f(f.e) end 
+        end
+        self:unset()
     end
-    self:unset()
 end

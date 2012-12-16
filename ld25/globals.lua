@@ -1,12 +1,34 @@
 gl = {}
 
 gl.normal_block = love.graphics.newImage('gfx/normal_block.png')
+gl.d_blue_block = love.graphics.newImage('gfx/d_blue_block.png')
+gl.d_brown_block = love.graphics.newImage('gfx/d_brown_block.png')
+gl.bg_block = love.graphics.newImage('gfx/bg_block.png')
 gl.default_image = love.graphics.newImage('gfx/default_image.png')
 gl.player_normal = love.graphics.newImage('gfx/player_normal.png')
-gl.animal = love.graphics.newImage('gfx/animal.png')
+gl.child = love.graphics.newImage('gfx/child.png')
 gl.person_normal = love.graphics.newImage('gfx/person_normal.png')
 gl.yay = love.graphics.newImage('gfx/yay.png')
+gl.play = love.graphics.newImage('gfx/play.png')
+gl.spaceenter = love.graphics.newImage('gfx/spaceenter.png')
+gl.killeveryone = love.graphics.newImage('gfx/killeveryone.png')
+gl.lmbshoot = love.graphics.newImage('gfx/lmbshoot.png')
+gl.goodjob = love.graphics.newImage('gfx/goodjob.png')
 gl.projectile = love.graphics.newImage('gfx/projectile.png')
+
+gl.hurts = {
+    love.audio.newSource('sounds/hurt_1.wav', 'static'),
+    love.audio.newSource('sounds/hurt_2.wav', 'static'),
+    love.audio.newSource('sounds/hurt_3.wav', 'static'),
+    love.audio.newSource('sounds/hurt_4.wav', 'static')
+}
+gl.jumps = {
+    love.audio.newSource('sounds/jump_1.wav', 'static'),
+    love.audio.newSource('sounds/jump_2.wav', 'static'),
+    love.audio.newSource('sounds/jump_3.wav', 'static'),
+    love.audio.newSource('sounds/jump_4.wav', 'static')
+}
+gl.shot = love.audio.newSource('sounds/shot.wav', 'static')
 
 gl.entity_counter = 0
 gl.entity_id = 
