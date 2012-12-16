@@ -1,5 +1,6 @@
 require 'Intro'
 require 'Level_1'
+require 'Level_2'
 require 'Room'
 gl = require 'globals'
 beholder = require 'beholder'
@@ -24,11 +25,12 @@ function love.load()
 
     levels = {
         level_1 = Level_1('level_1', 'gfx/level_1.png'),
+        level_2 = Level_2('level_2', 'gfx/Level_2.png'),
         room_1 = Room('room_1', 'gfx/room_1.png', 'level_1', 'gun_1'),
         room_2 = Room('room_2', 'gfx/room_2.png', 'level_2', 'gun_2')
     }
 
-    current_level = levels.room_2
+    current_level = levels.level_2
     beholder.observe('transition', 
                      function(level) 
                          change_level = true

@@ -12,7 +12,6 @@ function Room:initialize(name, map, to_level, gun)
 
     self.camera = Camera({x1 = -self.width, y1 = -self.height, x2 = self.width, y2 = self.height})
 
-
     for _, tile in ipairs(self.tiles) do self.camera:add(1, tile.draw, tile) end
     for _, entity in ipairs(self.entities) do self.camera:add(1, entity.draw, entity) end
 
