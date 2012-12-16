@@ -8,17 +8,17 @@ function Enemy:initialize(enemy_type, x, y, f_radius, level)
                            Vector(math.random(200, 500), math.random(200, 500)), 0.90, 400, -200, 1)
         self.image = gl.child
     else
-        if enemy_type == 'mom' or enemy_type == 'person' then
+        if enemy_type == 'mom' or enemy_type == 'person' or enemy_type == 'girl' then
             Movable.initialize(self, x, y, 32, 32, 200, Vector(400, 400), 0.90, 400, -50, 1)
         elseif enemy_type == 'boss' then
             Movable.initialize(self, x, y, 64, 64, 400, Vector(900, 400), 0.90, 400, -400, 1)
         end
         if enemy_type == 'mom' then self.image = gl.mom_normal
-        elseif enemy_type == 'person' then self.image = gl.person_normal
+        elseif enemy_type == 'person' then self.image = gl.person_mean
         elseif enemy_type == 'boss' then 
             self.image = gl.boss 
             self.hp = 25
-        end
+        elseif enemy_type == 'girl' then self.image = gl.person_normal end
     end
 
     math.randomseed(os.time())
@@ -47,10 +47,8 @@ function Enemy:initialize(enemy_type, x, y, f_radius, level)
 end
 
 function Enemy:update(dt, player)
-    if not self.type == 'boss' then
-        Movable.update(self, dt)
-        self:behavior(dt, player.p)
-    end
+    Movable.update(self, dt)
+    self:behavior(dt, player.p)
 
     if self.type == 'child' then
         self:flee(player.p)
@@ -63,6 +61,7 @@ function Enemy:update(dt, player)
 
     if self.type == 'boss' then
         self:seek(player.p)
+
         self.steering_force = self.steering:min(500)
         self.a = self.steering_force
         self.v = (self.v + self.a*dt):min(self.max_v)
@@ -87,6 +86,12 @@ function Enemy:behavior(dt, target)
     if self.type == 'mom' or self.type == 'person' then
         local d = (self.p - target):len()
         if d < 200 then self.speaking_mom = true
+        else self.speaking_mom = false end
+    end
+
+    if self.type == 'girl' then
+        local d = (self.p - target):len()
+        if d < 75 then self.speaking_mom = true
         else self.speaking_mom = false end
     end
 
@@ -119,10 +124,14 @@ function Enemy:behavior(dt, target)
                     local rn = math.random(1, #gl.mom_speak)
                     self.current_speech = gl.mom_speak[rn][1]
                     self.current_duration = gl.mom_speak[rn][2]
-                else
+                elseif self.type == 'person' then
                     local rn = math.random(1, #gl.friend_speak)
                     self.current_speech = gl.friend_speak[rn][1]
                     self.current_duration = gl.friend_speak[rn][2]
+                elseif self.type == 'girl' then
+                    local rn = math.random(1, #gl.girl_speak)
+                    self.current_speech = gl.girl_speak[rn][1]
+                    self.current_duration = gl.girl_speak[rn][2]
                 end
             end
         end
@@ -165,10 +174,7 @@ end
 
 function Enemy:draw()
     Movable.draw(self)
-
-    if not self.type == 'boss' then
-        self:speak()
-    end
+    self:speak()
     love.graphics.setColor(255, 0, 0)
     -- love.graphics.circle('line', self.p.x - self.w/2, self.p.y - self.h/2, self.flee_radius)
     love.graphics.setColor(255, 255, 255)

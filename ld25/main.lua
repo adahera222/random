@@ -31,10 +31,11 @@ function love.load()
         level_3 = Level_3('level_3', 'gfx/Level_3.png'),
         room_1 = Room('room_1', 'gfx/room_1.png', 'level_1', 'gun_1'),
         room_2 = Room('room_2', 'gfx/room_2.png', 'level_2', 'gun_1'),
-        room_3 = Room('room_3', 'gfx/room_3.png', 'level_3', 'gun_1')
+        room_3 = Room('room_3', 'gfx/room_3.png', 'level_3', 'gun_1'),
+        room_4 = Room('room_4', 'gfx/room_4.png', 'room_5', 'gun_1')
     }
 
-    current_level = levels.level_3
+    current_level = levels.room_4
     beholder.observe('transition', 
                      function(level) 
                          change_level = true

@@ -9,7 +9,8 @@ function Room:initialize(name, map, to_level, gun)
 
     if name == 'room_1' then self.player = Player(200, 100, gun)
     elseif name == 'room_2' then self.player = Player(600, 400, gun)
-    elseif name == 'room_3' then self.player = Player(550, 600, gun) end
+    elseif name == 'room_3' then self.player = Player(550, 600, gun)
+    elseif name == 'room_4' then self.player = Player(448, 400, gun) end
 
     self.camera = Camera({x1 = -self.width, y1 = -self.height, x2 = self.width, y2 = self.height})
 
@@ -22,13 +23,23 @@ function Room:initialize(name, map, to_level, gun)
         self:add(Enemy('person', 1035, 490, 100, self))
     end
 
+    if name == 'room_4' then
+        self:add(Enemy('person', 1100, 320, 100, self))
+        self:add(Enemy('person', 1065, 320, 100, self))
+        self:add(Enemy('person', 1000, 320, 100, self))
+
+        self:add(Enemy('person', 1085, 490, 100, self))
+        self:add(Enemy('person', 1035, 490, 100, self))
+        self:add(Enemy('girl', 324, 170, 100, self))
+    end
+
     for _, tile in ipairs(self.tiles) do self.camera:add(1, tile.draw, tile) end
     for _, entity in ipairs(self.entities) do self.camera:add(1, entity.draw, entity) end
 
     if name == 'room_2' then self.mom = Enemy('mom', 1600, 50, 100, self)
-    elseif name == 'room_3' then self.mom = Enemy('mom', 1600, 600, 100, self) end
+    elseif name == 'room_3' or name == 'room_4' then self.mom = Enemy('mom', 1600, 600, 100, self) end
 
-    if name == 'room_2' or name == 'room_3' then self.camera:add(1, self.mom.draw, self.mom) end
+    if name == 'room_2' or name == 'room_3' or name == 'room_4' then self.camera:add(1, self.mom.draw, self.mom) end
     self.camera:add(1, self.player.draw, self.player)
 
     self.down_player_keys = {
@@ -51,6 +62,7 @@ function Room:initialize(name, map, to_level, gun)
     self.mom_talk_count = false
     self.mom_can_speak_to = true 
     self.talked_to_friends = false
+    self.talked_to_girlfriend = false
 end
 
 function Room:update(dt)
@@ -62,7 +74,7 @@ function Room:update(dt)
 
     for _, tile in ipairs(self.tiles) do
         self.player:collideWith(tile)
-        if self.name == 'room_2' or self.name == 'room_3' then
+        if self.name == 'room_2' or self.name == 'room_3' or self.name == 'room_4' then
             self.mom:collideWith(tile)
         end
         local entities = self:getInArea('entities', tile.p, 64)
@@ -75,7 +87,7 @@ function Room:update(dt)
         entity:update(dt, self.player)
     end
 
-    if self.name == 'room_2' or self.name == 'room_3' then
+    if self.name == 'room_2' or self.name == 'room_3' or self.name == 'room_4' then
         self.mom:update(dt, self.player)
     end
 
@@ -89,7 +101,7 @@ function Room:update(dt)
         else self.under_play = false end
     end
 
-    if self.name == 'room_3' then
+    if self.name == 'room_3' or self.name == 'room_4' then
         if self.player.p.x >= 40 and self.player.p.x <= 48+128 and self.player.p.y >= 700 and self.player.p.y <= 1000 then
             self.under_play = true
         else self.under_play = false end
@@ -107,13 +119,15 @@ function Room:update(dt)
     end
 
     print(self.player.p)
-    print(self.under_play)
 end
 
 function Room:draw()
     local t = 6*(1-math.cos(love.timer.getTime()))
     local t2 = 2*(math.sin(10*love.timer.getTime()))
-    love.graphics.draw(gl.play, 48 - self.camera.p.x, self.height - 32*6 + 16 + t - self.camera.p.y)
+
+    if not self.name == 'room_4' or not self.name == 'room_5' then
+        love.graphics.draw(gl.play, 48 - self.camera.p.x, self.height - 32*6 + 16 + t - self.camera.p.y)
+    end
     self.camera:draw()
 
     love.graphics.print(self.name, 10, 10)
@@ -142,6 +156,12 @@ function Room:draw()
     if self.name == 'room_3' then
         if self.entities[3].speaking_mom and not self.talked_to_friends then
             love.graphics.draw(gl.talktofriends, gl.width/2 - 98, gl.height - 48 + t2)
+        end
+    end
+
+    if self.name == 'room_4' then
+        if self.entities[6].speaking_mom and not self.talked_to_girlfriend then
+            love.graphics.draw(gl.talktogirlfriend, gl.width/2 - 116, gl.height-48+t2)
         end
     end
 end
@@ -195,6 +215,15 @@ function Room:keypressed(key)
             end
         end
 
+    elseif self.name == 'room_4' then
+        if not self.talked_to_girlfriend then
+            if self.entities[6].speaking_mom then
+                if key == 'return' or key == ' ' then
+                    self.talked_to_girlfriend = true
+                    beholder.trigger('player speak girlfriend' .. self.player.id)
+                end
+            end
+        end
     end
 
     for k, v in pairs(self.press_player_keys) do

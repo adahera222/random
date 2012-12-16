@@ -13,6 +13,7 @@ gl.spaceenter = love.graphics.newImage('gfx/spaceenter.png')
 gl.projectile = love.graphics.newImage('gfx/projectile.png')
 gl.spawner = love.graphics.newImage('gfx/spawner.png')
 gl.boss = love.graphics.newImage('gfx/boss.png')
+gl.person_mean = love.graphics.newImage('gfx/person_mean.png')
 
 gl.play = love.graphics.newImage('gfx/play.png')
 gl.killeveryone = love.graphics.newImage('gfx/killeveryone.png')
@@ -33,6 +34,8 @@ gl.higuys = love.graphics.newImage('gfx/higuys.png')
 gl.dontlet = love.graphics.newImage('gfx/dontlet.png')
 gl.sadface = love.graphics.newImage('gfx/sadface.png')
 gl.happyface = love.graphics.newImage('gfx/happyface.png')
+gl.talktogirlfriend = love.graphics.newImage('gfx/talktogirlfriend.png')
+gl.butireally = love.graphics.newImage('gfx/butireally.png')
 
 gl.happy = {
     {love.graphics.newImage('gfx/yay.png'), 1},
@@ -65,6 +68,11 @@ gl.friend_speak = {
     {love.graphics.newImage('gfx/getout.png'), 1.5},
     {love.graphics.newImage('gfx/creep.png'), 2},
     {love.graphics.newImage('gfx/noy.png'), 1} 
+}
+
+gl.girl_speak = {
+    {love.graphics.newImage('gfx/sorryicant.png'), 2},
+    {love.graphics.newImage('gfx/sorry.png'), 1}
 }
 
 gl.hurts = {

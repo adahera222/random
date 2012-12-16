@@ -13,6 +13,9 @@ function Player:initialize(x, y, weapon)
     self.current_speech = nil
     self.current_t = 0
     self.current_end = 3
+    self.scream_count = false
+    self.scream_t = 0
+    self.scream_end = 12
     self.current_count = false
     self.dead = false
 
@@ -46,6 +49,12 @@ function Player:initialize(x, y, weapon)
                          self.current_speech = gl.higuys
                          self.current_count = true
                      end)
+
+    beholder.observe('player speak girlfriend' .. self.id,
+                     function()
+                         self.current_speech = gl.butireally
+                         self.current_count = true
+                     end)
 end
 
 function Player:update(dt, camera)
@@ -60,6 +69,20 @@ function Player:update(dt, camera)
         self.current_count = false
         self.current_t = 0
         self.current_speech = nil
+        self.scream_count = true
+    end
+
+    if current_level.name == 'room_4' then
+        if self.scream_count then
+            self.scream_t = self.scream_t + dt
+        end
+
+        if self.scream_t >= self.scream_end then
+            self.current_speech = nil
+            self.scream_count = false
+            self.scream_t = 0
+            beholder.trigger('transition', 'room_5')
+        end
     end
 end
 
