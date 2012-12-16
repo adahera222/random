@@ -2,30 +2,18 @@ require 'Level'
 require 'Projectile'
 require 'RotatingTile'
 
-Level_2 = class('Level_2', Level)
+Level_3 = class('Level_3', Level)
 
-function Level_2:initialize(name, map)
+function Level_3:initialize(name, map)
     Level.initialize(self, name, map)
-    self.player = Player(392, self.height - 512, 'gun_2')
-    self.camera = Camera({x1 = -self.width, y1 = -self.height, x2 = self.width, y2 = self.height})
+    self.player = Player(200, 100, 'gun_3')
+    self.camera = Camera({x1 = -self.width, y1 = -1.2*self.height, x2 = 1.2*self.width, y2 = self.height})
     self.camera:add(1, self.player.draw, self.player)
 
     self.rotating_tiles = {}
-    self:addBackground(2000)
+    self:addBackground(1000)
 
-    math.randomseed(os.time())
-    math.random(); math.random(); math.random();
-
-    self:spawnArea(48, 2192, 144, 1, 3, 1)
-    self:spawnArea(720, 1936, 624, 1, 2, -1)
-    self:spawnArea(720, 2224, 624, 1, 3, -1)
-    self:spawnArea(48, 1520, 208, 1, 3, 1)
-    self:spawnArea(720, 1424, 624, 1, 1, -1)
-    self:spawnArea(48, 1008, 144, 1, 2, 1)
-    self:spawnArea(48, 720, 144, 1, 2, 1)
-    self:spawnArea(48, 208, 304, 1, 4, 1)
-    self:spawnArea(720, 112, 464, 1, 4, -1)
-    self:spawnArea(720, 208, 464, 1, 4, -1)
+    self:add(Enemy('boss', 600, 100, 200, self))
 
     for _, tile in ipairs(self.tiles) do self.camera:add(1, tile.draw, tile) end
     for _, entity in ipairs(self.entities) do self.camera:add(1, entity.draw, entity) end
@@ -42,6 +30,7 @@ function Level_2:initialize(name, map)
         up = 'jump'
     }
 
+    self.first_lmb = false
     self.everyone_dead = false
     self.dead_delay = 1
     self.dead_t = 0
@@ -55,13 +44,28 @@ function Level_2:initialize(name, map)
         end)
 end
 
-function Level_2:update(dt)
+function Level_3:update(dt)
     if #self.entities == 0 then self.everyone_dead = true; self.change = true end
-    if self.everyone_dead then 
+    if self.player.dead then self.change = true end
+
+    if not self.player.dead then
+        if self.everyone_dead then 
+            self.dead_t = self.dead_t + dt
+            if self.dead_t >= self.dead_delay then
+                if self.change then
+                    beholder.trigger('transition', 'room_4')
+                    self.change = false
+                    self.dead_t = 0
+                end
+            end
+        end
+    end
+
+    if self.player.dead then
         self.dead_t = self.dead_t + dt
         if self.dead_t >= self.dead_delay then
             if self.change then
-                beholder.trigger('transition', 'room_3')
+                beholder.trigger('transition_self', 'level_3')
                 self.change = false
                 self.dead_t = 0
             end
@@ -90,6 +94,7 @@ function Level_2:update(dt)
         if instanceOf(Enemy, entity) then
             entity:update(dt, self.player) 
             entity:collideWith(self.player)
+            self.player:collideWith(entity)
             local projectiles = self:getInArea('entities', entity.p, 64)
             for _, proj in ipairs(projectiles) do
                 if instanceOf(Projectile, proj) then
@@ -115,31 +120,24 @@ function Level_2:update(dt)
     self.camera:update(dt)
 end
 
-function Level_2:draw()
+function Level_3:draw()
     local t = 2*(math.sin(10*love.timer.getTime()))
     love.graphics.setBackgroundColor(0, 0, 0)
     self.camera:draw()
     love.graphics.print(self.name, 10, 10)
 
-    if not self.everyone_dead then
-        love.graphics.draw(gl.behind, gl.width/2 - 129, gl.height- 48 + t)
+    if not self.player.dead then
+        if not self.everyone_dead then
+            love.graphics.draw(gl.dontlet, gl.width/2 - 180, gl.height- 48 + t)
+        else
+            love.graphics.draw(gl.happyface, gl.width/2 - 16, gl.height-48+t)
+        end
     else
-        love.graphics.draw(gl.goodjob, gl.width/2 - 64, gl.height-48+t)
+        love.graphics.draw(gl.sadface, gl.width/2 - 16, gl.height-48+t)
     end
 end
 
-function Level_2:spawnArea(x, y, dx, min, max, dir)
-    local n = math.random(min, max)
-    for i = 1, n do
-        local xx = 0
-        if dir == 1 then
-            xx = math.random(12, dx-x+12)
-        else xx = math.random(12, x-dx+12) end
-        self:add(Enemy('child', x+dir*xx, y-4, 200, self)) 
-    end
-end
-
-function Level_2:keypressed(key)
+function Level_3:keypressed(key)
     for k, v in pairs(self.press_player_keys) do
         if key == k then
             beholder:trigger(v .. self.player.id)
@@ -147,13 +145,13 @@ function Level_2:keypressed(key)
     end
 end
 
-function Level_2:mousepressed(x, y, button)
+function Level_3:mousepressed(x, y, button)
     self.player:mousepressed(x, y, button)
 end
 
-function Level_2:addBackground(n)
+function Level_3:addBackground(n)
     for i = 1, n do
-        local x, y = math.random(-self.width, 2*self.width), math.random(-self.height/2, self.height/2)
+        local x, y = math.random(-self.width, self.width), math.random(0, 1.25*self.height)
         local sx = math.random(10, 50)/10
         local r, b, g = math.random(64, 202), math.random(64, 202), math.random(64, 202)
         local rd = math.random(0, 2*math.pi)

@@ -35,11 +35,26 @@ function Entity:collideWith(e)
     e:updateAABB()
     
     if self:colliding(e) then
+        if instanceOf(Player, e) and instanceOf(Enemy, self) then
+            if self.type == 'boss' then
+                e.dead = true
+            end
+        end
+
         if instanceOf(Projectile, self) and instanceOf(Tile, e) then
             self.alive = false
 
         elseif instanceOf(Enemy, self) and instanceOf(Projectile, e) then
-            self.alive = false
+            if self.type == 'boss' then
+                self.hp = self.hp - 1
+                if not gl.hurts[2]:isStopped() then
+                    gl.hurts[2]:rewind()
+                end
+                love.audio.play(gl.hurts[2])
+                if self.hp <= 0 then self.alive = false end
+            else
+                self.alive = false
+            end
             e.alive = false
 
         else

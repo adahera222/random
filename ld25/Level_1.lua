@@ -92,7 +92,6 @@ function Level_1:update(dt)
     for _, entity in ipairs(self.entities) do 
         if instanceOf(Enemy, entity) then
             entity:update(dt, self.player) 
-            entity:collideWith(self.player)
             self.player:collideWith(entity)
             local projectiles = self:getInArea('entities', entity.p, 64)
             for _, proj in ipairs(projectiles) do

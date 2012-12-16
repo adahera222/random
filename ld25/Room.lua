@@ -8,15 +8,27 @@ function Room:initialize(name, map, to_level, gun)
     self.to_level = to_level
 
     if name == 'room_1' then self.player = Player(200, 100, gun)
-    elseif name == 'room_2' then self.player = Player(600, 400, gun) end
+    elseif name == 'room_2' then self.player = Player(600, 400, gun)
+    elseif name == 'room_3' then self.player = Player(550, 600, gun) end
 
     self.camera = Camera({x1 = -self.width, y1 = -self.height, x2 = self.width, y2 = self.height})
+
+    if name == 'room_3' then
+        self:add(Enemy('person', 1100, 320, 100, self))
+        self:add(Enemy('person', 1065, 320, 100, self))
+        self:add(Enemy('person', 1000, 320, 100, self))
+
+        self:add(Enemy('person', 1085, 490, 100, self))
+        self:add(Enemy('person', 1035, 490, 100, self))
+    end
 
     for _, tile in ipairs(self.tiles) do self.camera:add(1, tile.draw, tile) end
     for _, entity in ipairs(self.entities) do self.camera:add(1, entity.draw, entity) end
 
-    self.mom = Enemy('person', 1600, 50, 100, self)
-    self.camera:add(1, self.mom.draw, self.mom)
+    if name == 'room_2' then self.mom = Enemy('mom', 1600, 50, 100, self)
+    elseif name == 'room_3' then self.mom = Enemy('mom', 1600, 600, 100, self) end
+
+    if name == 'room_2' or name == 'room_3' then self.camera:add(1, self.mom.draw, self.mom) end
     self.camera:add(1, self.player.draw, self.player)
 
     self.down_player_keys = {
@@ -38,6 +50,7 @@ function Room:initialize(name, map, to_level, gun)
     self.mom_talk_t = 0
     self.mom_talk_count = false
     self.mom_can_speak_to = true 
+    self.talked_to_friends = false
 end
 
 function Room:update(dt)
@@ -49,30 +62,52 @@ function Room:update(dt)
 
     for _, tile in ipairs(self.tiles) do
         self.player:collideWith(tile)
-        self.mom:collideWith(tile)
+        if self.name == 'room_2' or self.name == 'room_3' then
+            self.mom:collideWith(tile)
+        end
         local entities = self:getInArea('entities', tile.p, 64)
         for _, entity in ipairs(entities) do
             entity:collideWith(tile)
         end
     end
 
-    self.mom:update(dt, self.player)
+    for _, entity in ipairs(self.entities) do
+        entity:update(dt, self.player)
+    end
+
+    if self.name == 'room_2' or self.name == 'room_3' then
+        self.mom:update(dt, self.player)
+    end
+
     self.player:update(dt, self.camera)
     self.camera:follow(dt, self.player)
     self.camera:update(dt)
 
-    if self.player.p.x >= 40 and self.player.p.x <= 48+128 then
-        self.under_play = true
-    else self.under_play = false end
+    if self.name == 'room_1' or self.name == 'room_2' then
+        if self.player.p.x >= 40 and self.player.p.x <= 48+128 then
+            self.under_play = true
+        else self.under_play = false end
+    end
 
-    if self.mom_talk_count then
-        self.mom_talk_t = self.mom_talk_t + dt
-        if self.mom_talk_t >= self.mom_talk_delay then
-            self.mom_talk_count = false
-            self.mom_can_speak_to = true 
-            self.mom_talk_t = 0
+    if self.name == 'room_3' then
+        if self.player.p.x >= 40 and self.player.p.x <= 48+128 and self.player.p.y >= 700 and self.player.p.y <= 1000 then
+            self.under_play = true
+        else self.under_play = false end
+    end
+
+    if self.name == 'room_2' then
+        if self.mom_talk_count then
+            self.mom_talk_t = self.mom_talk_t + dt
+            if self.mom_talk_t >= self.mom_talk_delay then
+                self.mom_talk_count = false
+                self.mom_can_speak_to = true 
+                self.mom_talk_t = 0
+            end
         end
     end
+
+    print(self.player.p)
+    print(self.under_play)
 end
 
 function Room:draw()
@@ -90,11 +125,24 @@ function Room:draw()
             if self.talked_to_mom then
                 love.graphics.draw(gl.spaceenter, gl.width/2 - 190, gl.height - 48 + t2)
             else love.graphics.draw(gl.mommy, gl.width/2 - 180, gl.height - 48 + t2) end
+        
+        elseif self.name == 'room_3' then
+            if self.talked_to_friends then
+                love.graphics.draw(gl.spaceenter, gl.width/2 - 190, gl.height - 48 + t2)
+            else love.graphics.draw(gl.friends, gl.width/2 - 146, gl.height - 48 + t2) end
         end
     end
 
-    if self.mom.speaking_mom and not self.talked_to_mom then
-        love.graphics.draw(gl.talktomom, gl.width/2 - 80, gl.height - 48 + t2)
+    if self.name == 'room_2' then
+        if self.mom.speaking_mom and not self.talked_to_mom then
+            love.graphics.draw(gl.talktomom, gl.width/2 - 80, gl.height - 48 + t2)
+        end
+    end
+
+    if self.name == 'room_3' then
+        if self.entities[3].speaking_mom and not self.talked_to_friends then
+            love.graphics.draw(gl.talktofriends, gl.width/2 - 98, gl.height - 48 + t2)
+        end
     end
 end
 
@@ -122,12 +170,31 @@ function Room:keypressed(key)
                         self.times_mom = self.times_mom + 1
                         self.mom_talk_count = true
                         self.mom_can_speak_to = false
-                        beholder.trigger('player speak' .. self.player.id, self.times_mom)
+                        beholder.trigger('player speak mom' .. self.player.id, self.times_mom)
                         if self.times_mom >= 3 then self.talked_to_mom = true end
                     end
                 end
             end
         end
+
+    elseif self.name == 'room_3' then
+        if self.talked_to_friends then
+            if key == 'return' or key == ' ' then
+                if self.under_play then
+                    beholder.trigger('transition', self.to_level)
+                end
+            end
+        end
+
+        if not self.talked_to_friends then
+            if self.entities[3].speaking_mom then
+                if key == 'return' or key == ' ' then
+                    self.talked_to_friends = true
+                    beholder.trigger('player speak friends' .. self.player.id)
+                end
+            end
+        end
+
     end
 
     for k, v in pairs(self.press_player_keys) do

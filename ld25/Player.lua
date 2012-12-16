@@ -12,8 +12,9 @@ function Player:initialize(x, y, weapon)
     self.shot_t = 0
     self.current_speech = nil
     self.current_t = 0
-    self.current_end = 5
+    self.current_end = 3
     self.current_count = false
+    self.dead = false
 
     if weapon == 'gun_1' then
         self.recoil = 75
@@ -21,11 +22,13 @@ function Player:initialize(x, y, weapon)
     elseif weapon == 'gun_2' then
         self.recoil = 150
         self.shot_delay = 0.2
+    elseif weapon == 'gun_3' then
+        self.recoil = 225
+        self.shot_delay = 0.15
     end
 
-    beholder.observe('player speak' .. self.id,
+    beholder.observe('player speak mom' .. self.id,
                      function(times)
-                         print('1', times)
                          if times == 1 then 
                              self.current_speech = gl.himom
                              self.current_count = true
@@ -36,6 +39,12 @@ function Player:initialize(x, y, weapon)
                              self.current_speech = gl.dots 
                              self.current_count = true
                          end
+                     end)
+
+    beholder.observe('player speak friends' .. self.id,
+                     function() 
+                         self.current_speech = gl.higuys
+                         self.current_count = true
                      end)
 end
 
