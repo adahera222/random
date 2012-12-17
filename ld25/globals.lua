@@ -17,6 +17,7 @@ gl.person_mean = love.graphics.newImage('gfx/person_mean.png')
 
 gl.play = love.graphics.newImage('gfx/play.png')
 gl.killeveryone = love.graphics.newImage('gfx/killeveryone.png')
+gl.killyourself = love.graphics.newImage('gfx/killyourself.png')
 gl.lmbshoot = love.graphics.newImage('gfx/lmbshoot.png')
 gl.goodjob = love.graphics.newImage('gfx/goodjob.png')
 gl.mommy = love.graphics.newImage('gfx/mommy.png')

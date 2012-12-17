@@ -9,6 +9,7 @@ Level = class('Level')
 function Level:initialize(name, map)
     self.name = name
     self.tiles = {}
+    self.tiles_aux = {}
     self.entities = {}
     self.pixel_color_image_map = {
         {r = 0, g = 0, b = 255, tile = 'd_blue_block'},
@@ -50,8 +51,10 @@ function Level:loadTiles(map)
             local r, g, b, a = data:getPixel(i, j)
             for _, m in ipairs(self.pixel_color_image_map) do
                 if r == m.r and g == m.g and b == m.b then
-                    table.insert(self.tiles,
-                                 Tile(m.tile, i*32+16, j*32+16))
+                    local x = i*32+16
+                    local y = j*32+16
+                    if x < 3000 then table.insert(self.tiles, Tile(m.tile, x, y))
+                    else table.insert(self.tiles_aux, Tile(m.tile, x, y)) end
                 end
             end
         end
