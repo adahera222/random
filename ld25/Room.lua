@@ -11,7 +11,7 @@ function Room:initialize(name, map, to_level, gun)
     elseif name == 'room_2' then self.player = Player(600, 400, gun)
     elseif name == 'room_3' then self.player = Player(550, 600, gun)
     elseif name == 'room_4' then self.player = Player(448, 400, gun)
-    elseif name == 'room_5' then self.player = Player(3356, 172, gun) end
+    elseif name == 'room_5' then self.player = Player(216, 900, gun) end
 
     self.camera = Camera({x1 = -self.width, y1 = -self.height, x2 = self.width, y2 = self.height})
 
@@ -220,20 +220,17 @@ function Room:update(dt)
             end
         end
     end
-
-    print(self.player.p)
 end
 
 function Room:draw()
     local t = 6*(1-math.cos(love.timer.getTime()))
     local t2 = 2*(math.sin(10*love.timer.getTime()))
 
-    if not self.name == 'room_4' or not self.name == 'room_5' then
+    if self.name == 'room_1' or self.name == 'room_2' or self.name == 'room_3' then
         love.graphics.draw(gl.play, 48 - self.camera.p.x, self.height - 32*6 + 16 + t - self.camera.p.y)
     end
     self.camera:draw()
 
-    love.graphics.print(self.name, 10, 10)
     if self.under_play then
         if self.name == 'room_1' then
             love.graphics.draw(gl.spaceenter, gl.width/2 - 190, gl.height - 48 + t2)
@@ -246,7 +243,7 @@ function Room:draw()
         elseif self.name == 'room_3' then
             if self.talked_to_friends then
                 love.graphics.draw(gl.spaceenter, gl.width/2 - 190, gl.height - 48 + t2)
-            else love.graphics.draw(gl.friends, gl.width/2 - 146, gl.height - 48 + t2) end
+            else love.graphics.draw(gl.friends, gl.width/2 - 335/2, gl.height - 48 + t2) end
         end
     end
 

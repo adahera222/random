@@ -124,7 +124,6 @@ function Level_3:draw()
     local t = 2*(math.sin(10*love.timer.getTime()))
     love.graphics.setBackgroundColor(0, 0, 0)
     self.camera:draw()
-    love.graphics.print(self.name, 10, 10)
 
     if not self.player.dead then
         if not self.everyone_dead then

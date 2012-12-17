@@ -41,7 +41,11 @@ gl.butireally = love.graphics.newImage('gfx/butireally.png')
 gl.happy = {
     {love.graphics.newImage('gfx/yay.png'), 1},
     {love.graphics.newImage('gfx/santa.png'), 1.5},
-    {love.graphics.newImage('gfx/presents.png'), 1.5}
+    {love.graphics.newImage('gfx/presents.png'), 1.5},
+    {love.graphics.newImage('gfx/chocolate.png'), 1.5},
+    {love.graphics.newImage('gfx/count5.png'), 1.5},
+    {love.graphics.newImage('gfx/poop.png'), 1},
+    {love.graphics.newImage('gfx/love.png'), 1.5}
 }
 
 gl.flee = {

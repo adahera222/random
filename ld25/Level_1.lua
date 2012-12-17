@@ -123,7 +123,6 @@ function Level_1:draw()
     local t = 2*(math.sin(10*love.timer.getTime()))
     love.graphics.setBackgroundColor(0, 0, 0)
     self.camera:draw()
-    love.graphics.print(self.name, 10, 10)
 
     if not self.first_lmb then
         love.graphics.draw(gl.lmbshoot, gl.width/2 - 128, gl.height - 48 + t)
