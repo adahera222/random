@@ -15,25 +15,29 @@ function love.load()
     change_level = false
     change_level_new = false
     to_level = nil
-    canvas = love.graphics.newCanvas()
+    supported = love.graphics.isSupported('canvas', 'pixeleffect')
 
-    effect = love.graphics.newPixelEffect[[
-       extern number t;
-       extern number tt;
-       extern number vignetteIntensity;
-       vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
-           vec4 texcolor = Texel(texture, texture_coords);
-           float g;
+    if supported then
+        canvas = love.graphics.newCanvas()
 
-           if (tt == 1) {
-               g = dot(texcolor.rgb, vec3(0.299, 0.587, 0.114));
-               vec2 dist = texture_coords - 0.5f;
-               texcolor = vec4(g*vec3(1.2, 1.0, 0.8)*(1-dot(dist,dist)*vignetteIntensity), texcolor.a);
+        effect = love.graphics.newPixelEffect[[
+           extern number t;
+           extern number tt;
+           extern number vignetteIntensity;
+           vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
+               vec4 texcolor = Texel(texture, texture_coords);
+               float g;
+
+               if (tt == 1) {
+                   g = dot(texcolor.rgb, vec3(0.299, 0.587, 0.114));
+                   vec2 dist = texture_coords - 0.5f;
+                   texcolor = vec4(g*vec3(1.2, 1.0, 0.8)*(1-dot(dist,dist)*vignetteIntensity), texcolor.a);
+               }
+
+               return texcolor*t;
            }
-
-           return texcolor*t;
-       }
-    ]]
+        ]]
+    end
 
     levels = {
         level_1 = Level_1('level_1', 'gfx/level_1.png'),
@@ -46,7 +50,7 @@ function love.load()
         room_5 = Room('room_5', 'gfx/room_5.png', '', 'gun_2')
     }
 
-    current_level = levels.room_1
+    current_level = levels.room_5
     beholder.observe('transition', 
                      function(level) 
                          change_level = true
@@ -57,7 +61,6 @@ function love.load()
                          change_level_new = true
                          to_level = level
                      end)
-
 end
 
 function love.update(dt)
@@ -77,20 +80,24 @@ function love.update(dt)
         change_level_new = false
     end
 
-    if current_level.name == 'level_1' or current_level.name == 'level_2' or current_level.name == 'level_3' then
-        effect:send("tt", 1)
-    else effect:send("tt", 2) end
-    effect:send("vignetteIntensity", math.random(40,60)/100)
-    effect:send("t", 1-transition_c)
+    if supported then
+        if current_level.name == 'level_1' or current_level.name == 'level_2' or current_level.name == 'level_3' then
+            effect:send("tt", 1)
+        else effect:send("tt", 2) end
+        effect:send("vignetteIntensity", math.random(40,60)/100)
+        effect:send("t", 1-transition_c)
+    end
     current_level:update(dt) 
 end
 
 function love.draw()
-    canvas:clear()
-    love.graphics.setPixelEffect(effect)
-    canvas:renderTo(function() current_level:draw() end)
-    love.graphics.draw(canvas, 0, 0)
-    love.graphics.setPixelEffect()
+    if supported then
+        canvas:clear()
+        love.graphics.setPixelEffect(effect)
+        canvas:renderTo(function() current_level:draw() end)
+        love.graphics.draw(canvas, 0, 0)
+        love.graphics.setPixelEffect()
+    else current_level:draw() end
 end
 
 function love.keypressed(key)

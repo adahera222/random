@@ -43,16 +43,15 @@ function Room:initialize(name, map, to_level, gun)
         self:add(Enemy('person', 1035, 490, 100, self))
         self:add(Enemy('girl', 324, 170, 100, self))
 
-        self:spawnArea(3120, 336, 3440, 0, 3, 1)
-        self:spawnArea(3120, 496, 3440, 0, 2, 1)
-        self:spawnArea(3120, 656, 3440, 0, 2, 1)
-        self:spawnArea(3120, 816, 3440, 0, 3, 1)
-        self:spawnArea(3120, 976, 3440, 0, 2, 1)
-        self:spawnArea(4048, 336, 3760, 0, 2, -1)
-        self:spawnArea(4048, 496, 3760, 0, 3, -1)
-        self:spawnArea(4048, 656, 3760, 0, 2, -1)
-        self:spawnArea(4048, 816, 3760, 0, 2, -1)
-        self:spawnArea(4048, 976, 3760, 0, 3, -1)
+        self:spawnArea(3120, 336, 3440, 3, 83, 1)
+        self:spawnArea(3120, 496, 3440, 2, 82, 1)
+        self:spawnArea(3120, 656, 3440, 2, 82, 1)
+        self:spawnArea(3120, 816, 3440, 3, 83, 1)
+        self:spawnArea(3120, 976, 3440, 2, 82, 1)
+        self:spawnArea(4048, 336, 3760, 2, 82, -1)
+        self:spawnArea(4048, 496, 3760, 3, 83, -1)
+        self:spawnArea(4048, 656, 3760, 2, 82, -1)
+        self:spawnArea(4048, 816, 3760, 2, 82, -1)
     end
 
     for _, tile in ipairs(self.tiles) do self.camera:add(1, tile.draw, tile) end
@@ -136,15 +135,17 @@ function Room:update(dt)
         end
     end
 
-    for _, tile in ipairs(self.tiles_aux) do
-        if self.player.p.x > 3000 then
-            self.player:collideWith(tile)
-        end
+    if self.player.p.x >= 1976 then
+        for _, tile in ipairs(self.tiles_aux) do
+            if self.player.p.x > 3000 then
+                self.player:collideWith(tile)
+            end
 
-        local entities = self:getInArea('entities', tile.p, 64)
-        for _, entity in ipairs(entities) do
-            if entity.p.x > 3000 then
-                entity:collideWith(tile)
+            local entities = self:getInArea('entities', tile.p, 64)
+            for _, entity in ipairs(entities) do
+                if entity.p.x > 3000 then
+                    entity:collideWith(tile)
+                end
             end
         end
     end
