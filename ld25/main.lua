@@ -50,7 +50,7 @@ function love.load()
         room_5 = Room('room_5', 'gfx/room_5.png', '', 'gun_2')
     }
 
-    current_level = levels.room_5
+    current_level = levels.room_1
     beholder.observe('transition', 
                      function(level) 
                          change_level = true

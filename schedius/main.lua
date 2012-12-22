@@ -75,7 +75,7 @@ function love.draw()
     love.graphics.setBackgroundColor(255, 255, 255)
     love.graphics.setColor(0, 0, 0)
     love.graphics.setLineStyle('smooth')
-    OBB()
+    AABBVoronoiRegions()
 
     --[[
     canvas:renderTo(function() OBB() end)
@@ -84,8 +84,9 @@ function love.draw()
 end
 
 function love.keypressed(key)
-    if key == 'p' then
-
+    if key == 's' then
+        local image = love.graphics.newScreenshot()
+        image:encode('output.png')
     end
 end
 

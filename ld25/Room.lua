@@ -43,15 +43,15 @@ function Room:initialize(name, map, to_level, gun)
         self:add(Enemy('person', 1035, 490, 100, self))
         self:add(Enemy('girl', 324, 170, 100, self))
 
-        self:spawnArea(3120, 336, 3440, 3, 83, 1)
-        self:spawnArea(3120, 496, 3440, 2, 82, 1)
-        self:spawnArea(3120, 656, 3440, 2, 82, 1)
-        self:spawnArea(3120, 816, 3440, 3, 83, 1)
-        self:spawnArea(3120, 976, 3440, 2, 82, 1)
-        self:spawnArea(4048, 336, 3760, 2, 82, -1)
-        self:spawnArea(4048, 496, 3760, 3, 83, -1)
-        self:spawnArea(4048, 656, 3760, 2, 82, -1)
-        self:spawnArea(4048, 816, 3760, 2, 82, -1)
+        self:spawnArea(3120, 336, 3440, 1, 3, 1)
+        self:spawnArea(3120, 496, 3440, 1, 2, 1)
+        self:spawnArea(3120, 656, 3440, 1, 2, 1)
+        self:spawnArea(3120, 816, 3440, 1, 3, 1)
+        self:spawnArea(3120, 976, 3440, 1, 2, 1)
+        self:spawnArea(4048, 336, 3760, 1, 2, -1)
+        self:spawnArea(4048, 496, 3760, 1, 3, -1)
+        self:spawnArea(4048, 656, 3760, 1, 2, -1)
+        self:spawnArea(4048, 816, 3760, 1, 2, -1)
     end
 
     for _, tile in ipairs(self.tiles) do self.camera:add(1, tile.draw, tile) end
@@ -152,7 +152,11 @@ function Room:update(dt)
 
     for _, entity in ipairs(self.entities) do
         if instanceOf(Enemy, entity) then
-            entity:update(dt, self.player)
+            if entity.p.x <= 1976 and self.player.p.x <= 1976 then
+                entity:update(dt, self.player)
+            elseif entity.p.x >= 1976 and self.player.p.x >= 1976 then
+                entity:update(dt, self.player)
+            end
             local projectiles = self:getInArea('entities', entity.p, 64)
             
             for _, proj in ipairs(projectiles) do
