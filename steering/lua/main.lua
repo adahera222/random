@@ -13,26 +13,44 @@ function love.load()
     gFleeRadius = 200 -- flee
     gArrivalRadius = 200 -- arrival
     slowing = false -- flee, arrival
-    nAvoidanceObstacles = 10 -- avoidance
+    nAvoidanceObstacles = 50 -- avoidance
 
-    entity = Entity(20, 20, Vector(400, 300), Vector(0, 0), 1, 150, 100, 
+    entity = Entity(20, 20, Vector(50, 50), Vector(0, 0), 1, 150, 100, 
                     gFleeRadius, gArrivalRadius) 
 
     pursue_evade_entity = Entity(10, 10, Vector(500, 400), Vector(0, 0), 1, 
                                  300, 200, gFleeRadius, gArrivalRadius)
 
+    -- Avoidance setup 
+    -- [
     avoidance_obstacles = {}
+    avoidance_walls = {}
+
+    local addObstacles = 
+        function(in_obstacle)
+            for _, obstacle in ipairs(avoidance_obstacles) do
+                if Vector.distance(in_obstacle.p, obstacle.p) <=
+                   in_obstacle.r + obstacle.r + 50 then
+                    return false
+                end
+            end            
+            table.insert(avoidance_obstacles, in_obstacle)
+            return true
+        end
+
     for i = 1, nAvoidanceObstacles do
-        table.insert(avoidance_obstacles, {
-            x = math.random(50, w-50),
-            y = math.random(50, h-50),
-            r = math.random(20, 100)
-        })
+        addObstacles({p = Vector(math.random(100, w-100),
+                      math.random(100, h-100)), r = math.random(25, 40)})
     end
+    table.insert(avoidance_walls, {p = Vector(), w = 20, h = h})
+    table.insert(avoidance_walls, {p = Vector(), w = w, h = 20})
+    table.insert(avoidance_walls, {p = Vector(w-20, 0), w = 20, h = h})
+    table.insert(avoidance_walls, {p = Vector(0, h-20), w = w, h = 20})
+    -- ]
 
     -- Global behavior settings
     current = {
-        behavior = 'seek',
+        behavior = 'avoidance',
         radius = 200,
         target_entity = nil
     }
@@ -55,7 +73,8 @@ function love.update(dt)
         pursue_evade_entity:update(dt)
     
     elseif current.behavior == 'avoidance' then
-
+        entity.behavior = 'avoidance'
+        entity:update(dt)
     end
 end
 
@@ -69,8 +88,13 @@ function love.draw()
     if current.behavior == 'avoidance' then
         for _, obstacle in ipairs(avoidance_obstacles) do
             love.graphics.setColor(0, 0, 0)
-            love.graphics.circle('line', obstacle.x, obstacle.y, 
+            love.graphics.circle('line', obstacle.p.x, obstacle.p.y, 
                                  obstacle.r, 360)
+        end
+
+        for _, wall in ipairs(avoidance_walls) do
+            love.graphics.setColor(0, 0, 0)
+            love.graphics.rectangle('line', wall.p.x, wall.p.y, wall.w, wall.h)
         end
     end
 
@@ -91,11 +115,8 @@ function love.keypressed(key)
     if key == '3' then current.behavior = 'arrival'; current.radius = gArrivalRadius end
     if key == '4' then current.behavior = 'pursue'; current.target_entity = entity end
     if key == '5' then current.behavior = 'evade'; current.target_entity = entity end
-    if key == '6' then current.behavior = 'avoidance'; setBehavior('avoidance') end
-end
 
-function setBehavior(behavior)
-    if behavior == 'avoidance' then
-
+    if key == '6' then 
+        current.behavior = 'avoidance' 
     end
 end

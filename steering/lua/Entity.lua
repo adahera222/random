@@ -34,6 +34,9 @@ function Entity:update(dt)
 
     elseif equalsAny(self.behavior, 'pursue', 'evade') then
         self[self.behavior](self, self.pursue_evade_entity)
+
+    elseif self.behavior == 'avoidance' then
+        self:avoidance()
     end
 
     self.steering_force = self.steering:min(self.max_force)
@@ -98,6 +101,10 @@ function Entity:evade(target)
     local t = distance*0.01
     self.pursue_evade_future_entity_position = target.position + target.velocity*t 
     self:flee(self.pursue_evade_future_entity_position)
+end
+
+function Entity:avoidance()
+    
 end
 
 local function drawEntity(entity, borderColor, fillColor)
