@@ -78,9 +78,3 @@ function struct(...)
     })
     return struct_table
 end
-
-local Point = struct('x', 'y', 'type')
-local p1 = Point(1, 2, 'dkkddkdkdk')
-local p2 = Point(3, 4, 'dsjfdfh')
-print(p1)
-print(p2)
