@@ -31,7 +31,8 @@
 -- print(p1.z) -- error, unknown field 'z'
 -- p1.w = 1    -- error, unknown field 'w'
 
-function struct(fields)
+function struct(...)
+    local fields = {...}
     local structs_table = setmetatable({}, {
         __call = 
             function(struct_table, ...)
@@ -53,6 +54,18 @@ function struct(fields)
                                 end
                             end
                             error("Unknown field '" .. key .. "'")
+                        end,
+
+                    __tostring = 
+                        function(struct_table)
+                            local result = "("
+                            for i, field in ipairs(fields) do
+                                result = 
+                                    result .. field .. "=" ..
+                                    tostring(struct_table[fields[i]]) .. ", "
+                            end
+                            result = string.sub(result, 1, -3) .. ")"
+                            return result
                         end
                 })
 
