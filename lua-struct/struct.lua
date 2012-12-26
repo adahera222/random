@@ -33,7 +33,7 @@
 
 function struct(...)
     local fields = {...}
-    local structs_table = setmetatable({}, {
+    local struct_table = setmetatable({}, {
         __call = 
             function(struct_table, ...)
                 local instance_table = setmetatable({}, {
@@ -76,5 +76,11 @@ function struct(...)
                 return instance_table 
             end
     })
-    return structs_table
+    return struct_table
 end
+
+local Point = struct('x', 'y', 'type')
+local p1 = Point(1, 2, 'dkkddkdkdk')
+local p2 = Point(3, 4, 'dsjfdfh')
+print(p1)
+print(p2)
