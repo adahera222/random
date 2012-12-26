@@ -25,47 +25,43 @@
 --
 -- local Point = struct('x', 'y')
 -- local p1 = Point(1, 1)       -- OK
--- local p2 = Point(1, 2, 3)    -- error, unknown 3rd argument
+-- local p2 = Point(1, 2, 3)    -- error, unknown argument #3
+-- p1.x = 3    -- OK
 -- print(p1.x) -- OK
--- print(p1.z) -- error
+-- print(p1.z) -- error, unknown field 'z'
+-- p1.w = 1    -- error, unknown field 'w'
 
 function struct(fields)
-    local struct_table = setmetatable({}, {
-        __index = 
-            function(struct_table, key)
-                for _, field in ipairs(fields) do
-                    if field == key then return struct_table[key] end
-                end
-                error("Unknown field '" .. key .. "'")
-            end,
-
-        __newindex =
-            function(struct_table, key, value)
-                for _, field in ipairs(fields) do
-                    if field == key then 
-                        rawset(struct_table, key, value) 
-                        return
-                    end
-                end
-                error("Unknown field '" .. key .. "'")
-            end,
-
+    local structs_table = setmetatable({}, {
         __call = 
             function(struct_table, ...)
+                local instance_table = setmetatable({}, {
+                    __index = 
+                        function(struct_table, key)
+                            for _, field in ipairs(fields) do
+                                if field == key then return rawget(struct_table, key) end
+                            end
+                            error("Unknown field '" .. key .. "'")
+                        end,
+
+                    __newindex =
+                        function(struct_table, key, value)
+                            for _, field in ipairs(fields) do
+                                if field == key then 
+                                    rawset(struct_table, key, value) 
+                                    return
+                                end
+                            end
+                            error("Unknown field '" .. key .. "'")
+                        end
+                })
+
                 for i, arg in ipairs({...}) do
-                    if fields[i] then struct_table[fields[i]] = arg 
+                    if fields[i] then instance_table[fields[i]] = arg 
                     else error("Unknown argument #" .. tostring(i)) end 
                 end
-                return struct_table
+                return instance_table 
             end
     })
-    return struct_table
+    return structs_table
 end
-
-local Point = struct({'x', 'y'})
-local p1 = Point(1, 2)
-local p2 = Point(3, 4)
-print(p1.x)
-print(p1.y)
-print(p2.x)
-print(p2.y)
