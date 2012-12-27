@@ -33,7 +33,21 @@
 --
 -- until(5, player.invincility).after(0, player.selfExplosion)
 -- The player is invincible for 5 seconds and when that ends he explodes.
--- If it were .after(2, player:selfExplosion()) the player would have a 2
+-- If it were .after(2, player.selfExplosion) the player would have a 2
 -- second delay between invincibility end and self explosion.
 -- 
--- after(2, enemy.shoot).until(
+-- every(2, enemy.chooseTarget).after(1, enemy.shoot)
+-- The enemy will choose a target every 2 seconds and will shoot
+-- 1 second after the every call is cancelled (or until it has been
+-- run c times, if c were not omitted).
+--
+-- There's another possibility:
+-- every(2, enemy.chooseTarget).'interleave'.after(1, enemy.shoot)
+-- (Can I even do the .'interleave'. part...?)
+-- The enemy will choose a target at t = 2 and at t = 3 will shoot.
+-- Then it will choose a target at t = 5 and at t = 6 will shoot...
+--
+-- So, after and until behave as you would expect. Composition makes
+-- the actions happen linearly (after action1 is performed, action2
+-- will be performed (using the modifiers)). With every that can be
+-- the case but it can also be interleaved.
