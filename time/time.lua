@@ -1,0 +1,39 @@
+-- There are some timing related constructs that appear very often 
+-- while developing games. One such construct is as follows:
+--
+-- function update(dt)
+--   counter = counter + dt
+--   if counter >= action_delay then
+--     counter = 0
+--     action()
+--   end
+-- end 
+--
+-- This performs action() after action_delay seconds.
+-- It would be useful to have a function or set of functions that would handle 
+-- all that (creating at least two control variables + if + increment) for me.
+-- Such function could be defined like this: after(n, action). And so we could 
+-- change the code from lines 5-11 to:
+--
+-- function update(dt)
+--   after(action_delay, action()
+-- end
+--
+-- There are other constructs that serve different purposes. Here's a list:
+-- (time this function was called = t)
+--
+-- after(n, action): performs action at time t+n. 
+-- until(n, action): performs action every frame until time t+n. 
+-- every(n, c, action): performs action at times t+n, t+2n, t+3n, ..., up to c times.
+--                      If c is omitted will run until cancelled.
+-- cancel(id): removes timer with id = id from the timers list.
+--
+-- It would also be useful if we could combine after, until and every to create
+-- complex timing behaviors. For instance:
+--
+-- until(5, player.invincility).after(0, player.selfExplosion)
+-- The player is invincible for 5 seconds and when that ends he explodes.
+-- If it were .after(2, player:selfExplosion()) the player would have a 2
+-- second delay between invincibility end and self explosion.
+-- 
+-- after(2, enemy.shoot).until(
