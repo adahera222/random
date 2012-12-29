@@ -1,6 +1,9 @@
 require 'Entity'
+require 'struct'
 
 function love.load()
+    Circle = struct('mode', 'p', 'r')
+
     love.graphics.setBackgroundColor(255, 255, 255)
     love.graphics.setColor(0, 0, 0)
     font = love.graphics.newFont('visitor1.ttf', 24)
@@ -39,13 +42,9 @@ function love.load()
         end
 
     for i = 1, nAvoidanceObstacles do
-        addObstacles({p = Vector(math.random(100, w-100),
-                      math.random(100, h-100)), r = math.random(25, 40)})
+        addObstacles(Circle('line', Vector(math.random(100, w-100), 
+                     math.random(100, h-100)), math.random(25, 40)))
     end
-    table.insert(avoidance_walls, {p = Vector(), w = 20, h = h})
-    table.insert(avoidance_walls, {p = Vector(), w = w, h = 20})
-    table.insert(avoidance_walls, {p = Vector(w-20, 0), w = 20, h = h})
-    table.insert(avoidance_walls, {p = Vector(0, h-20), w = w, h = 20})
     -- ]
 
     -- Global behavior settings
@@ -88,13 +87,7 @@ function love.draw()
     if current.behavior == 'avoidance' then
         for _, obstacle in ipairs(avoidance_obstacles) do
             love.graphics.setColor(0, 0, 0)
-            love.graphics.circle('line', obstacle.p.x, obstacle.p.y, 
-                                 obstacle.r, 360)
-        end
-
-        for _, wall in ipairs(avoidance_walls) do
-            love.graphics.setColor(0, 0, 0)
-            love.graphics.rectangle('line', wall.p.x, wall.p.y, wall.w, wall.h)
+            love.graphics.circle(obstacle.mode, obstacle.p.x, obstacle.p.y, obstacle.r)
         end
     end
 

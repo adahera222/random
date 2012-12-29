@@ -95,10 +95,8 @@ function Chrono:update(dt)
 end
 
 function Chrono:after(n, action, ...)
-    print(n, action, ...)
     self.uid = self.uid + 1
-    local action_struct = Action('after', self.uid, n, nil, action, 0, ...)
-    print(action_struct)
+    return self:add(Action('after', self.uid, n, nil, action, 0, ...))
 end
 
 function Chrono:every(n, c, action, ...)

@@ -2,7 +2,6 @@ require 'chrono'
 
 function love.load()
     chrono = Chrono()
-    id1 = chrono:after(2, function() print(1) end)
 end
 
 function love.update(dt)

@@ -31,7 +31,7 @@
 -- print(p1.z) -- error, unknown field 'z'
 -- p1.w = 1    -- error, unknown field 'w'
 
-local struct = setmetatable({}, {
+struct = setmetatable({}, {
     __call =
         function(struct_table, ...)
             local fields = {...}
@@ -43,7 +43,6 @@ local struct = setmetatable({}, {
             local struct_table = setmetatable({}, {
                 __call = 
                     function(struct_table, ...)
-                        local args = {...}
                         local instance_table = setmetatable({}, {
                             __index = 
                                 function(struct_table, key)
@@ -82,8 +81,8 @@ local struct = setmetatable({}, {
                                 end
                         })
 
-                        for i = 1, #args do
-                            if fields[i] then instance_table[fields[i]] = args[i] 
+                        for i, arg in ipairs({...}) do
+                            if fields[i] then instance_table[fields[i]] = arg 
                             else error("Unknown argument #" .. tostring(i)) end 
                         end
                         instance_table["uguu~"] = fields -- unlikely field name
@@ -102,5 +101,3 @@ function struct.unpack(instance_table)
     end
     return unpack(values)
 end
-
-return struct
