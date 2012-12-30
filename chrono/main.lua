@@ -2,6 +2,7 @@ require 'chrono'
 
 function love.load()
     chrono = Chrono()
+    print(chrono:after(2, function() print(1) end))
 end
 
 function love.update(dt)

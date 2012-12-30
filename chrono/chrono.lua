@@ -55,6 +55,7 @@
 
 local struct = require 'struct'
 local Action = struct('type', 'id', 'n', 'c', 'action', 'counter', 'parameters')
+local CompositeAction = struct('id', 'actions')
 
 Chrono = {}
 Chrono.__index = Chrono
@@ -63,72 +64,77 @@ function Chrono.new()
     return setmetatable({uid = 0, actions = {}}, Chrono)
 end
 
+local function add(instance, action_struct)
+    table.insert(instance.actions, action_struct)
+    return instance.uid
+end
+
+local function remove(instance, id)
+    for i, action_struct in ipairs(instance.actions) do
+        if action_struct.id == id then 
+            table.remove(instance.actions, i)
+            return
+        end
+    end
+end
+
+local function run_after(instance, action_struct)
+    if action_struct.counter >= action_struct.n then
+        action_struct.action(action_struct.parameters)
+        remove(instance, action_struct.id)
+    end
+end
+
+local function run_every(instance, action_struct)
+    if action_struct.counter >= action_struct.n then
+        if not action_struct.c then
+            action_struct.action(action_struct.parameters)
+        else 
+            if action_struct.c >= 1 then
+                action_struct.action(action_struct.parameters) 
+                action_struct.c = action_struct.c - 1
+            else remove(instance, action_struct.id) end
+        end
+        action_struct.counter = 0
+    end
+end
+
+local function run_do_for(instance, action_struct)
+    if action_struct.counter < action_struct.n then
+        action_struct.action(action_struct.parameters)
+    else remove(instance, action_struct.id) end
+end
+
 function Chrono:update(dt)
     for _, action_struct in ipairs(self.actions) do
         action_struct.counter = action_struct.counter + dt
-
-        if action_struct.type == 'after' then
-            if action_struct.counter >= action_struct.n then
-                action_struct.action(action_struct.parameters)
-                self:remove(action_struct.id)
-            end
-
-        elseif action_struct.type == 'every' then
-            if action_struct.counter >= action_struct.n then
-                if not action_struct.c then
-                    action_struct.action(action_struct.parameters)
-                else 
-                    if action_struct.c >= 1 then
-                        action_struct.action(action_struct.parameters) 
-                        action_struct.c = action_struct.c - 1
-                    else self:remove(action_struct.id) end
-                end
-                action_struct.counter = 0
-            end
-
-        elseif action_struct.type == 'do_for' then
-            if action_struct.counter < action_struct.n then
-                action_struct.action(action_struct.parameters)
-            else self:remove(action_struct.id) end
-        end
+        if action_struct.type == 'after' then run_after(self, action_struct)
+        elseif action_struct.type == 'every' then run_every(self, action_struct)
+        else run_do_for(self, action_struct) end
     end
 end
 
 function Chrono:after(n, action, ...)
     self.uid = self.uid + 1
-    return self:add(Action('after', self.uid, n, nil, action, 0, ...))
+    return add(self, Action('after', self.uid, n, nil, action, 0, ...))
 end
 
 function Chrono:every(n, c, action, ...)
     self.uid = self.uid + 1
-    return self:add(Action('every', self.uid, n, c, action, 0, ...))
+    return add(self, Action('every', self.uid, n, c, action, 0, ...))
 end
 
 function Chrono:do_for(n, action, ...)
     self.uid = self.uid + 1
-    return self:add(Action('do_for', self.uid, n, nil, action, 0, ...))
+    return add(self, Action('do_for', self.uid, n, nil, action, 0, ...))
 end
 
 function Chrono:cancel(id)
-    self:remove(id)
+    remove(self, id)
 end
 
 function Chrono:trigger()
     
-end
-
-function Chrono:add(action_struct)
-    table.insert(self.actions, action_struct)
-    return self.uid
-end
-
-function Chrono:remove(id)
-    for i, action_struct in ipairs(self.actions) do
-        if action_struct.id == id then 
-            table.remove(self.actions, i)
-            return
-        end
-    end
 end
 
 setmetatable(Chrono, {__call = function(_, _) return Chrono.new() end})
