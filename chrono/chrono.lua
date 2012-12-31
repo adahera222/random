@@ -69,6 +69,11 @@ local function remove(self, id)
     end
 end
 
+local function type_check(n, action)
+    if type(n) ~= "number" then error("First argument must be a number.") end
+    if type(action) ~= "function" then error("Action must be a function.") end
+end
+
 local function run_after(self, action_struct)
     if action_struct.counter >= action_struct.n then
         action_struct.action(action_struct.parameters)
@@ -105,25 +110,34 @@ end
 
 function CompositeAction:update(dt)
     local current_action_struct = self.actions[1]
-    current_action_struct.counter = current_action_struct.counter + dt
-    if current_action_struct.type == 'after' then 
-        run_after(self, current_action_struct)
-    elseif current_action_struct.type == 'every' then
-        run_every(self, current_action_struct)
-    else run_do_for(self, current_action_struct) end
+    if current_action_struct then
+        current_action_struct.counter = current_action_struct.counter + dt
+        if current_action_struct.type == 'after' then 
+            run_after(self, current_action_struct)
+        elseif current_action_struct.type == 'every' then
+            run_every(self, current_action_struct)
+        else run_do_for(self, current_action_struct) end
+    end
 end
 
 function CompositeAction:after(n, action, ...)
+    type_check(n, action)
     add(self, Action('after', n, nil, action, 0, ...))
     return self
 end
 
 function CompositeAction:every(n, c, action, ...)
-    add(self, Action('every', n, c, action, 0, ...))
+    local new_action, params
+    if type(c) == 'function' then new_action = c; c = nil; params = {action, ...}
+    else new_action = action; params = {...} end
+    type_check(n, new_action)
+
+    add(self, Action('every', n, c, new_action, 0, unpack(params))) 
     return self
 end
 
 function CompositeAction:do_for(n, action, ...)
+    type_check(n, action)
     add(self, Action('do_for', n, nil, action, 0, ...))
     return self
 end
@@ -145,6 +159,7 @@ function Chrono:update(dt)
 end
 
 function Chrono:after(n, action, ...)
+    type_check(n, action)
     self.uid = self.uid + 1
     local c_action = CompositeAction(self.uid):after(n, action, ...)
     add(self, c_action)
@@ -155,6 +170,7 @@ function Chrono:every(n, c, action, ...)
     local new_action, params
     if type(c) == 'function' then new_action = c; c = nil; params = {action, ...}
     else new_action = action; params = {...} end
+    type_check(n, new_action)
 
     self.uid = self.uid + 1
     local c_action = CompositeAction(self.uid):every(n, c, new_action, unpack(params))
@@ -163,6 +179,7 @@ function Chrono:every(n, c, action, ...)
 end
 
 function Chrono:do_for(n, action, ...)
+    type_check(n, action)
     self.uid = self.uid + 1
     local c_action = CompositeAction(self.uid):do_for(n, action, ...)
     add(self, c_action)

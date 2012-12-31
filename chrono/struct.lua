@@ -43,7 +43,7 @@ local struct = setmetatable({}, {
             local struct_table = setmetatable({}, {
                 __call = 
                     function(struct_table, ...)
-                        local args = {...}
+                        local params = {...}
                         local instance_table = setmetatable({}, {
                             __index = 
                                 function(struct_table, key)
@@ -82,8 +82,8 @@ local struct = setmetatable({}, {
                                 end
                         })
 
-                        for i = 1, #args do
-                            if fields[i] then instance_table[fields[i]] = args[i] 
+                        for i = 1, table.maxn(params) do
+                            if fields[i] then instance_table[fields[i]] = params[i] 
                             else error("Unknown argument #" .. tostring(i)) end 
                         end
                         instance_table["uguu~"] = fields -- unlikely field name
