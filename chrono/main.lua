@@ -1,8 +1,11 @@
 require 'chrono'
 
 function love.load()
+    print(love.timer.getMicroTime())
     chrono = Chrono()
-    print(chrono:after(2, function() print(1) end))
+    id = chrono:every(0.5, 2, f):after(10, f):do_for(4, f)
+    -- interleave leftttt
+    print(id.id)
 end
 
 function love.update(dt)
