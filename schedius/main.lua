@@ -59,11 +59,13 @@ function arrowedLine(x1, y1, x2, y2, name, both, length)
 end
 
 function love.load()
-    w = 300
-    h = 240
+    love.filesystem.setIdentity("schedius")
+    w = 600
+    h = 200
     love.graphics.setMode(w, h, false, false, 8)
-    font = love.graphics.newFont('LinLibertine_RB.ttf', 16)
-    love.graphics.setFont(font)
+    font_1 = love.graphics.newFont('LinLibertine_RB.ttf', 24)
+    font_2 = love.graphics.newFont('LinLibertine_RB.ttf', 16)
+    -- font = love.graphics.newFont('VeraMono.ttf', 24) love.graphics.setFont(font)
     canvas = love.graphics.newCanvas(w, h)
 
     -- Implement FXAA when I actually have the MENTAL POWER to understand it...
@@ -75,12 +77,7 @@ function love.draw()
     love.graphics.setBackgroundColor(255, 255, 255)
     love.graphics.setColor(0, 0, 0)
     love.graphics.setLineStyle('smooth')
-    AABBVoronoiRegions()
-
-    --[[
-    canvas:renderTo(function() OBB() end)
-    love.graphics.draw(canvas, 0, 0)
-    ]]--
+    processesArtifacts()
 end
 
 function love.keypressed(key)
@@ -88,14 +85,34 @@ function love.keypressed(key)
         local image = love.graphics.newScreenshot()
         image:encode('output.png')
     end
+
+    if key == 'q' then
+        love.event.push('quit')
+    end
 end
 
-function dotProductProjection()
-    local xi, yi = w/12, h-h/4
-    local xf, yf = 2*w/3, h/6
-    local theta = math.atan2(yf-yi, xf-xi)
-    arrowedLine(xi, yi, 8.75*w/10, yi, 'u')
-    arrowedLine(xi, yi, xf, yi)
+function processesArtifacts()
+    arrowedLine(w/12, h/2, 3*w/12, h/2)
+    love.graphics.rectangle('line', 3*w/12+6, h/2-50, 3*w/12, 100)
+    arrowedLine(6*w/12+6, h/2, 8*w/12, h/2)
+    love.graphics.rectangle('line', 8*w/12+6, h/2-50, 3*w/12, 100)
+
+    love.graphics.setFont(font_1)
+    love.graphics.print('the thing', 3.45*w/12+6, h/2-15)
+    love.graphics.print('what needs', 8.25*w/12+6, h/2-30)
+    love.graphics.print('to be done', 8.4*w/12+6, h/2)
+    love.graphics.setFont(font_2)
+    love.graphics.print('process #1', 1.3*w/12, h/2-20)
+    love.graphics.print('process #2', 6.3*w/12, h/2-20)
+end 
+
+function dotProductProjection() 
+    local xi, yi = w/12, h-h/4 
+    local xf, yf = 2*w/3, h/6 
+    local theta = math.atan2(yf-yi, xf-xi) 
+    
+    arrowedLine(xi, yi, 8.75*w/10, yi, 'u') 
+    arrowedLine(xi, yi, xf, yi) 
     arrowedLine(xi, yi, xf, yf, 'v') 
     dottedLine(xf+6, yf-7, xf+6, yi, 1, 5) 
     love.graphics.arc('line', xi, yi, 35, 0, theta)
