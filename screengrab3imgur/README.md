@@ -16,4 +16,4 @@ If you happen to find this and use it, please get your own key for the [imgur AP
 
 ## Status: unfinished
 
-Found a better program to achieve this task: http://app.prntscr.com/
+Found a better program to achieve this task: http://gethyperdesktop.com/
