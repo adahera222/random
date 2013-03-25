@@ -1,46 +1,59 @@
+// Felipe Gonzalez, Renan Drabach
+
 %{
     
 #include <stdio.h>
 #include "tokens.h"
+#include "hash.c"
 
 int running = 1;
-int line_number = 0;
-void initMe(void) {}
+int line_number = 1;
 
 %}
 
+%x multiLineComment
+
 %%
 
-word printf("KW_WORD\n");
-bool printf("KW_BOOL\n");
-byte printf("KW_BYTE\n");
-if printf("KW_IF\n");
-then printf("KW_THEN\n");
-else printf("KW_ELSE\n");
-loop printf("KW_LOOP\n");
-input printf("KW_INPUT\n");
-output printf("KW_OUTPUT\n");
-return printf("KW_RETURN\n");
-true printf("LIT_TRUE\n");
-TRUE printf("LIT_TRUE\n");
-false printf("LIT_FALSE\n");
-FALSE printf("LIT_FALSE\n");
-[,;:\(\)\[\]{}\+\-\*/<>=!&\$] printf("%c\n", yytext[0]);
-\<= printf("OPERATOR_LE\n");
->= printf("OPERATOR_GE\n");
-== printf("OPERATOR_EQ\n");
-\!= printf("OPERATOR_NE\n");
-&& printf("OPERATOR_AND\n");
-\|\| printf("OPERATOR_OR\n");
-[_a-zA-Z][_a-zA-Z0-9]* printf("TK_IDENTIFIER\n");
-[0-9][0-9A-Fa-f]* printf("LIT_INTEGER\n");
-'.' printf("LIT_CHAR\n");
-\"([^\"]|\\.)*\" printf("LIT_STRING\n");
+word return KW_WORD; 
+bool return KW_BOOL; 
+byte return KW_BYTE; 
+if return KW_IF;
+then return KW_THEN; 
+else return KW_ELSE;
+loop return KW_LOOP;
+input return KW_INPUT;
+output return KW_OUTPUT;
+return return KW_RETURN;
+true hashInsert(yytext, LIT_TRUE); return LIT_TRUE;
+TRUE hashInsert(yytext, LIT_TRUE); return LIT_TRUE;
+false hashInsert(yytext, LIT_FALSE); return LIT_FALSE;
+FALSE hashInsert(yytext, LIT_FALSE); return LIT_FALSE;
+[,;:\(\)\[\]{}\+\-\*/<>=!&\$] return yytext[0];
+\<= return OPERATOR_LE;
+>= return OPERATOR_GE;
+== return OPERATOR_EQ;
+\!= return OPERATOR_NE; 
+&& return OPERATOR_AND; 
+\|\| return OPERATOR_OR; 
+[_a-zA-Z][_a-zA-Z0-9]* hashInsert(yytext, TK_IDENTIFIER); return TK_IDENTIFIER;
+[0-9][0-9A-Fa-f]* hashInsert(yytext, LIT_INTEGER); return LIT_INTEGER;
+'.' hashInsert(yytext, LIT_CHAR); return LIT_CHAR;
+\"([^\"]|\\.)*\" hashInsert(yytext, LIT_STRING); return LIT_STRING;
+\/\/.*\n ++line_number;
+\/\* BEGIN(multiLineComment);
+<multiLineComment>\*\/ BEGIN(INITIAL);
+<multiLineComment>[\n\r] ++line_number;
+<multiLineComment>. 
 \n ++line_number;
 \ 
-. printf("TOKEN_ERROR\n");
+. printf("Lexical error on line %d: %s\n", line_number, yytext); return TOKEN_ERROR;
 
 %%
+
+void initMe(void) {
+    hashInit();
+}
 
 #include "main.c"
 
@@ -48,9 +61,7 @@ int getLineNumber(void) {
     return line_number;
 }
 
-
 int yywrap(void) {
     running = 0;
-    printf("Lines: %d\n", line_number); 
     return 1;
 }
