@@ -41,9 +41,10 @@ FALSE hashInsert(yytext, LIT_FALSE); return LIT_FALSE;
 \/\/.*\n ++line_number;
 \/\* BEGIN(multiLineComment);
 <multiLineComment>\*\/ BEGIN(INITIAL);
-<multiLineComment>[\n\r] ++line_number;
+<multiLineComment>\n ++line_number;
 <multiLineComment>. 
 \n ++line_number;
+\ 
 \t
 . printf("Lexical error on line %d: %s\n", line_number, yytext); return TOKEN_ERROR;
 
