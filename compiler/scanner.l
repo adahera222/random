@@ -1,5 +1,3 @@
-// Felipe Gonzalez, Renan Drabach
-
 %{
     
 #include <stdio.h>
@@ -46,7 +44,7 @@ FALSE hashInsert(yytext, LIT_FALSE); return LIT_FALSE;
 <multiLineComment>[\n\r] ++line_number;
 <multiLineComment>. 
 \n ++line_number;
-\ 
+\t
 . printf("Lexical error on line %d: %s\n", line_number, yytext); return TOKEN_ERROR;
 
 %%
