@@ -1,9 +1,11 @@
 %{
-    
+
+/* Felipe Gonzalez, Renan Drabach */
+
 #include <stdio.h>
-#include "hash.c"
     
 #include "y.tab.h"
+#include "scanner.h"
 
 #define SYMBOL_UNDEFINED 0
 #define SYMBOL_LIT_INTEGER 1
@@ -49,13 +51,13 @@ FALSE       hashInsert(yytext, SYMBOL_LIT_FALSE); return LIT_FALSE;
 '.'                     hashInsert(yytext, SYMBOL_LIT_CHAR); return LIT_CHAR;
 \"([^\"]|\\.)*\"        hashInsert(yytext, SYMBOL_LIT_STRING); return LIT_STRING;
 \/\/.*\n                ++line_number;
-\/\*                    BEGIN(multiLineComment);
-
+\/\*                        BEGIN(multiLineComment);
 <multiLineComment>\*\/      BEGIN(INITIAL);
-<multiLineComment>[\n\r]    ++line_number;
+<multiLineComment>\n        ++line_number;
 <multiLineComment>. 
 \n                          ++line_number;
 \ 
+\t
 . printf("Lexical error on line %d: %s\n", line_number, yytext); return TOKEN_ERROR;
 
 %%
@@ -64,7 +66,7 @@ void initMe(void) {
     hashInit();
 }
 
-#include "main.c"
+//#include "main.c"
 
 int getLineNumber(void) {
     return line_number;

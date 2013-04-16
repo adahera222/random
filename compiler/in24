@@ -1,0 +1,15 @@
+word main()
+{
+if (true)
+then;
+a = nada(3);
+nada(a, "teste", 2f, 2234, 'a', i, outra());
+output a;
+output "teste";
+output nada();
+output a, "teste", 2f, 2234, 'a', i, outra();
+return TRUE;
+loop (true)
+{
+}
+}

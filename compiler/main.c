@@ -1,11 +1,10 @@
-// Felipe Gonzalez, Renan Drabach
+/* Felipe Gonzalez, Renan Drabach */
 
 #include <stdio.h>
-//
 #include "lex.yy.h"
 #include "scanner.h"
 #include "y.tab.h"
-//
+
 int yyparse(void);
 
 int main(int argc, char *argv[]) {
@@ -15,16 +14,8 @@ int main(int argc, char *argv[]) {
     
     initMe();
     
-    int token = yylex();
-    
-    while (running) {
-        printf("%d: %d %s\n", getLineNumber(), token, yytext); 
-        token = yylex();
-    }
-    
-    hashPrint();
-    
     yyparse();
     
+    printf("Nenhum erro sintatico.\n");
     return 0;
 }
