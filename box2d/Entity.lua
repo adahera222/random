@@ -8,7 +8,7 @@ function Entity:initialize(type, x, y, r)
 
 end
 
-function Entity:initialize(type, x, y, )
+function Entity:initialize(type, x1, y1, x2, y2)
     
 end
 
