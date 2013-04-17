@@ -1,12 +1,15 @@
 Entity = class('Entity')
 
-function Entity:initialize(a)
-    self.a = a
+function Entity:initialize(type, x, y, w, h)
+
 end
 
-function Entity:initialize(a, b)
-    self.a = a
-    self.b = b
+function Entity:initialize(type, x, y, r)
+
+end
+
+function Entity:initialize(type, x, y, )
+    
 end
 
 function Entity:draw()

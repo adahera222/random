@@ -35,6 +35,11 @@ function love.draw()
     end
 end
 
+function createLine(x1, y1, x2, y2)
+    
+end
+
+
 function createRectangle(x, y, w, h, type)
     local body = love.physics.newBody(world, x, y, type or 'dynamic')
     local shape = love.physics.newRectangleShape(w, h) 
