@@ -26,9 +26,11 @@ function Projectile:collisionSolid(nx, ny)
         if self.modifiers.reflect < 0 then self.modifiers.reflect = nil end
     end
 
-    if self.modifiers.exploding then
-        local x, y = self.body:getPosition()
-        beholder.trigger('CREATE AREA', x, y, self, areas[self.modifiers.exploding])
+    if self.modifiers.area then
+        if areas[self.modifiers.area].on_hit then
+            local x, y = self.body:getPosition()
+            beholder.trigger('CREATE AREA', x, y, self, areas[self.modifiers.area])
+        end
     end
 
     if not self.modifiers.reflect then self.dead = true end 
@@ -40,9 +42,11 @@ function Projectile:collisionEnemy(enemy)
         if self.modifiers.pierce < 0 then self.modifiers.pierce = nil end
     end
 
-    if self.modifiers.exploding then
-        local x, y = self.body:getPosition()
-        beholder.trigger('CREATE AREA', x, y, false, areas[self.modifiers.exploding])
+    if self.modifiers.area then
+        if areas[self.modifiers.area].on_hit then
+            local x, y = self.body:getPosition()
+            beholder.trigger('CREATE AREA', x, y, false, areas[self.modifiers.area])
+        end
     end
 
     if not self.modifiers.pierce then self.dead = true end

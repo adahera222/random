@@ -19,6 +19,12 @@ function Level:initialize()
     self:loadMap()
 
     beholder.observe('CREATE PROJECTILE', function(x, y, angle, modifiers)
+        if modifiers.area then
+            if not areas[modifiers.area].on_hit then
+                table.insert(self.to_be_created, {'projectile_area', self.world, x, y, angle, modifiers})
+                return
+            end
+        end
         table.insert(self.to_be_created, {'projectile', self.world, x, y, angle, modifiers})
     end)
 
@@ -43,6 +49,10 @@ function Level:createPostWorldStep()
             table.insert(self.enemies, Enemy(t[2], t[3], t[4], t[5], t[6]))
         elseif t[1] == 'area' then
             table.insert(self.areas, Area(t[2], t[3], t[4], t[5], t[6]))
+        elseif t[1] == 'projectile_area' then
+            local p = Projectile(t[2], t[3], t[4], t[5], t[6])
+            table.insert(self.projectiles, p)
+            table.insert(self.areas, Area(t[2], t[3], t[4], p, areas[t[6].area]))
         end
         table.insert(to_be_removed, i)
     end

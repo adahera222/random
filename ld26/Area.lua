@@ -27,6 +27,10 @@ function Area:update(dt)
     if self.parent then
         if not self.parent.dead then
             self.body:setPosition(self.parent.body:getPosition())
+        else 
+            if not self.logic.on_hit then
+                chrono:after(self.logic.duration, function() self.dead = true end)
+            end
         end
     end
 end
