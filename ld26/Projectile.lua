@@ -19,15 +19,35 @@ function Projectile:collisionSolid(nx, ny)
     elseif ny < 0 and nx == 0 then dir = 'up'
     elseif ny > 0 and nx == 0 then dir = 'down' end
 
-    if self.modifiers.reflecting then
-        self.modifiers.reflecting = self.modifiers.reflecting - 1
+    if self.modifiers.reflect then
+        self.modifiers.reflect = self.modifiers.reflect - 1
         if dir == 'left' or dir == 'right' then self.angle = math.pi - self.angle
         elseif dir == 'up' or dir == 'down' then self.angle = -self.angle end
-        if self.modifiers.reflecting <= 0 then self.modifiers.reflecting = nil end
+        if self.modifiers.reflect < 0 then self.modifiers.reflect = nil end
     end
 
-    if not self.modifiers.reflecting then self.dead = true end 
+    if self.modifiers.exploding then
+        local x, y = self.body:getPosition()
+        beholder.trigger('CREATE AREA', x, y, self, areas[self.modifiers.exploding])
+    end
+
+    if not self.modifiers.reflect then self.dead = true end 
 end
+
+function Projectile:collisionEnemy(enemy)
+    if self.modifiers.pierce then
+        self.modifiers.pierce = self.modifiers.pierce - 1
+        if self.modifiers.pierce < 0 then self.modifiers.pierce = nil end
+    end
+
+    if self.modifiers.exploding then
+        local x, y = self.body:getPosition()
+        beholder.trigger('CREATE AREA', x, y, false, areas[self.modifiers.exploding])
+    end
+
+    if not self.modifiers.pierce then self.dead = true end
+end
+
 
 function Projectile:update(dt)
     EntityRect.update(self, dt)    

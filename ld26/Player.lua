@@ -1,5 +1,6 @@
 require 'EntityRect'
 require 'Attack'
+require 'attacks'
 
 Player = class('Player', EntityRect)
 
@@ -20,7 +21,7 @@ function Player:initialize(world)
     self.direction = 'right'
     self.jumps_left = self.max_jumps
 
-    self.attack = Attack({reflecting = 5, multiple = 3, back = true})
+    self.attack = attacks.test
 end
 
 function Player:collisionSolid(type, nx, ny)
@@ -47,6 +48,14 @@ function Player:update(dt)
     if love.keyboard.isDown('up') or love.keyboard.isDown('w') then
         self.jumping = true
         self.jump_impulse = true
+    end
+
+    if love.keyboard.isDown('j') or love.keyboard.isDown('z') then
+        local angle
+        if self.direction == 'left' then angle = math.pi
+        elseif self.direction == 'right' then angle = 0 end
+        local x, y = self.body:getPosition()
+        self.attack:attack(x, y, angle, 'hold')
     end
 
     local v_x, v_y = self.body:getLinearVelocity()
@@ -101,6 +110,6 @@ function Player:keypressed(key)
         if self.direction == 'left' then angle = math.pi
         elseif self.direction == 'right' then angle = 0 end
         local x, y = self.body:getPosition()
-        self.attack:attack(x, y, angle)
+        self.attack:attack(x, y, angle, 'press')
     end
 end
