@@ -3,13 +3,14 @@ require 'EntityRect'
 Player = class('Player', EntityRect)
 
 function Player:initialize(world)
-    EntityRect.initialize(self, world, 'dynamic', 400, 300, 16, 16)
+    EntityRect.initialize(self, world, 'dynamic', 300, 32, 16, 16)
 
     self.v = 200
-    self.jump_v = -200
+    self.jump_v = -300
     self.max_jumps = 1
 
     self.moving = {left = false, right = false}
+    self.colliding = {left = false, right = false}
     self.jump_impulse = false
     self.jumping = false
     self.falling = false
@@ -19,13 +20,21 @@ function Player:initialize(world)
     self.jumps_left = self.max_jumps
 end
 
-function Player:collisionSolid(solid, nx, ny)
-    if ny == 32 then self.ground = true end
+function Player:collisionSolid(type, nx, ny)
+    if type == 'enter' then
+        if ny == 32 then self.ground = true end
+        if nx == -32 then self.colliding.left = true end
+        if nx == 32 then self.colliding.right = true end
+    
+    else
+        self.colliding.left = false
+        self.colliding.right = false
+    end
 end
 
 function Player:update(dt)
     EntityRect.update(self, dt)
-
+    
     if love.keyboard.isDown('left') or love.keyboard.isDown('a') then
         self.moving.left = true
     end
@@ -34,16 +43,21 @@ function Player:update(dt)
     end
     if love.keyboard.isDown('up') or love.keyboard.isDown('w') then
         self.jumping = true
+        self.jump_impulse = true
     end
 
     local v_x, v_y = self.body:getLinearVelocity()
     if self.moving.right then
-        self.body:setLinearVelocity(self.v, v_y)
-        self.direction = 'right'
+        if not self.colliding.right then
+            self.body:setLinearVelocity(self.v, v_y)
+            self.direction = 'right'
+        end
     end
     if self.moving.left then
-        self.body:setLinearVelocity(-self.v, v_y)
-        self.direction = 'left'
+        if not self.colliding.left then
+            self.body:setLinearVelocity(-self.v, v_y)
+            self.direction = 'left'
+        end
     end
     if not self.moving.right and not self.moving.left then
         self.body:setLinearVelocity(0, v_y)

@@ -1,5 +1,6 @@
 require 'lib/middleclass/middleclass'
 require 'lib/chrono/chrono'
+struct = require 'lib/chrono/struct'
 beholder = require 'lib/beholder/beholder'
 Vector = require 'lib/hump/vector'
 Camera = require 'lib/hump/camera'
@@ -33,4 +34,56 @@ end
 
 function love.keypressed(key)
     level:keypressed(key)  
+end
+
+function love.run()
+    math.randomseed(os.time())
+    math.random(); math.random(); math.random();
+
+    if love.load then love.load(arg) end
+
+    local t = 0
+    local dt = 0
+    local fixed_dt = 1/60 
+    local accumulator = 0
+
+    -- Main loop time
+    while true do
+        -- Process events
+        if love.event then
+            love.event.pump()
+            for e, a, b, c, d in love.event.poll() do
+                if e == "quit" then
+                    if not love.quit or not love.quit() then
+                        if love.audio then
+                            love.audio.stop()
+                        end
+                        return
+                    end
+                end
+                love.handlers[e](a, b, c, d)
+            end
+        end
+
+        -- Update dt, as we'll be passing it to update
+        if love.timer then
+            love.timer.step()
+            dt = love.timer.getDelta()
+        end
+
+        accumulator = accumulator + dt
+
+        while accumulator >= fixed_dt do
+            if love.update then love.update(fixed_dt) end
+            accumulator = accumulator - fixed_dt
+            t = t + fixed_dt
+        end
+
+        if love.graphics then
+            love.graphics.clear()
+            if love.draw then love.draw() end
+        end
+
+        if love.graphics then love.graphics.present() end
+    end
 end

@@ -1,14 +1,21 @@
 require 'Player'
+require 'map'
 
 Level = class('Level')
 
 function Level:initialize()
     love.physics.setMeter(32)
-    self.world = love.physics.newWorld(0, 10*32)
+    self.world = love.physics.newWorld(0, 20*32)
     self.world:setCallbacks(collisionOnEnter, collisionOnExit)
     self.player = Player(self.world)
     self.solids = {}
-    table.insert(self.solids, EntityRect(self.world, 'static', 400, 600, 800, 100))
+    self:loadMap()
+end
+
+function Level:loadMap()
+    for _, solid in ipairs(map) do
+        table.insert(self.solids, EntityRect(self.world, 'static', solid.x, solid.y, solid.w, solid.h))
+    end
 end
 
 function collisionOnEnter(fa, fb, c)
@@ -18,13 +25,21 @@ function collisionOnEnter(fa, fb, c)
     if not (fa:isSensor() or fb:isSensor()) then
         if collIf('Player', 'EntityRect', a, b) then
             a, b = collEnsure('Player', a, 'EntityRect', b)
-            a:collisionSolid(b, nx, ny)
+            a:collisionSolid('enter', nx, ny)
         end
     end
 end
 
-function collisionOnExit(fixture_a, fixture_b, contact)
+function collisionOnExit(fa, fb, c)
+    local a, b = fa:getUserData(), fb:getUserData()
+    local nx, ny = c:getNormal()
     
+    if not (fa:isSensor() or fb:isSensor()) then
+        if collIf('Player', 'EntityRect', a, b) then
+            a, b = collEnsure('Player', a, 'EntityRect', b)
+            a:collisionSolid('exit', nx, ny)
+        end
+    end
 end
 
 function collEnsure(class_name1, a, class_name2, b)

@@ -7,6 +7,8 @@ function EntityRect:initialize(world, body_type, x, y, w, h)
     self.fixture = love.physics.newFixture(self.body, self.shape)
     self.fixture:setUserData(self)
 
+    self.body:setFixedRotation(true)
+
     self.sensor = love.physics.newFixture(self.body, self.shape)
     self.sensor:setSensor(true)
     self.sensor:setUserData(self)
