@@ -5,7 +5,7 @@ require 'attacks'
 Player = class('Player', EntityRect)
 
 function Player:initialize(world)
-    EntityRect.initialize(self, world, 'dynamic', 300, 32, 16, 16)
+    EntityRect.initialize(self, world, 'dynamic', 212+300, 212+32, 16, 16)
 
     self.v = 200
     self.jump_v = -300
@@ -22,6 +22,10 @@ function Player:initialize(world)
     self.jumps_left = self.max_jumps
 
     self.attack = attacks.test
+end
+
+function Player:collisionEnemy()
+    game_over = true
 end
 
 function Player:collisionSolid(type, nx, ny)
@@ -97,6 +101,9 @@ function Player:update(dt)
     self.jump_impulse = false
     self.jumping = false
     self.falling = false
+
+    local x, y = self.body:getPosition()
+    if y >= 212+448-16 then game_over = true end
 end
 
 function Player:draw()

@@ -63,6 +63,3 @@ end
 function Projectile:draw()
     EntityRect.draw(self)
 end
-
-
-

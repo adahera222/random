@@ -1,19 +1,22 @@
-require 'lib/middleclass/middleclass'
-require 'lib/chrono/chrono'
-struct = require 'lib/chrono/struct'
-beholder = require 'lib/beholder/beholder'
-Vector = require 'lib/hump/vector'
-Camera = require 'lib/hump/camera'
-tween = require 'lib/tween/tween'
-anim8 = require 'lib/anim8/anim8'
-
-require 'Level'
-
-UID = 0 function getID() UID = UID + 1; return UID end
-function copy(t) local copy = {} for k, v in pairs(t) do copy[k] = v end return copy end
-physics_meter = 16
 
 function love.load()
+    UID = 0 function getID() UID = UID + 1; return UID end
+    function copy(t) local copy = {} for k, v in pairs(t) do copy[k] = v end return copy end
+    physics_meter = 16
+    game_over = false 
+    enemy_counter = 0
+
+    require 'lib/middleclass/middleclass'
+    require 'lib/chrono/chrono'
+    struct = require 'lib/chrono/struct'
+    beholder = require 'lib/beholder/beholder'
+    Vector = require 'lib/hump/vector'
+    Camera = require 'lib/hump/camera'
+    tween = require 'lib/tween/tween'
+    anim8 = require 'lib/anim8/anim8'
+
+    require 'Level'
+
     chrono = Chrono()
     camera = Camera()
     level = Level()
@@ -22,7 +25,8 @@ end
 function love.update(dt)
     tween.update(dt)
     chrono:update(dt)
-    level:update(dt)
+    if not game_over then level:update(dt) end
+    if enemy_counter >= 2 then game_over = true end
 end
 
 function love.draw()
@@ -33,6 +37,13 @@ end
 
 function love.keypressed(key)
     if key == 'q' then love.event.push('quit') end
+    if key == 'r' then
+        if game_over then
+            game_over = false
+            love.load()
+        end
+    end
+
     level:keypressed(key)  
 end
 

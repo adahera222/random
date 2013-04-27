@@ -3,6 +3,7 @@ require 'Player'
 require 'Projectile'
 require 'Enemy'
 require 'Area'
+require 'Text'
 
 Level = class('Level')
 
@@ -15,6 +16,7 @@ function Level:initialize()
     self.projectiles = {}
     self.enemies = {}
     self.areas = {}
+    self.texts = {}
     self.to_be_created = {}
     self:loadMap()
 
@@ -36,7 +38,19 @@ function Level:initialize()
         table.insert(self.to_be_created, {'area', self.world, x, y, parent, area_logic})
     end)
 
-    chrono:every(5, function() beholder.trigger('CREATE ENEMY', 300, 100, 16, 16) end)
+    beholder.observe('ENEMIES LIST REQUEST', function(id)
+        beholder.trigger('ENEMIES LIST REPLY' .. id, self.enemies)
+    end)
+
+    beholder.observe('DAMAGE POP', function(text, x, y)
+        table.insert(self.texts, Text(text, x, y, math.random(50, 150), math.random(-3*math.pi/4, -math.pi/4)))
+    end)
+
+    beholder.observe('TEXT POP', function(text, x, y, parent)
+        table.insert(self.texts, Text(text, x, y, 25, math.pi/2, parent))
+    end)
+
+    chrono:every(5, function() beholder.trigger('CREATE ENEMY', 212+300, -16, 16, 16) end)
 end
 
 function Level:createPostWorldStep()
@@ -78,6 +92,11 @@ function collisionOnEnter(fa, fb, c)
             b:collisionEnemy()
         end
 
+        if collIf('Player', 'Enemy', a, b) then
+            a, b = collEnsure('Player', a, 'Enemy', b)
+            a:collisionEnemy()
+        end
+
     elseif not (fa:isSensor() or fb:isSensor()) then
         if collIf('Player', 'EntityRect', a, b) then
             a, b = collEnsure('Player', a, 'EntityRect', b)
@@ -105,7 +124,13 @@ function collisionOnExit(fa, fb, c)
     local a, b = fa:getUserData(), fb:getUserData()
     local nx, ny = c:getNormal()
     
-    if not (fa:isSensor() or fb:isSensor()) then
+    if fa:isSensor() and fb:isSensor() then
+        if collIf('Area', 'Enemy', a, b) then
+            a, b = collEnsure('Area', a, 'Enemy', b)
+            a:collisionEnemy(b)
+        end
+    
+    elseif not (fa:isSensor() or fb:isSensor()) then
         if collIf('Player', 'EntityRect', a, b) then
             a, b = collEnsure('Player', a, 'EntityRect', b)
             a:collisionSolid('exit', nx, ny)
@@ -156,6 +181,7 @@ function Level:update(dt)
     for _, proj in ipairs(self.projectiles) do proj:update(dt) end
     for _, enemy in ipairs(self.enemies) do enemy:update(dt) end
     for _, area in ipairs(self.areas) do area:update(dt) end
+    for _, text in ipairs(self.texts) do text:update(dt) end
 
     self:cleanUp()
     self:createPostWorldStep()
@@ -167,6 +193,10 @@ function Level:draw()
     for _, proj in ipairs(self.projectiles) do proj:draw() end
     for _, enemy in ipairs(self.enemies) do enemy:draw() end
     for _, area in ipairs(self.areas) do area:draw() end
+    for _, text in ipairs(self.texts) do text:draw() end
+    love.graphics.setColor(255, 0, 0)
+    love.graphics.line(212+300-16, 212+448-8, 212+300+16, 212+448-8)
+    love.graphics.setColor(255, 255, 255)
 end
 
 function Level:keypressed(key)
