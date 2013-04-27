@@ -1,4 +1,5 @@
 require 'EntityRect'
+require 'Attack'
 
 Player = class('Player', EntityRect)
 
@@ -18,13 +19,15 @@ function Player:initialize(world)
 
     self.direction = 'right'
     self.jumps_left = self.max_jumps
+
+    self.attack = Attack({reflecting = 5, multiple = 3, back = true})
 end
 
 function Player:collisionSolid(type, nx, ny)
     if type == 'enter' then
-        if ny == 32 then self.ground = true end
-        if nx == -32 then self.colliding.left = true end
-        if nx == 32 then self.colliding.right = true end
+        if ny == physics_meter then self.ground = true end
+        if nx == -physics_meter then self.colliding.left = true end
+        if nx == physics_meter then self.colliding.right = true end
     
     else
         self.colliding.left = false
@@ -93,6 +96,11 @@ end
 
 function Player:keypressed(key)
     if key == 'up' or key == 'w' then self.jump_impulse = true end
+    if key == 'j' or key == 'z' then
+        local angle
+        if self.direction == 'left' then angle = math.pi
+        elseif self.direction == 'right' then angle = 0 end
+        local x, y = self.body:getPosition()
+        self.attack:attack(x, y, angle)
+    end
 end
-
-

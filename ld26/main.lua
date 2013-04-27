@@ -9,20 +9,19 @@ anim8 = require 'lib/anim8/anim8'
 
 require 'Level'
 
-UID = 0
-function getID() UID = UID + 1; return UID end
+UID = 0 function getID() UID = UID + 1; return UID end
+function copy(t) local copy = {} for k, v in pairs(t) do copy[k] = v end return copy end
+physics_meter = 16
 
 function love.load()
     chrono = Chrono()
     camera = Camera()
-
     level = Level()
 end
 
 function love.update(dt)
     tween.update(dt)
     chrono:update(dt)
-
     level:update(dt)
 end
 
@@ -33,6 +32,7 @@ function love.draw()
 end
 
 function love.keypressed(key)
+    if key == 'q' then love.event.push('quit') end
     level:keypressed(key)  
 end
 
