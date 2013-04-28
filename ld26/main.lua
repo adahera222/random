@@ -12,11 +12,12 @@ function reload()
     enemy_counter = 30
     enemies_killed = 0
     score = 0
+    score_rate = 0
     current_weapon_level = 0
     proj_speeds = {50, 100, 200, 300, 400}
-    proj_speeds_pointer = 0
+    proj_speeds_pointer = 1
     area_sizes = {48, 64, 96, 128, 256} 
-    area_sizes_pointer = 0
+    area_sizes_pointer = 1
     area_slows = {0.75, 0.5, 0.25, 0.1}
     area_slows_pointer = 0
 
@@ -37,7 +38,8 @@ function reload()
     win2_help = love.graphics.newImage('res/win2_help.png')
     attack_help = love.graphics.newImage('res/attack_help.png')
     upgrade_help = love.graphics.newImage('res/upgrade_help.png')
-
+    esc_help = love.graphics.newImage('res/esc_help.png')
+    apply_help = love.graphics.newImage('res/apply_help.png')
 
     require 'lib/middleclass/middleclass'
     require 'lib/chrono/chrono'
@@ -53,12 +55,13 @@ function reload()
     attack = struct('activation', 'cooldown', 'damage', 'multiple', 'pierce', 'reflect', 'back', 'area', 'speed')
     area = struct('r_i', 'r_f', 'duration', 'tween', 'on_hit', 'cooldown', 'damage', 'slow')
     areas = {}
-    areas['initial'] = area(0, 0, 0, false, false, 1, 0, false)
-    areas['main'] = area(0, 0, 0, false, false, 1, 0, false)
-    initial_attack = Attack(attack('hold', 0.3, 10, 1, 0, 0, false, false))
+    areas['initial'] = area(48, 48, 0, false, false, 1, 0, false)
+    areas['main'] = area(48, 48, 0, false, false, 1, 0, false)
+    initial_attack = Attack(attack('hold', 0.3, 10, 1, 0, 0, false, false, 50))
     stub_attack = attack('hold', 0, 0, 0, 0, 0, false, 'initial') 
-    current_attack_table = Attack(attack('hold', 1, 0, 0, 0, 0, false, false, 200))
+    current_attack_table = Attack(attack('hold', 1, 0, 0, 0, 0, false, false, 50))
     current_attack_string = nil
+    total_cost = calculateTotalCost(current_attack_table)
 
     chrono = Chrono()
     camera = Camera()
@@ -76,8 +79,12 @@ function love.update(dt)
         tween.update(dt)
         chrono:update(dt)
         level:update(dt) 
+        current_weapon_level = round(calculateTotalCost(level.player.attack), 1)
+        score = score + current_weapon_level/1000
+        score_rate = round(current_weapon_level/1000, 3)
+        score = round(score, 2)
+        if enemy_counter <= 0 then game_over = true end
     end
-    if enemy_counter <= 0 then game_over = true end
 end
 
 function love.draw()
@@ -86,18 +93,22 @@ function love.draw()
     camera:detach()
     
     if game_paused then
-        love.graphics.setColor(64, 64, 64, 192)
+        love.graphics.setColor(32, 32, 32, 240)
         love.graphics.rectangle('fill', 0, 0, 1024, 872)
         love.graphics.setColor(255, 255, 255, 255)
     end
 
-    love.graphics.setFont(font96)
+    love.graphics.setFont(font64)
     love.graphics.setColor(0, 0, 0)
     if not game_over then 
-        local w = font80:getWidth(score)
-        love.graphics.print(score, 200-w/2, -32)
-        local w = font80:getWidth(current_weapon_level)
-        love.graphics.print(current_weapon_level, 168+592-w/2, -32)
+        local w = font64:getWidth(score)
+        love.graphics.print(score, 96, 16)
+        local w = font64:getWidth(current_weapon_level)
+        love.graphics.print(current_weapon_level, 180+592-w/2, 16)
+        love.graphics.setFont(font16)
+        local w = font16:getWidth("+(" .. score_rate .. ")")
+        love.graphics.print("+(" .. score_rate .. ")", 192-w/2, 140)
+        love.graphics.setFont(font80)
         local w = font80:getWidth(enemy_counter)
         love.graphics.print(enemy_counter, 200+300-w/2, 184+448)
         love.graphics.setFont(font16)
@@ -122,13 +133,25 @@ function love.draw()
             love.graphics.draw(weapon_help, 680, 160)
             love.graphics.draw(win_help, 616, 736)
             love.graphics.draw(win2_help, 254, 392)
+            love.graphics.draw(esc_help, 312, 524)
             love.graphics.draw(attack_help, -32, 792)
+            love.graphics.setFont(font64)
+            local w = font64:getWidth(score)
+            love.graphics.print(score, 96, 16)
+            local w = font64:getWidth(current_weapon_level)
+            love.graphics.print(current_weapon_level, 180+592-w/2, 16)
+            love.graphics.setFont(font80)
+            local w = font80:getWidth(enemy_counter)
+            love.graphics.print(enemy_counter, 200+300-w/2, 184+448)
         end
     end
 
     if game_ui then
         love.graphics.setColor(255, 255, 255)
         love.graphics.draw(upgrade_help, 64, 16)
+        love.graphics.setColor(255, 0, 0)
+        love.graphics.setFont(font16)
+        love.graphics.print("RED == the cost to upgrade a modifier.", 244, 48)
         love.graphics.setFont(font24)
         love.graphics.setColor(255, 255, 255)
         if current_attack_table.modifiers.damage >= 100 then love.graphics.setColor(192, 192, 192)
@@ -137,53 +160,62 @@ function love.draw()
         if current_attack_table.modifiers.cooldown <= 0.1999 then love.graphics.setColor(192, 192, 192)
         else love.graphics.setColor(255, 255, 255) end
         love.graphics.print('Cooldown-', 416, 128)
-        love.graphics.setColor(255, 255, 255)
+        if current_attack_table.modifiers.cooldown >= 3 then love.graphics.setColor(192, 192, 192)
+        else love.graphics.setColor(255, 255, 255) end
         love.graphics.print('cooldowN+', 660, 128)
         if current_attack_table.modifiers.multiple >= 8 then love.graphics.setColor(192, 192, 192)
         else love.graphics.setColor(255, 255, 255) end
-        love.graphics.print('Multiple', 168, 260)
+        love.graphics.print('Multiple', 168, 228)
         if proj_speeds_pointer <= 1 then love.graphics.setColor(192, 192, 192)
         else love.graphics.setColor(255, 255, 255) end
-        love.graphics.print('Speed-', 452, 260)
+        love.graphics.print('Speed-', 452, 228)
         if proj_speeds_pointer >= #proj_speeds then love.graphics.setColor(192, 192, 192) 
         else love.graphics.setColor(255, 255, 255) end
-        love.graphics.print('speEd+', 720, 260)
+        love.graphics.print('speEd+', 720, 228)
         if current_attack_table.modifiers.pierce >= 8 then love.graphics.setColor(192, 192, 192)
         else love.graphics.setColor(255, 255, 255) end
-        love.graphics.print('Pierce', 168, 392)
+        love.graphics.print('Pierce', 168, 328)
         if current_attack_table.modifiers.reflect >= 8 then love.graphics.setColor(192, 192, 192)
         else love.graphics.setColor(255, 255, 255) end
-        love.graphics.print('Reflect', 360, 392)
+        love.graphics.print('Reflect', 360, 328)
         if current_attack_table.modifiers.back then love.graphics.setColor(192, 192, 192)
         else love.graphics.setColor(255, 255, 255) end
-        love.graphics.print('Back', 580, 392)
+        love.graphics.print('Back', 580, 328)
         if current_attack_table.modifiers.area then love.graphics.setColor(192, 192, 192)
         else love.graphics.setColor(255, 255, 255) end
-        love.graphics.print('Area', 760, 392)
+        love.graphics.print('Area', 760, 328)
         if not current_attack_table.modifiers.area then love.graphics.setColor(192, 192, 192); area_locked = true
         else love.graphics.setColor(255, 255, 255); area_locked = false end
         if not area_locked then love.graphics.setColor(255, 255, 255) end
         if area_sizes_pointer >= #area_sizes then love.graphics.setColor(192, 192, 192) end
-        love.graphics.print('area siZe', 168, 524)
+        love.graphics.print('area siZe', 168, 428)
         if not area_locked then love.graphics.setColor(255, 255, 255) end
         if areas['main'].damage >= 50 then love.graphics.setColor(192, 192, 192) end
-        love.graphics.print('area damaGe', 392, 524)
+        love.graphics.print('area damaGe', 392, 428)
         if not area_locked then love.graphics.setColor(255, 255, 255) end
         if area_slows_pointer >= #area_slows then love.graphics.setColor(192, 192, 192) end
-        love.graphics.print('area sLow', 682, 524)
+        love.graphics.print('area sLow', 682, 428)
         if not area_locked then love.graphics.setColor(255, 255, 255) end
-        love.graphics.print('area damage cOoldown+', 16, 656)
+        if areas['main'].cooldown >= 2 then love.graphics.setColor(192, 192, 192) end
+        love.graphics.print('area damage cOoldown+', 16, 528)
         if not area_locked then love.graphics.setColor(255, 255, 255) end
         if areas['main'].cooldown <= 0.59999 then love.graphics.setColor(192, 192, 192) end
-        love.graphics.print('area damage cooldoWn-', 544, 656)
+        love.graphics.print('area damage cooldoWn-', 544, 528)
         if not area_locked then love.graphics.setColor(255, 255, 255) end
         if areas['main'].on_hit then love.graphics.setColor(192, 192, 192) end
-        love.graphics.print('area eXploding', 360, 788)
+        love.graphics.print('area eXploding', 360, 628)
 
         love.graphics.setFont(font16)
         love.graphics.setColor(255, 192, 255)
         local w = font16:getWidth('Your attack: ' .. buildTextFromAttack(current_attack_table))
-        love.graphics.print('Your attack: ' .. buildTextFromAttack(current_attack_table), 512-w/2, 48)
+        love.graphics.print('Your attack: ' .. buildTextFromAttack(current_attack_table), 500-w/2, 736)
+        love.graphics.setColor(255, 192, 192)
+        local w = font16:getWidth("Your attack's cost: " .. total_cost)
+        love.graphics.print("Your attack's cost: " .. total_cost, 500-w/2, 768)
+
+        love.graphics.setColor(255, 255, 255)
+        love.graphics.draw(esc_help, -44, 832)
+        love.graphics.draw(apply_help, 628, 832)
     end
 end
 
@@ -207,7 +239,46 @@ function buildTextFromAttack(attack)
             end
         end
     end
+    string = string.sub(string, 1, -2)
     return string
+end
+
+function round(n, p)
+    local m = math.pow(10, p or 0)
+    return math.floor(n*m+0.5)/m
+end
+
+function calculateTotalCost(attack)
+    total_cost = 0
+    damage_cost = (attack.modifiers.damage*attack.modifiers.damage)/100
+    if attack.modifiers.cooldown > 1 then cooldown_cost = -attack.modifiers.cooldown*attack.modifiers.cooldown*10
+    elseif attack.modifiers.cooldown < 1 then cooldown_cost = (1/attack.modifiers.cooldown)*10
+    else cooldown_cost = 0 end
+    multiple_cost = (attack.modifiers.multiple*attack.modifiers.multiple)
+    pierce_cost = (attack.modifiers.pierce*attack.modifiers.pierce)
+    reflect_cost = (attack.modifiers.reflect*attack.modifiers.reflect)
+    if attack.modifiers.back then back_cost = 25 else back_cost = 0 end
+    if attack.modifiers.speed then
+        speed_cost = attack.modifiers.speed/4
+    else speed_cost = 0 end
+    if attack.modifiers.area then area_cost = 50 else area_cost = 0 end
+    if attack.modifiers.area then
+        area_damage_cost = areas[attack.modifiers.area].damage*areas[attack.modifiers.area].damage
+        if areas[attack.modifiers.area].r_f > 50 then
+            area_size_cost = areas[attack.modifiers.area].r_f/2
+        end
+        if areas[attack.modifiers.area].slow then
+            area_slow_cost = (1/areas[attack.modifiers.area].slow)*10
+        end
+        if areas[attack.modifiers.area].cooldown > 1 then area_cooldown_cost = -areas[attack.modifiers.area].cooldown*areas[attack.modifiers.area].cooldown*10
+        elseif areas[attack.modifiers.area].cooldown < 1 then area_cooldown_cost = (1/areas[attack.modifiers.area].cooldown)*50
+        else area_cooldown_cost = 0 end
+        if areas[attack.modifiers.area].on_hit then area_exploding_cost = 250 end
+    end
+    total_cost = damage_cost + cooldown_cost + multiple_cost + pierce_cost + reflect_cost + back_cost + 
+                 speed_cost + area_cost + (area_damage_cost or 0) + (area_size_cost or 0) + (area_slow_cost or 0) +
+                 (area_cooldown_cost or 0) + (area_exploding_cost or 0)
+    return round(total_cost, 2)
 end
 
 function love.keypressed(key)
@@ -216,7 +287,7 @@ function love.keypressed(key)
         if not game_over and not game_paused then
             game_paused = true
             game_ui = true
-            current_attack_table = Attack(attack('hold', 1, 0, 0, 0, 0, false, false, 200))
+            current_attack_table = Attack(attack('hold', 1, 0, 0, 0, 0, false, false, 50))
         end
     end
     if key == 'escape' then 
@@ -232,10 +303,18 @@ function love.keypressed(key)
         end
     end
 
+    if love.keyboard.isDown('lctrl') or love.keyboard.isDown('rctrl') then
+        if key == 'a' or key == 'A' then
+            level.player.attack = current_attack_table
+            game_ui = false
+            game_paused = not game_paused
+        end
+    end
+
     if game_ui then
         if key == 'd' or key == 'D' then if current_attack_table.modifiers.damage < 100 then current_attack_table.modifiers.damage = current_attack_table.modifiers.damage + 10 end end
         if key == 'c' or key == 'C' then if current_attack_table.modifiers.cooldown >= 0.2 then current_attack_table.modifiers.cooldown = current_attack_table.modifiers.cooldown - 0.1 end end
-        if key == 'n' or key == 'N' then current_attack_table.modifiers.cooldown = current_attack_table.modifiers.cooldown + 0.1 end
+        if key == 'n' or key == 'N' then if current_attack_table.modifiers.cooldown <= 3 then current_attack_table.modifiers.cooldown = current_attack_table.modifiers.cooldown + 0.1 end end
         if key == 'm' or key == 'M' then if current_attack_table.modifiers.multiple < 8 then current_attack_table.modifiers.multiple = current_attack_table.modifiers.multiple + 1 end end
         if key == 'p' or key == 'P' then if current_attack_table.modifiers.pierce < 8 then current_attack_table.modifiers.pierce = current_attack_table.modifiers.pierce + 1 end end
         if key == 'r' or key == 'R' then if current_attack_table.modifiers.reflect < 8 then current_attack_table.modifiers.reflect = current_attack_table.modifiers.reflect + 1 end end
@@ -252,10 +331,16 @@ function love.keypressed(key)
             end
             current_attack_table.modifiers.speed = proj_speeds[proj_speeds_pointer]
         end
-        if key == 'a' or key == 'A' then 
-            areas['main'] = area(0, 0, 0, false, false, 1, 0, false)
-            current_attack_table.modifiers.area = 'main' 
+
+        if not love.keyboard.isDown('lctrl') and not love.keyboard.isDown('rctrl') then
+            if key == 'a' or key == 'A' then 
+                if not current_attack_table.modifiers.area then
+                    areas['main'] = area(48, 48, 0, false, false, 1, 0, false)
+                    current_attack_table.modifiers.area = 'main' 
+                end
+            end
         end
+
         if current_attack_table.modifiers.area then
             if key == 'z' or key == 'Z' then
                 if area_sizes_pointer < #area_sizes then
@@ -275,21 +360,25 @@ function love.keypressed(key)
                 end
                 areas['main'].slow = area_slows[area_slows_pointer]
             end
-            if key == 'o' or key == 'O' then
+            if key == 'w' or key == 'W' then
                 if areas['main'].cooldown >= 0.6 then 
                     areas['main'].cooldown = areas['main'].cooldown - 0.1
                 end
             end
-            if key == 'w' or key == 'W' then
-                areas['main'].cooldown = areas['main'].cooldown + 0.1
+            if key == 'o' or key == 'O' then
+                if areas['main'].cooldown <= 2 then
+                    areas['main'].cooldown = areas['main'].cooldown + 0.1
+                end
             end
             if key == 'x' or key == 'X' then 
                 areas['main'].on_hit = true
                 areas['main'].tween = 'inOutCubic'
-                areas['main'].duration = 0.5
+                areas['main'].duration = 1
                 areas['main'].r_i = 0
             end
         end
+
+        total_cost = calculateTotalCost(current_attack_table)
     end
 
     level:keypressed(key)  
