@@ -13,6 +13,7 @@ function reload()
     enemies_killed = 0
     score = 0
     current_weapon_level = 0
+    proj_speed = 300
 
     font12 = love.graphics.newFont('res/Fipps-Regular.otf', 12)
     font16 = love.graphics.newFont('res/Fipps-Regular.otf', 16)
@@ -44,6 +45,15 @@ function reload()
 
     require 'Level'
 
+    attack = struct('activation', 'cooldown', 'damage', 'multiple', 'pierce', 'reflect', 'back', 'area')
+    area = struct('r_i', 'r_f', 'duration', 'tween', 'on_hit', 'cooldown', 'damage', 'slow')
+    areas = {}
+    areas['initial'] = area(0, 0, 0, false, false, 1, 0, false)
+    initial_attack = Attack(attack('hold', 0.3, 10, 1, 0, 0, false, false))
+    stub_attack = attack('hold', 0, 0, 0, 0, 0, false, 'initial') 
+    current_attack_table = Attack(attack('hold', 1, 0, 0, 0, 0, false, false))
+    current_attack_string = nil
+
     chrono = Chrono()
     camera = Camera()
     level = Level()
@@ -51,14 +61,6 @@ function reload()
     love.graphics.setFont(font12)
     love.graphics.setBackgroundColor(255, 255, 255)
     love.graphics.setColor(0, 0, 0)
-
-    attack = struct('activation', 'cooldown', 'damage', 'multiple', 'pierce', 'reflect', 'back', 'area')
-    area = struct('r_i', 'r_f', 'duration', 'tween', 'on_hit', 'cooldown', 'damage', 'slow')
-    areas = {}
-    areas['initial'] = area(0, 0, 0, false, false, 0, 0, false)
-    initial_attack = attack()
-    current_attack_table = attack('hold', 0, 0, 0, 0, 0, false, 'initial') 
-    current_attack_string = nil
 
     -- Perfection is achieved, not when there is nothing more to add, but when there is nothing left to take away.
 end
@@ -95,8 +97,10 @@ function love.draw()
         love.graphics.setFont(font16)
         local weapon_modifiers_text = buildTextFromAttack(level.player.attack)
         local w = font16:getWidth(weapon_modifiers_text)
-        love.graphics.print(weapon_modifiers_text, 8, 832)
-        love.graphics.print('Press ESC for help!', 764, 832) 
+        love.graphics.setColor(255, 192, 255)
+        if not game_ui then love.graphics.print(weapon_modifiers_text, 8, 832) end
+        love.graphics.setColor(255, 255, 255)
+        if not game_ui then love.graphics.print('Press ESC for help!', 764, 832) end
     end
 
     if game_over then
@@ -129,29 +133,38 @@ function love.draw()
         love.graphics.print('speeD+', 720, 260)
         love.graphics.print('Pierce', 168, 392)
         love.graphics.print('Reflecting', 416, 392)
+        if current_attack_table.modifiers.area then love.graphics.setColor(192, 192, 192)
+        else love.graphics.setColor(255, 255, 255) end
         love.graphics.print('Area', 760, 392)
+        if not current_attack_table.modifiers.area then love.graphics.setColor(192, 192, 192)
+        else love.graphics.setColor(255, 255, 255) end
         love.graphics.print('area siZe', 168, 524)
         love.graphics.print('area damaGe', 392, 524)
         love.graphics.print('area sLow', 682, 524)
         love.graphics.print('area damage cOoldown+', 16, 656)
         love.graphics.print('area damage cooldoWn-', 544, 656)
         love.graphics.print('area eXploding', 360, 788)
+
+        love.graphics.setFont(font16)
+        love.graphics.setColor(255, 192, 255)
+        local w = font16:getWidth(buildTextFromAttack(current_attack_table))
+        love.graphics.print(buildTextFromAttack(current_attack_table), 512-w/2, 48)
     end
 end
 
 function buildTextFromAttack(attack)
     local string = ""
     for k, v in pairs(attack.modifiers) do
-        if k == 'multiple' then for i = 1, attack.modifiers.multiple do string = string .. 'M' end
-        elseif k == 'pierce' then for i = 1, attack.modifiers.pierce do string = string .. 'P' end
-        elseif k == 'reflect' then for i = 1, attack.modifiers.reflect do string = string .. 'R' end
-        elseif k == 'damage' then if attack.modifiers.damage then string = string .. 'D' .. attack.modifiers.damage end
+        if k == 'multiple' then if attack.modifiers.multiple then if attack.modifiers.multiple > 0 then string = string .. 'M' .. attack.modifiers.multiple end end
+        elseif k == 'pierce' then if attack.modifiers.pierce then if attack.modifiers.pierce > 0 then string = string .. 'P' .. attack.modifiers.pierce end end
+        elseif k == 'reflect' then if attack.modifiers.reflect then if attack.modifiers.reflect > 0 then string = string .. 'R' .. attack.modifiers.reflect end end
+        elseif k == 'damage' then if attack.modifiers.damage then if attack.modifiers.damage > 0 then string = string .. 'D' .. attack.modifiers.damage end end
         elseif k == 'back' then if attack.modifiers.back then string = string .. 'B' end
         elseif k == 'cooldown' then string = string .. 'C' .. attack.modifiers.cooldown
         elseif k == 'area' then 
             if attack.modifiers.area then
                 if areas[attack.modifiers.area].cooldown then string = string .. 'AC' .. areas[attack.modifiers.area].cooldown end
-                if areas[attack.modifiers.area].damage then string = string .. 'AD' .. areas[attack.modifiers.area].damage end
+                if areas[attack.modifiers.area].damage then if areas[attack.modifiers.area].damage > 0 then string = string .. 'AD' .. areas[attack.modifiers.area].damage end end
                 if areas[attack.modifiers.area].slow then string = string .. 'AL' .. areas[attack.modifiers.area].slow end
                 if areas[attack.modifiers.area].on_hit then string = string .. 'AE' .. areas[attack.modifiers.area].slow end
             end
@@ -180,6 +193,17 @@ function love.keypressed(key)
             game_over = false
             reload()
         end
+    end
+
+    if game_ui then
+        if key == 'd' or key == 'D' then current_attack_table.modifiers.damage = current_attack_table.modifiers.damage + 10 end
+        if key == 'c' or key == 'C' then current_attack_table.modifiers.cooldown = current_attack_table.modifiers.cooldown - 0.1 end
+        if key == 'n' or key == 'N' then current_attack_table.modifiers.cooldown = current_attack_table.modifiers.cooldown + 0.1 end
+        if key == 'm' or key == 'M' then current_attack_table.modifiers.multiple = current_attack_table.modifiers.multiple + 1 end
+        if key == 'p' or key == 'P' then current_attack_table.modifiers.pierce = current_attack_table.modifiers.pierce + 1 end
+        if key == 'r' or key == 'R' then current_attack_table.modifiers.reflect = current_attack_table.modifiers.reflect + 1 end
+        if key == 'b' or key == 'B' then current_attack_table.modifiers.back = true end
+        if key == 'a' or key == 'A' then current_attack_table.modifiers.area = 'initial' end
     end
 
     level:keypressed(key)  

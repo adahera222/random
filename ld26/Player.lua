@@ -21,7 +21,7 @@ function Player:initialize(world)
     self.direction = 'right'
     self.jumps_left = self.max_jumps
 
-    self.attack = attacks.test
+    self.attack = initial_attack
 end
 
 function Player:collisionEnemy()
