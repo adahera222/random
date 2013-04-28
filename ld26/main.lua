@@ -20,6 +20,8 @@ function reload()
     area_sizes_pointer = 1
     area_slows = {0.75, 0.5, 0.25, 0.1}
     area_slows_pointer = 0
+    last_key = nil
+    last_keys = {}
 
     font12 = love.graphics.newFont('res/Fipps-Regular.otf', 12)
     font16 = love.graphics.newFont('res/Fipps-Regular.otf', 16)
@@ -150,8 +152,6 @@ function love.draw()
         love.graphics.setColor(255, 255, 255)
         love.graphics.draw(upgrade_help, 64, 16)
         love.graphics.setColor(255, 0, 0)
-        love.graphics.setFont(font16)
-        love.graphics.print("RED == the cost to upgrade a modifier.", 244, 48)
         love.graphics.setFont(font24)
         love.graphics.setColor(255, 255, 255)
         if current_attack_table.modifiers.damage >= 100 then love.graphics.setColor(192, 192, 192)
@@ -249,18 +249,25 @@ function round(n, p)
 end
 
 function calculateTotalCost(attack)
-    total_cost = 0
-    damage_cost = (attack.modifiers.damage*attack.modifiers.damage)/100
+    local total_cost = 0
+    local damage_cost = (attack.modifiers.damage*attack.modifiers.damage)/100
+    local cooldown_cost = 0
     if attack.modifiers.cooldown > 1 then cooldown_cost = -attack.modifiers.cooldown*attack.modifiers.cooldown*10
     elseif attack.modifiers.cooldown < 1 then cooldown_cost = (1/attack.modifiers.cooldown)*10
     else cooldown_cost = 0 end
-    multiple_cost = (attack.modifiers.multiple*attack.modifiers.multiple)
-    pierce_cost = (attack.modifiers.pierce*attack.modifiers.pierce)
-    reflect_cost = (attack.modifiers.reflect*attack.modifiers.reflect)
+    local multiple_cost = (attack.modifiers.multiple*attack.modifiers.multiple)
+    local pierce_cost = (attack.modifiers.pierce*attack.modifiers.pierce)
+    local reflect_cost = (attack.modifiers.reflect*attack.modifiers.reflect)
+    local speed_cost = 0
     if attack.modifiers.back then back_cost = 25 else back_cost = 0 end
     if attack.modifiers.speed then
         speed_cost = attack.modifiers.speed/4
     else speed_cost = 0 end
+    local area_cost = 0
+    local area_size_cost = 0
+    local area_slow_cost = 0
+    local area_cooldown_cost = 0
+    local area_exploding_cost = 0
     if attack.modifiers.area then area_cost = 50 else area_cost = 0 end
     if attack.modifiers.area then
         area_damage_cost = areas[attack.modifiers.area].damage*areas[attack.modifiers.area].damage
@@ -282,6 +289,55 @@ function calculateTotalCost(attack)
 end
 
 function love.keypressed(key)
+    local keya = false
+
+    if key ~= 'lctrl' and key ~= 'rctrl' then
+        if love.keyboard.isDown('lctrl') or love.keyboard.isDown('rctrl') then
+            if key == 'z' or key == 'Z' then
+                local last_key = last_keys[1]
+                if last_key then
+                    print(last_key.key)
+                    table.remove(last_keys, 1)
+                    local cm = current_attack_table.modifiers
+                    if last_key.key == 'd' or last_key.key == 'D' then cm.damage = cm.damage - 10 end
+                    if last_key.key == 'c' or last_key.key == 'C' then cm.cooldown = cm.cooldown + 0.1 end
+                    if last_key.key == 'n' or last_key.key == 'N' then cm.cooldown = cm.cooldown - 0.1 end
+                    if last_key.key == 'm' or last_key.key == 'M' then cm.multiple = cm.multiple - 1 end
+                    if last_key.key == 'p' or last_key.key == 'P' then cm.pierce = cm.pierce -1 end
+                    if last_key.key == 'r' or last_key.key == 'R' then cm.reflect = cm.reflect -1 end
+                    if last_key.key == 'b' or last_key.key == 'B' then cm.back = false end
+                    if last_key.key == 'e' or last_key.key == 'E' then 
+                        proj_speeds_pointer = proj_speeds_pointer - 1
+                        cm.speed = proj_speeds[proj_speeds_pointer]
+                    end
+                    if last_key.key == 's' or last_key.key == 'S' then 
+                        proj_speeds_pointer = proj_speeds_pointer + 1
+                        cm.speed = proj_speeds[proj_speeds_pointer]
+                    end
+                    if not last_key.ctrl and (last_key.key == 'a' or last_key.key == 'A') then cm.area = false end
+                    if not last_key.ctrl and (last_key.key == 'z' or last_key.key == 'Z') then 
+                        area_sizes_pointer = area_sizes_pointer - 1
+                        areas['main'].r_i = area_sizes[area_sizes_pointer]
+                        areas['main'].r_f = area_sizes[area_sizes_pointer]
+                    end
+                    if last_key.key == 'g' or last_key.key == 'G' then areas['main'].damage = areas['main'].damage - 5 end
+                    if last_key.key == 'l' or last_key.key == 'L' then 
+                        area_slows_pointer = area_slows_pointer - 1
+                        areas['main'].slow = area_slows[area_slows_pointer]
+                    end
+                    if last_key.key == 'w' or last_key.key == 'W' then areas['main'].cooldown = areas['main'].cooldown + 0.1 end
+                    if last_key.key == 'o' or last_key.key == 'O' then areas['main'].cooldown = areas['main'].cooldown - 0.1 end
+                    if last_key.key == 'x' or last_key.key == 'X' then
+                        areas['main'].on_hit = false
+                        areas['main'].tween = false
+                        areas['main'].duration = 0
+                        areas['main'].r_i = areas['main'].r_f
+                    end
+                end
+            end
+        end
+    end
+
     if key == 'q' then love.event.push('quit') end
     if key == 'u' then 
         if not game_over and not game_paused then
@@ -312,22 +368,24 @@ function love.keypressed(key)
     end
 
     if game_ui then
-        if key == 'd' or key == 'D' then if current_attack_table.modifiers.damage < 100 then current_attack_table.modifiers.damage = current_attack_table.modifiers.damage + 10 end end
-        if key == 'c' or key == 'C' then if current_attack_table.modifiers.cooldown >= 0.2 then current_attack_table.modifiers.cooldown = current_attack_table.modifiers.cooldown - 0.1 end end
-        if key == 'n' or key == 'N' then if current_attack_table.modifiers.cooldown <= 3 then current_attack_table.modifiers.cooldown = current_attack_table.modifiers.cooldown + 0.1 end end
-        if key == 'm' or key == 'M' then if current_attack_table.modifiers.multiple < 8 then current_attack_table.modifiers.multiple = current_attack_table.modifiers.multiple + 1 end end
-        if key == 'p' or key == 'P' then if current_attack_table.modifiers.pierce < 8 then current_attack_table.modifiers.pierce = current_attack_table.modifiers.pierce + 1 end end
-        if key == 'r' or key == 'R' then if current_attack_table.modifiers.reflect < 8 then current_attack_table.modifiers.reflect = current_attack_table.modifiers.reflect + 1 end end
-        if key == 'b' or key == 'B' then current_attack_table.modifiers.back = true end
+        if key == 'd' or key == 'D' then if current_attack_table.modifiers.damage < 100 then current_attack_table.modifiers.damage = current_attack_table.modifiers.damage + 10; keya = true end end
+        if key == 'c' or key == 'C' then if current_attack_table.modifiers.cooldown >= 0.2 then current_attack_table.modifiers.cooldown = current_attack_table.modifiers.cooldown - 0.1; keya = true end end
+        if key == 'n' or key == 'N' then if current_attack_table.modifiers.cooldown <= 3 then current_attack_table.modifiers.cooldown = current_attack_table.modifiers.cooldown + 0.1; keya = true end end
+        if key == 'm' or key == 'M' then if current_attack_table.modifiers.multiple < 8 then current_attack_table.modifiers.multiple = current_attack_table.modifiers.multiple + 1; keya = true end end
+        if key == 'p' or key == 'P' then if current_attack_table.modifiers.pierce < 8 then current_attack_table.modifiers.pierce = current_attack_table.modifiers.pierce + 1; keya = true end end
+        if key == 'r' or key == 'R' then if current_attack_table.modifiers.reflect < 8 then current_attack_table.modifiers.reflect = current_attack_table.modifiers.reflect + 1; keya = true end end
+        if key == 'b' or key == 'B' then if not current_attack_table.modifiers.back then current_attack_table.modifiers.back = true; keya = true end end
         if key == 'e' or key == 'E' then
             if proj_speeds_pointer < #proj_speeds then
                 proj_speeds_pointer = proj_speeds_pointer + 1
+                keya = true
             end
             current_attack_table.modifiers.speed = proj_speeds[proj_speeds_pointer]
         end
         if key == 's' or key == 'S' then
             if proj_speeds_pointer > 1 then
                 proj_speeds_pointer = proj_speeds_pointer - 1
+                keya = true
             end
             current_attack_table.modifiers.speed = proj_speeds[proj_speeds_pointer]
         end
@@ -335,6 +393,7 @@ function love.keypressed(key)
         if not love.keyboard.isDown('lctrl') and not love.keyboard.isDown('rctrl') then
             if key == 'a' or key == 'A' then 
                 if not current_attack_table.modifiers.area then
+                    keya = true
                     areas['main'] = area(48, 48, 0, false, false, 1, 0, false)
                     current_attack_table.modifiers.area = 'main' 
                 end
@@ -342,43 +401,64 @@ function love.keypressed(key)
         end
 
         if current_attack_table.modifiers.area then
-            if key == 'z' or key == 'Z' then
-                if area_sizes_pointer < #area_sizes then
-                    area_sizes_pointer = area_sizes_pointer + 1
+            if not love.keyboard.isDown('lctrl') and not love.keyboard.isDown('rctrl') then
+                if key == 'z' or key == 'Z' then
+                    if area_sizes_pointer < #area_sizes then
+                        keya = true
+                        area_sizes_pointer = area_sizes_pointer + 1
+                    end
+                    areas['main'].r_i = area_sizes[area_sizes_pointer]
+                    areas['main'].r_f = area_sizes[area_sizes_pointer]
                 end
-                areas['main'].r_i = area_sizes[area_sizes_pointer]
-                areas['main'].r_f = area_sizes[area_sizes_pointer]
             end
             if key == 'g' or key == 'G' then
                 if areas['main'].damage < 50 then 
+                    keya = true
                     areas['main'].damage = areas['main'].damage + 5
                 end
             end
             if key == 'l' or key == 'L' then
                 if area_slows_pointer < #area_slows then
+                    keya = true
                     area_slows_pointer = area_slows_pointer + 1
                 end
                 areas['main'].slow = area_slows[area_slows_pointer]
             end
             if key == 'w' or key == 'W' then
                 if areas['main'].cooldown >= 0.6 then 
+                    keya = true
                     areas['main'].cooldown = areas['main'].cooldown - 0.1
                 end
             end
             if key == 'o' or key == 'O' then
                 if areas['main'].cooldown <= 2 then
+                    keya = true
                     areas['main'].cooldown = areas['main'].cooldown + 0.1
                 end
             end
             if key == 'x' or key == 'X' then 
-                areas['main'].on_hit = true
-                areas['main'].tween = 'inOutCubic'
-                areas['main'].duration = 1
-                areas['main'].r_i = 0
+                if not areas['main'].on_hit then
+                    keya = true
+                    areas['main'].on_hit = true
+                    areas['main'].tween = 'inOutCubic'
+                    areas['main'].duration = 1
+                    areas['main'].r_i = 0
+                end
             end
         end
 
         total_cost = calculateTotalCost(current_attack_table)
+    end
+
+    if game_ui then
+        if key ~= 'lctrl' and key ~= 'rctrl' and key ~= 'u' then
+            if not (love.keyboard.isDown('lctrl') or love.keyboard.isDown('rctrl')) then
+                if keya then
+                    local last_key = {key = key, ctrl = love.keyboard.isDown('lctrl') or love.keyboard.isDown('rctrl')}
+                    table.insert(last_keys, 1, last_key)
+                end
+            end
+        end
     end
 
     level:keypressed(key)  
