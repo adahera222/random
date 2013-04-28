@@ -12,6 +12,7 @@ function love.load()
 
     font12 = love.graphics.newFont('res/Fipps-Regular.otf', 12)
     font16 = love.graphics.newFont('res/Fipps-Regular.otf', 16)
+    font16u = love.graphics.newFont('res/UpheavalPro.ttf', 16)
     font20 = love.graphics.newFont('res/Fipps-Regular.otf', 20)
     font24 = love.graphics.newFont('res/Fipps-Regular.otf', 24)
     font28 = love.graphics.newFont('res/Fipps-Regular.otf', 28)
@@ -20,6 +21,12 @@ function love.load()
     font64 = love.graphics.newFont('res/Fipps-Regular.otf', 64)
     font80 = love.graphics.newFont('res/Fipps-Regular.otf', 80)
     font96 = love.graphics.newFont('res/Fipps-Regular.otf', 96)
+
+    score_help = love.graphics.newImage('res/score_help.png')
+    weapon_help = love.graphics.newImage('res/weapon_help.png')
+    win_help = love.graphics.newImage('res/win_help.png')
+    win2_help = love.graphics.newImage('res/win2_help.png')
+    attack_help = love.graphics.newImage('res/attack_help.png')
 
     require 'lib/middleclass/middleclass'
     require 'lib/chrono/chrono'
@@ -42,9 +49,11 @@ function love.load()
 end
 
 function love.update(dt)
-    tween.update(dt)
-    chrono:update(dt)
-    if not game_over and not game_paused then level:update(dt) end
+    if not game_over and not game_paused then 
+        tween.update(dt)
+        chrono:update(dt)
+        level:update(dt) 
+    end
     if enemy_counter <= 0 then game_over = true end
 end
 
@@ -55,22 +64,35 @@ function love.draw()
     
     love.graphics.setFont(font96)
     love.graphics.setColor(0, 0, 0)
-    local w = font80:getWidth(score)
-    love.graphics.print(score, 200-w/2, -32)
-    local w = font80:getWidth(current_weapon_level)
-    love.graphics.print(current_weapon_level, 168+592-w/2, -32)
-    local w = font80:getWidth(enemy_counter)
-    love.graphics.print(enemy_counter, 200+300-w/2, 184+448)
-    love.graphics.setFont(font16)
-    local weapon_modifiers_text = buildTextFromAttack(level.player.attack)
-    local w = font16:getWidth(weapon_modifiers_text)
-    love.graphics.print(weapon_modifiers_text, 212+300-w/2, 0)
-    love.graphics.print('Press ESC for help!', 8, 832)
+    if not game_over then 
+        local w = font80:getWidth(score)
+        love.graphics.print(score, 200-w/2, -32)
+        local w = font80:getWidth(current_weapon_level)
+        love.graphics.print(current_weapon_level, 168+592-w/2, -32)
+        local w = font80:getWidth(enemy_counter)
+        love.graphics.print(enemy_counter, 200+300-w/2, 184+448)
+        love.graphics.setFont(font16)
+        local weapon_modifiers_text = buildTextFromAttack(level.player.attack)
+        local w = font16:getWidth(weapon_modifiers_text)
+        love.graphics.print(weapon_modifiers_text, 8, 832)
+    end
+
+    if not game_over and not game_paused then
+        love.graphics.print('Press ESC for help!', 8, 0) 
+    end
 
     if game_over then
-        love.graphics.setFont(font64)
-        local w = font64:getWidth('You lost! Retry (r)')
-        love.graphics.print('You lost! Retry (r)', 212+300-w/2, 436-96)
+        love.graphics.setFont(font48)
+        local w = font48:getWidth('RIP in pieces. Retry (r)')
+        love.graphics.print('RIP in pieces. Retry (r)', 212+300-w/2, 436-96)
+    end
+
+    if game_paused then
+        love.graphics.draw(score_help, -24, 152)
+        love.graphics.draw(weapon_help, 680, 160)
+        love.graphics.draw(win_help, 616, 736)
+        love.graphics.draw(win2_help, 254, 392)
+        love.graphics.draw(attack_help, -32, 792)
     end
 end
 
@@ -96,7 +118,11 @@ end
 function love.keypressed(key)
     if key == 'q' then love.event.push('quit') end
     if key == 's' then score = score + 100 end
-    if key == 'escape' then game_paused = not game_paused end
+    if key == 'escape' then 
+        if not game_over then
+            game_paused = not game_paused 
+        end
+    end
     if key == 'r' then
         if game_over then
             game_over = false

@@ -45,7 +45,7 @@ function Enemy:update(dt)
     if self.direction == 'left' then self.body:setLinearVelocity(-self.v, v_y)
     else self.body:setLinearVelocity(self.v, v_y) end
 
-    self.v = self.init_v
+    if not self.slowed then self.v = self.init_v end
 
     local x, y = self.body:getPosition()
     if y >= 212+448-16 then self.dead = true; enemy_counter = enemy_counter - 1 end
