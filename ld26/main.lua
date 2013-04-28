@@ -13,8 +13,6 @@ function reload()
     enemies_killed = 0
     score = 0
     current_weapon_level = 0
-    current_attack_table = {} 
-    current_attack_string = nil
 
     font12 = love.graphics.newFont('res/Fipps-Regular.otf', 12)
     font16 = love.graphics.newFont('res/Fipps-Regular.otf', 16)
@@ -34,6 +32,7 @@ function reload()
     attack_help = love.graphics.newImage('res/attack_help.png')
     upgrade_help = love.graphics.newImage('res/upgrade_help.png')
 
+
     require 'lib/middleclass/middleclass'
     require 'lib/chrono/chrono'
     struct = require 'lib/chrono/struct'
@@ -52,6 +51,16 @@ function reload()
     love.graphics.setFont(font12)
     love.graphics.setBackgroundColor(255, 255, 255)
     love.graphics.setColor(0, 0, 0)
+
+    attack = struct('activation', 'cooldown', 'damage', 'multiple', 'pierce', 'reflect', 'back', 'area')
+    area = struct('r_i', 'r_f', 'duration', 'tween', 'on_hit', 'cooldown', 'damage', 'slow')
+    areas = {}
+    areas['initial'] = area(0, 0, 0, false, false, 0, 0, false)
+    initial_attack = attack()
+    current_attack_table = attack('hold', 0, 0, 0, 0, 0, false, 'initial') 
+    current_attack_string = nil
+
+    -- Perfection is achieved, not when there is nothing more to add, but when there is nothing left to take away.
 end
 
 function love.update(dt)
