@@ -15,7 +15,7 @@ end
 
 function Enemy:takeDamage(value)
     self.hp = self.hp - value
-    if self.hp <= 0 then self.dead = true end
+    if self.hp <= 0 then self.dead = true; enemies_killed = enemies_killed + 1 end
     local x, y = self.body:getPosition()
     beholder.trigger('DAMAGE POP', value, x, y)
 end
@@ -48,7 +48,7 @@ function Enemy:update(dt)
     self.v = self.init_v
 
     local x, y = self.body:getPosition()
-    if y >= 212+448-16 then self.dead = true; enemy_counter = enemy_counter + 1 end
+    if y >= 212+448-16 then self.dead = true; enemy_counter = enemy_counter - 1 end
 end
 
 function Enemy:draw()

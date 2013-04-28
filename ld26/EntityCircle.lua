@@ -24,6 +24,7 @@ function EntityCircle:update(dt)
 end
 
 function EntityCircle:draw()
+    love.graphics.setColor(0, 0, 0)
     local x, y = self.body:getPosition()
     love.graphics.circle('line', x, y, self.shape:getRadius())
 end

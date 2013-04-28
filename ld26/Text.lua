@@ -26,18 +26,18 @@ function Text:update(dt)
         if self.parent then
             if not self.parent.dead then
                 local x, y = self.parent.body:getPosition()
-                self.x = x - 24
+                self.x = x - 36
                 self.y = self.y + self.v*math.sin(self.angle)*dt
             end
         end
     end
 end
 
-
 function Text:draw()
-    love.graphics.setColor(255, 255, 255, self.alpha)
+    love.graphics.setFont(font12)
+    love.graphics.setColor(0, 0, 0, self.alpha)
     if self.text ~= 'SLOWED' then
         love.graphics.print(self.text, self.x, self.y, 0, self.scale, self.scale)    
     else love.graphics.print(self.text, self.x, self.y) end
-    love.graphics.setColor(255, 255, 255, 255)
+    love.graphics.setColor(0, 0, 0, 255)
 end

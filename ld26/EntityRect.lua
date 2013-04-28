@@ -24,6 +24,7 @@ function EntityRect:update(dt)
 end
 
 function EntityRect:draw()
+    love.graphics.setColor(0, 0, 0)
     love.graphics.polygon('line', self.body:getWorldPoints(self.shape:getPoints())) 
 end
 
