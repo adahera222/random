@@ -452,7 +452,7 @@ function love.keypressed(key)
                         keya = true
                         area_sizes_pointer = area_sizes_pointer + 1
                     end
-                    areas['main'].r_i = area_sizes[area_sizes_pointer]
+                    if not areas['main'].on_hit then areas['main'].r_i = area_sizes[area_sizes_pointer] end
                     areas['main'].r_f = area_sizes[area_sizes_pointer]
                 end
             end

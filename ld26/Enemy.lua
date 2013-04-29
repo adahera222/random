@@ -10,6 +10,9 @@ function Enemy:initialize(world, x, y, w, h, v, hp, direction)
     self.init_v = v
     self.direction = direction
     self.hp = hp
+    self.slowed = false
+
+    beholder.observe('UNSLOW' .. self.id, function() self.slowed = false print(self.id, self.slowed) end)
 end
 
 function Enemy:takeDamage(value)
