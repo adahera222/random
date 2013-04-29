@@ -7,7 +7,7 @@ Player = class('Player', EntityRect)
 function Player:initialize(world)
     EntityRect.initialize(self, world, 'dynamic', 212+300, 212+32, 16, 16)
 
-    self.v = 200
+    self.v = 250
     self.jump_v = -300
     self.max_jumps = 1
 
@@ -25,7 +25,9 @@ function Player:initialize(world)
 end
 
 function Player:collisionEnemy()
-    game_over = true
+    if not game_over then
+        game_over = true
+    end
 end
 
 function Player:collisionSolid(type, nx, ny)
@@ -103,11 +105,15 @@ function Player:update(dt)
     self.falling = false
 
     local x, y = self.body:getPosition()
-    if y >= 212+448-16 then game_over = true end
+    if y >= 212+448-16 then 
+        if not game_over then
+            game_over = true 
+        end
+    end
 end
 
 function Player:draw()
-    EntityRect.draw(self)
+    EntityRect.draw(self, 'player')
 end
 
 function Player:keypressed(key)
@@ -117,6 +123,6 @@ function Player:keypressed(key)
         if self.direction == 'left' then angle = math.pi
         elseif self.direction == 'right' then angle = 0 end
         local x, y = self.body:getPosition()
-        self.attack:attack(x, y, angle, 'press')
+        self.attack:attack(x, y, angle, 'hold')
     end
 end

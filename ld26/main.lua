@@ -1,5 +1,8 @@
+reloadb = false
+
 function love.load()
     reload()
+    TEsound.playLooping({'res/ogre.wav', 'res/age.wav', 'res/dogs.wav'})
 end
 
 function reload()
@@ -9,13 +12,14 @@ function reload()
     game_over = false 
     game_paused = false
     game_ui = false
+    game_won = false
     enemy_counter = 30
     enemies_killed = 0
     score = 0
     score_rate = 0
     current_weapon_level = 0
     proj_speeds = {50, 100, 200, 300, 400}
-    proj_speeds_pointer = 1
+    proj_speeds_pointer = 3
     area_sizes = {48, 64, 96, 128, 256} 
     area_sizes_pointer = 1
     area_slows = {0.75, 0.5, 0.25, 0.1}
@@ -42,9 +46,12 @@ function reload()
     upgrade_help = love.graphics.newImage('res/upgrade_help.png')
     esc_help = love.graphics.newImage('res/esc_help.png')
     apply_help = love.graphics.newImage('res/apply_help.png')
+    undo_help = love.graphics.newImage('res/undo_help.png')
+    square = love.graphics.newImage('res/square.png')
 
     require 'lib/middleclass/middleclass'
     require 'lib/chrono/chrono'
+    require 'lib/TEsound/TEsound'
     struct = require 'lib/chrono/struct'
     beholder = require 'lib/beholder/beholder'
     Vector = require 'lib/hump/vector'
@@ -59,9 +66,9 @@ function reload()
     areas = {}
     areas['initial'] = area(48, 48, 0, false, false, 1, 0, false)
     areas['main'] = area(48, 48, 0, false, false, 1, 0, false)
-    initial_attack = Attack(attack('hold', 0.3, 10, 1, 0, 0, false, false, 50))
+    initial_attack = Attack(attack('hold', 0.3, 10, 1, 0, 0, false, false, 200))
     stub_attack = attack('hold', 0, 0, 0, 0, 0, false, 'initial') 
-    current_attack_table = Attack(attack('hold', 1, 0, 0, 0, 0, false, false, 50))
+    current_attack_table = Attack(attack('hold', 1, 0, 1, 0, 0, false, false, 200))
     current_attack_string = nil
     total_cost = calculateTotalCost(current_attack_table)
 
@@ -73,11 +80,13 @@ function reload()
     love.graphics.setBackgroundColor(255, 255, 255)
     love.graphics.setColor(0, 0, 0)
 
+    if not reloadb then game_paused = true end
+
     -- Perfection is achieved, not when there is nothing more to add, but when there is nothing left to take away.
 end
 
 function love.update(dt)
-    if not game_over and not game_paused then 
+    if not game_over and not game_paused and not game_won then 
         tween.update(dt)
         chrono:update(dt)
         level:update(dt) 
@@ -85,8 +94,15 @@ function love.update(dt)
         score = score + current_weapon_level/1000
         score_rate = round(current_weapon_level/1000, 3)
         score = round(score, 2)
-        if enemy_counter <= 0 then game_over = true end
+        if enemy_counter <= 0 then 
+            if not game_over then
+                game_over = true
+            end
+        end
+        if 100-enemies_killed <= 0 then game_won = true end
     end
+
+    TEsound.cleanup()
 end
 
 function love.draw()
@@ -102,17 +118,20 @@ function love.draw()
 
     love.graphics.setFont(font64)
     love.graphics.setColor(0, 0, 0)
-    if not game_over then 
+    if not game_over and not game_won then 
         local w = font64:getWidth(score)
-        love.graphics.print(score, 96, 16)
+        love.graphics.print(score, 192-w/2, 16)
         local w = font64:getWidth(current_weapon_level)
-        love.graphics.print(current_weapon_level, 180+592-w/2, 16)
+        love.graphics.print(current_weapon_level, 212+592-w/2, 16)
         love.graphics.setFont(font16)
         local w = font16:getWidth("+(" .. score_rate .. ")")
         love.graphics.print("+(" .. score_rate .. ")", 192-w/2, 140)
         love.graphics.setFont(font80)
         local w = font80:getWidth(enemy_counter)
-        love.graphics.print(enemy_counter, 200+300-w/2, 184+448)
+        love.graphics.print(enemy_counter, 212+300-w/2, 184+448)
+        local w = font16:getWidth('Enemies left: ' .. 100 - enemies_killed)
+        love.graphics.setFont(font16)
+        love.graphics.print('Enemies left: ' .. 100 - enemies_killed, 212+300-w/2, 0)
         love.graphics.setFont(font16)
         local weapon_modifiers_text = buildTextFromAttack(level.player.attack)
         local w = font16:getWidth(weapon_modifiers_text)
@@ -128,23 +147,31 @@ function love.draw()
         love.graphics.print('RIP in pieces. Retry (r)', 212+300-w/2, 436-96)
     end
 
+    if game_won then
+        love.graphics.setFont(font48)
+        local w = font48:getWidth("You won! Score: " .. score .. '!')
+        love.graphics.print("You won! Score: " .. score .. '!', 212+300-w/2, 436-96)
+        local w = font48:getWidth('Play again! (r)')
+        love.graphics.print('Play again! (r)', 212+300-w/2, 436)
+    end
+
     if game_paused then
         if not game_ui then
             love.graphics.setColor(255, 255, 255)
             love.graphics.draw(score_help, -24, 152)
             love.graphics.draw(weapon_help, 680, 160)
-            love.graphics.draw(win_help, 616, 736)
+            love.graphics.draw(win_help, 596, 720)
             love.graphics.draw(win2_help, 254, 392)
             love.graphics.draw(esc_help, 312, 524)
             love.graphics.draw(attack_help, -32, 792)
             love.graphics.setFont(font64)
             local w = font64:getWidth(score)
-            love.graphics.print(score, 96, 16)
+            love.graphics.print(score, 192-w/2, 16)
             local w = font64:getWidth(current_weapon_level)
-            love.graphics.print(current_weapon_level, 180+592-w/2, 16)
+            love.graphics.print(current_weapon_level, 212+592-w/2, 16)
             love.graphics.setFont(font80)
             local w = font80:getWidth(enemy_counter)
-            love.graphics.print(enemy_counter, 200+300-w/2, 184+448)
+            love.graphics.print(enemy_counter, 212+300-w/2, 184+448)
         end
     end
 
@@ -216,8 +243,15 @@ function love.draw()
         love.graphics.setColor(255, 255, 255)
         love.graphics.draw(esc_help, -44, 832)
         love.graphics.draw(apply_help, 628, 832)
+        love.graphics.draw(undo_help, 712, 800)
     end
 end
+
+function chance(n, action)
+    local c = math.random(1, 100)
+    if c < n*100 then action() end
+end
+
 
 function buildTextFromAttack(attack)
     local string = ""
@@ -328,6 +362,7 @@ function love.keypressed(key)
                     if last_key.key == 'w' or last_key.key == 'W' then areas['main'].cooldown = areas['main'].cooldown + 0.1 end
                     if last_key.key == 'o' or last_key.key == 'O' then areas['main'].cooldown = areas['main'].cooldown - 0.1 end
                     if last_key.key == 'x' or last_key.key == 'X' then
+                        areas['main'].cooldown = 1 
                         areas['main'].on_hit = false
                         areas['main'].tween = false
                         areas['main'].duration = 0
@@ -340,14 +375,17 @@ function love.keypressed(key)
 
     if key == 'q' then love.event.push('quit') end
     if key == 'u' then 
-        if not game_over and not game_paused then
+        if not game_over and not game_paused and not game_won then
+            area_slows_pointer = 1
+            area_sizes_pointer = 1
+            proj_speeds_pointer = 3
             game_paused = true
             game_ui = true
-            current_attack_table = Attack(attack('hold', 1, 0, 0, 0, 0, false, false, 50))
+            current_attack_table = Attack(attack('hold', 1, 0, 1, 0, 0, false, false, 200))
         end
     end
     if key == 'escape' then 
-        if not game_over then
+        if not game_over and not game_won then
             game_paused = not game_paused 
             game_ui = false
         end
@@ -356,6 +394,13 @@ function love.keypressed(key)
         if game_over then
             game_over = false
             reload()
+            reloadb = true
+        end
+
+        if game_won then
+            game_won = false
+            reload()
+            reloadb = true
         end
     end
 
@@ -439,6 +484,7 @@ function love.keypressed(key)
             if key == 'x' or key == 'X' then 
                 if not areas['main'].on_hit then
                     keya = true
+                    areas['main'].cooldown = 0.1
                     areas['main'].on_hit = true
                     areas['main'].tween = 'inOutCubic'
                     areas['main'].duration = 1

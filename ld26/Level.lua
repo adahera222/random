@@ -4,6 +4,9 @@ require 'Projectile'
 require 'Enemy'
 require 'Area'
 require 'Text'
+require 'Spawner'
+require 'Particles'
+require 'Shake'
 
 Level = class('Level')
 
@@ -11,6 +14,9 @@ function Level:initialize()
     love.physics.setMeter(physics_meter)
     self.world = love.physics.newWorld(0, 40*physics_meter)
     self.world:setCallbacks(collisionOnEnter, collisionOnExit)
+    self.spawner = Spawner()
+    self.particle = Particles()
+    self.shake = Shake(camera)
     self.player = Player(self.world)
     self.solids = {}
     self.projectiles = {}
@@ -30,8 +36,8 @@ function Level:initialize()
         table.insert(self.to_be_created, {'projectile', self.world, x, y, angle, modifiers})
     end)
 
-    beholder.observe('CREATE ENEMY', function(x, y, w, h)
-        table.insert(self.to_be_created, {'enemy', self.world, x, y, w, h})
+    beholder.observe('CREATE ENEMY', function(x, y, w, h, v, hp, direction)
+        table.insert(self.to_be_created, {'enemy', self.world, x, y, w, h, v, hp, direction})
     end)
 
     beholder.observe('CREATE AREA', function(x, y, parent, area_logic)
@@ -50,7 +56,13 @@ function Level:initialize()
         table.insert(self.texts, Text(text, x, y, 25, math.pi/2, parent))
     end)
 
-    chrono:every(5, function() beholder.trigger('CREATE ENEMY', 212+300, -16, 16, 16) end)
+    beholder.observe('SPAWN', function(name, x, y)
+        self.particle:spawn(name, {position = {x = x, y = y}})
+    end)
+
+    beholder.observe('SHAKE', function(intensity, duration)
+        self.shake:add(intensity, duration)
+    end)
 end
 
 function Level:createPostWorldStep()
@@ -60,7 +72,7 @@ function Level:createPostWorldStep()
         if t[1] == 'projectile' then
             table.insert(self.projectiles, Projectile(t[2], t[3], t[4], t[5], t[6]))
         elseif t[1] == 'enemy' then
-            table.insert(self.enemies, Enemy(t[2], t[3], t[4], t[5], t[6]))
+            table.insert(self.enemies, Enemy(t[2], t[3], t[4], t[5], t[6], t[7], t[8], t[9]))
         elseif t[1] == 'area' then
             table.insert(self.areas, Area(t[2], t[3], t[4], t[5], t[6]))
         elseif t[1] == 'projectile_area' then
@@ -176,6 +188,10 @@ end
 function Level:update(dt)
     self.world:update(dt)
 
+    self.spawner:update(dt)
+    self.particle:update(dt)
+    self.shake:update(dt)
+
     self.player:update(dt)    
     for _, solid in ipairs(self.solids) do solid:update(dt) end
     for _, proj in ipairs(self.projectiles) do proj:update(dt) end
@@ -188,6 +204,7 @@ function Level:update(dt)
 end
 
 function Level:draw()
+    self.particle:draw()
     self.player:draw()
     for _, solid in ipairs(self.solids) do solid:draw() end
     for _, proj in ipairs(self.projectiles) do proj:draw() end
@@ -195,7 +212,7 @@ function Level:draw()
     for _, area in ipairs(self.areas) do area:draw() end
     for _, text in ipairs(self.texts) do text:draw() end
     love.graphics.setColor(255, 0, 0)
-    love.graphics.line(212+300-16, 212+448-8, 212+300+16, 212+448-8)
+    love.graphics.line(212+300-32, 212+448-8, 212+300+32, 212+448-8)
     love.graphics.setColor(255, 255, 255)
 end
 

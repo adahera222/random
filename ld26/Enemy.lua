@@ -2,20 +2,24 @@ require 'EntityRect'
 
 Enemy = class('Enemy', EntityRect)
 
-function Enemy:initialize(world, x, y, w, h)
+function Enemy:initialize(world, x, y, w, h, v, hp, direction)
     EntityRect.initialize(self, world, 'dynamic', x, y, w, h)
 
-    self.v = 100
-    self.init_v = 100
-    local directions = {'left', 'right'}
-    self.direction = directions[math.random(1, 2)]
-
-    self.hp = 100
+    self.w = w
+    self.v = v
+    self.init_v = v
+    self.direction = direction
+    self.hp = hp
 end
 
 function Enemy:takeDamage(value)
     self.hp = self.hp - value
-    if self.hp <= 0 then self.dead = true; enemies_killed = enemies_killed + 1 end
+    if self.hp <= 0 then
+        local x, y = self.body:getPosition()
+        beholder.trigger('SPAWN', 'EnemyDead', x, y)
+        self.dead = true 
+        enemies_killed = enemies_killed + 1 
+    end
     local x, y = self.body:getPosition()
     beholder.trigger('DAMAGE POP', value, x, y)
 end
@@ -32,6 +36,9 @@ end
 function Enemy:collisionSolid(nx, ny)
     if nx == physics_meter then self.direction = 'right' end
     if nx == -physics_meter then self.direction = 'left' end
+    if ny == physics_meter or ny == -physics_meter then
+        if self.w >= 40 then beholder.trigger('SHAKE', 5, 0.5) end
+    end
 end
 
 function Enemy:collisionProjectile(projectile)
@@ -48,9 +55,9 @@ function Enemy:update(dt)
     if not self.slowed then self.v = self.init_v end
 
     local x, y = self.body:getPosition()
-    if y >= 212+448-16 then self.dead = true; enemy_counter = enemy_counter - 1 end
+    if y >= 212+448-16 then self.dead = true enemy_counter = enemy_counter - 1 end
 end
 
 function Enemy:draw()
-    EntityRect.draw(self) 
+    EntityRect.draw(self, 'enemy') 
 end

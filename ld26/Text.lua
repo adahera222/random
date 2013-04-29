@@ -5,10 +5,10 @@ function Text:initialize(text, x, y, v, angle, parent)
     self.parent = parent
     self.x = x - 16
     if self.text == 'SLOWED' then self.y = y + 8
-    else self.y = y - 32 end
+    else self.y = y - 64 end
     self.v = v
     self.angle = angle
-    self.alpha = 255
+    self.alpha = 224
 
     tween(1, self, {v = 0}, 'inOutCubic')
     tween(1, self, {alpha = 0}, 'inOutCubic')

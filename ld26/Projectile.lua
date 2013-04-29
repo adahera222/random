@@ -9,7 +9,7 @@ function Projectile:initialize(world, x, y, angle, modifiers)
     self.modifiers = copy(modifiers)
 
     self.angle = angle
-    self.v = 400
+    self.v = modifiers.speed
 end
 
 function Projectile:collisionSolid(nx, ny)
