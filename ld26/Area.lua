@@ -57,7 +57,7 @@ function contains_enemy(t, v)
 end
 
 function Area:query()
-    beholder.trigger('ENEMIES LIST REQUEST', self.id)
+    beholder.trigger('ENEMIES LIST REQUEST' .. luid, self.id)
     for _, enemy in ipairs(self.query_enemies_list) do
         if not contains_enemy(self.enemies_hit, enemy) then self:addEnemy(enemy) end
 

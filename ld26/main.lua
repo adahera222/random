@@ -1,8 +1,9 @@
 reloadb = false
+luid = 0
 
 function love.load()
     reload()
-    TEsound.playLooping({'res/ogre.wav', 'res/age.wav', 'res/dogs.wav'})
+    TEsound.playLooping({'res/ogre.ogg', 'res/age.ogg', 'res/dogs.ogg'})
 end
 
 function reload()
@@ -100,6 +101,7 @@ function love.update(dt)
             end
         end
         if 100-enemies_killed <= 0 then game_won = true end
+        total_cost = calculateTotalCost(current_attack_table)
     end
 
     TEsound.cleanup()
@@ -492,8 +494,6 @@ function love.keypressed(key)
                 end
             end
         end
-
-        total_cost = calculateTotalCost(current_attack_table)
     end
 
     if game_ui then

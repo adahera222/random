@@ -12,6 +12,8 @@ Level = class('Level')
 
 function Level:initialize()
     love.physics.setMeter(physics_meter)
+    luid = luid + 1
+    self.id = luid
     self.world = love.physics.newWorld(0, 40*physics_meter)
     self.world:setCallbacks(collisionOnEnter, collisionOnExit)
     self.spawner = Spawner()
@@ -44,7 +46,7 @@ function Level:initialize()
         table.insert(self.to_be_created, {'area', self.world, x, y, parent, area_logic})
     end)
 
-    beholder.observe('ENEMIES LIST REQUEST', function(id)
+    beholder.observe('ENEMIES LIST REQUEST' .. self.id, function(id)
         beholder.trigger('ENEMIES LIST REPLY' .. id, self.enemies)
     end)
 
@@ -133,6 +135,8 @@ function collisionOnEnter(fa, fb, c)
 end
 
 function collisionOnExit(fa, fb, c)
+    collectgarbage()
+
     local a, b = fa:getUserData(), fb:getUserData()
     local nx, ny = c:getNormal()
     
