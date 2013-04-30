@@ -1,0 +1,11 @@
+BINDIR = '/usr/local/bin'
+CLOSURE_JAR = '/usr/lib/haxe/lib/flambe/2,2b/tools/waf/closure.jar'
+HAXE = '/usr/bin/haxe'
+JAVA = '/usr/bin/java'
+LIBDIR = '/usr/local/lib'
+PREFIX = '/usr/local'
+debug = True
+has_android = False
+has_flash = True
+has_html = True
+has_ios = False

@@ -1,0 +1,8 @@
+argv = ['/usr/lib/haxe/lib/flambe/2,2b/bin/waf', 'configure', '--debug']
+environ = {'MAIL': '/var/mail/root', 'TERM': 'xterm', 'SUDO_GID': '100', 'LANG': 'en_US.UTF-8', 'HOME': '/root', 'LANGUAGE': '', 'USERNAME': 'root', 'PATH': '/usr/lib/qt4/bin:/usr/bin:/usr/local/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:/usr/bin/core_perl', 'SUDO_COMMAND': '/usr/bin/wafl configure --debug', 'LOGNAME': 'root', 'SUDO_UID': '1000', 'SUDO_USER': 'adn', 'USER': 'root', 'SHELL': '/bin/bash', 'DISPLAY': ':0'}
+files = ['/home/adn/code/random/flambe/helloworld/wscript']
+hash = -1189914531
+options = {'no_flash': None, 'nocache': False, 'flashdevelop': None, 'zones': '', 'no_android': None, 'files': '', 'force': False, 'destdir': '', 'download': False, 'keep': 0, 'out': '', 'progress_bar': 0, 'jobs': 2, 'no_ios': None, 'prefix': '/usr/local/', 'targets': '', 'top': '', 'no_html': None, 'debug': True, 'verbose': 0}
+out_dir = '/home/adn/code/random/flambe/helloworld/build'
+run_dir = '/home/adn/code/random/flambe/helloworld'
+top_dir = '/home/adn/code/random/flambe/helloworld'
