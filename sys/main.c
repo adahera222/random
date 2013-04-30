@@ -29,7 +29,6 @@ int* multiplyMatrix(int *matrix1, int n1, int m1, int *matrix2, int n2, int m2) 
         free(result);
         return NULL;
     }
-
     return result;
 }
 
@@ -68,10 +67,11 @@ int main(int argc, const char *argv[]) {
 
     printMatrix(matrix1, n1, m1);
     printMatrix(matrix2, n2, m2);
-    int *m12 = multiplyMatrix(matrix1, n1, m1, matrix2, n2, m2);
-    printMatrix(m12, n1, m2);
+    int *matrix12 = multiplyMatrix(matrix1, n1, m1, matrix2, n2, m2);
+    printMatrix(matrix12, n1, m2);
 
-    // m1 == n2
-
+    free(matrix1);
+    free(matrix2);
+    free(matrix12);
     return 0;
 }
