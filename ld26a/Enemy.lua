@@ -58,7 +58,7 @@ function Enemy:update(dt)
     if not self.slowed then self.v = self.init_v end
 
     local x, y = self.body:getPosition()
-    if y >= 212+448-16 then self.dead = true enemy_counter = enemy_counter - 1 end
+    if y >= 872 then self.body:setPosition(x, -32) end
 end
 
 function Enemy:draw()

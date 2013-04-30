@@ -105,11 +105,7 @@ function Player:update(dt)
     self.falling = false
 
     local x, y = self.body:getPosition()
-    if y >= 212+448-16 then 
-        if not game_over then
-            game_over = true 
-        end
-    end
+    if y >= 872 then self.body:setPosition(x, -32) end
 end
 
 function Player:draw()

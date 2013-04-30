@@ -63,6 +63,7 @@ end
 
 function love.draw()
     camera:attach()
+    love.graphics.setColor(0, 0, 0)
     level:draw()
     camera:detach()
     

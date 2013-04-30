@@ -147,9 +147,6 @@ function Level:draw()
     for _, enemy in ipairs(self.enemies) do enemy:draw() end
     for _, area in ipairs(self.areas) do area:draw() end
     for _, text in ipairs(self.texts) do text:draw() end
-    love.graphics.setColor(255, 0, 0)
-    love.graphics.line(212+300-32, 212+448-8, 212+300+32, 212+448-8)
-    love.graphics.setColor(255, 255, 255)
 end
 
 function Level:keypressed(key)
