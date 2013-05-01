@@ -49,8 +49,6 @@ function reload()
 
     love.graphics.setFont(font12)
     love.graphics.setColor(255, 255, 255)
-
-    canvas = love.graphics.newCanvas()
 end
 
 function love.update(dt)
@@ -64,13 +62,8 @@ function love.update(dt)
 end
 
 function love.draw()
-    canvas:clear()
-
     camera:attach()
-    canvas:renderTo(function() level:draw() end)
-    love.graphics.setPixelEffect(blur)
-    love.graphics.draw(canvas, 0, 0)
-    love.graphics.setPixelEffect()
+    level:draw()
     camera:detach()
 end
 
