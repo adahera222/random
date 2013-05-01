@@ -36,7 +36,7 @@ end
 function Text:draw()
     love.graphics.setFont(font12)
     local r, g, b, a = love.graphics.getColor()
-    love.graphics.setColor(0, 0, 0, self.alpha)
+    love.graphics.setColor(255, 255, 255, self.alpha)
     if self.text ~= 'SLOWED' then
         love.graphics.print(self.text, self.x, self.y, 0, self.scale, self.scale)    
     else love.graphics.print(self.text, self.x, self.y) end
