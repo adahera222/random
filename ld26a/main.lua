@@ -1,9 +1,10 @@
-reloadb = false
 luid = 0
 
 function love.load()
     reload()
-    TEsound.playLooping({'res/ogre.ogg', 'res/age.ogg', 'res/dogs.ogg'})
+    -- TEsound.playLooping({'res/ogre.ogg', 'res/age.ogg', 'res/dogs.ogg'})
+    W = love.graphics.getWidth()
+    H = love.graphics.getHeight()
 end
 
 function reload()
@@ -49,6 +50,39 @@ function reload()
     love.graphics.setFont(font12)
     love.graphics.setBackgroundColor(255, 255, 255)
     love.graphics.setColor(0, 0, 0)
+
+    red = love.graphics.newPixelEffect[[
+        vec4 effect(vec4 color, Image tex, vec2 tc, vec2 pc) {
+            vec4 c = Texel(tex, tc);
+            return vec4(c.r, 0, 0, c.a);
+        }
+    ]]
+    green = love.graphics.newPixelEffect[[
+        vec4 effect(vec4 color, Image tex, vec2 tc, vec2 pc) {
+            vec4 c = Texel(tex, tc);
+            return vec4(0, c.g, 0, c.a);
+        }
+    ]]
+    blue = love.graphics.newPixelEffect[[
+        vec4 effect(vec4 color, Image tex, vec2 tc, vec2 pc) {
+            vec4 c = Texel(tex, tc);
+            return vec4(0, 0, c.b, c.a);
+        }
+    ]]
+    screen = love.graphics.newPixelEffect[[
+        extern Image img;
+        vec4 effect(vec4 color, Image tex, vec2 tc, vec2 pc) {
+            vec4 base = Texel(tex, tc);
+            vec4 blend = Texel(img, tc);
+            return vec4(1-((1-base)*(1-blend)));
+        }
+    ]]
+
+    normal_canvas = love.graphics.newCanvas()
+    r_screen_canvas = love.graphics.newCanvas()
+    g_screen_canvas = love.graphics.newCanvas()
+    b_screen_canvas = love.graphics.newCanvas()
+    gb_screen_canvas = love.graphics.newCanvas()
 end
 
 function love.update(dt)
@@ -62,9 +96,37 @@ function love.update(dt)
 end
 
 function love.draw()
+    local n = 2
+    normal_canvas:clear()
+    r_screen_canvas:clear()
+    g_screen_canvas:clear()
+    b_screen_canvas:clear()
+    gb_screen_canvas:clear()
     camera:attach()
-    love.graphics.setColor(0, 0, 0)
+    love.graphics.setColor(64, 64, 64)
     level:draw()
+    normal_canvas:renderTo(function() level:draw() end)
+    r_screen_canvas:renderTo(function()
+        love.graphics.setPixelEffect(red)
+        love.graphics.draw(normal_canvas, math.random(0, 2*n)-n, math.random(0, 2*n)-n)
+    end)
+    g_screen_canvas:renderTo(function()
+        love.graphics.setPixelEffect(green)
+        love.graphics.draw(normal_canvas, math.random(0, 2*n)-n, math.random(0, 2*n)-n) 
+    end)
+    b_screen_canvas:renderTo(function()
+        love.graphics.setPixelEffect(blue)
+        love.graphics.draw(normal_canvas, math.random(0, 2*n)-n, math.random(0, 2*n)-n)
+    end)
+    screen:send("img", g_screen_canvas)
+    gb_screen_canvas:renderTo(function()
+        love.graphics.setPixelEffect(screen)
+        love.graphics.draw(b_screen_canvas, 0, 0)
+    end)
+    screen:send("img", gb_screen_canvas)
+    love.graphics.setPixelEffect(screen)
+    love.graphics.draw(r_screen_canvas, 0, 0)
+    love.graphics.setPixelEffect()
     camera:detach()
     
     if game_paused then
