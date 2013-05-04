@@ -1,9 +1,10 @@
-reloadb = false
 luid = 0
 
 function love.load()
+    W = love.graphics.getWidth()
+    H = love.graphics.getHeight()
     reload()
-    TEsound.playLooping({'res/ogre.ogg', 'res/age.ogg', 'res/dogs.ogg'})
+    -- TEsound.playLooping({'res/ogre.ogg', 'res/age.ogg', 'res/dogs.ogg'})
 end
 
 function reload()
@@ -47,8 +48,7 @@ function reload()
     level = Level()
 
     love.graphics.setFont(font12)
-    love.graphics.setBackgroundColor(255, 255, 255)
-    love.graphics.setColor(0, 0, 0)
+    love.graphics.setColor(255, 255, 255)
 end
 
 function love.update(dt)
@@ -63,15 +63,8 @@ end
 
 function love.draw()
     camera:attach()
-    love.graphics.setColor(0, 0, 0)
     level:draw()
     camera:detach()
-    
-    if game_paused then
-        love.graphics.setColor(32, 32, 32, 240)
-        love.graphics.rectangle('fill', 0, 0, 1024, 872)
-        love.graphics.setColor(255, 255, 255, 255)
-    end
 end
 
 function love.keypressed(key)
