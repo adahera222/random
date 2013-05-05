@@ -108,40 +108,58 @@ int main(int argc, const char *argv[]) {
     /* printMatrix(matrix1, n1, m1); */
     /* printMatrix(matrix2, n2, m2); */
 
-
     int n = atoi(argv[3]);
-    pthread_t *threads = malloc(n*sizeof(pthread_t));
-    int *buckets = calloc(n, sizeof(int));
-    j = 0;
-    for (i = 0; i < n1; i++) {
-        buckets[j] += 1;
-        j++;
-        if (j >= n) j = 0;
-    }
 
-    int *matrix12 = (int*)calloc(n1*m2, sizeof(int));
-    struct arg_struct *args = malloc(n*sizeof(struct arg_struct));
-    int **results = calloc(n, sizeof(int*));
-    int current_line = 0;
-    for (i = 0; i < n; i++) {
-        args[i].n1 = n1; args[i].m1 = m1; args[i].n2 = n2; args[i].m2 = m2;
-        args[i].matrix1 = copyArray(matrix1, n1*m1);
-        args[i].matrix2 = copyArray(matrix2, n2*m2);
-        args[i].n = buckets[i];
-        results[i] = calloc(2*m2*buckets[i], sizeof(int));
-        args[i].line = current_line;
-        current_line += args[i].n;
-        pthread_create(&threads[i], NULL, threadedMultiplyLineColumn, (void*)&args[i]);
-    }
-    current_line = 0;
-    for (i = 0; i < n; i++) {
-        pthread_join(threads[i], (void**)&results[i]);
-        for (j = 0; j < 2*m2*buckets[i]; j+=2) {
-            printf("%d %d\n", results[i][j], results[i][j+1]);
+    struct timespec start, finish;
+    double elapsed;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+        pthread_t *threads = malloc(n*sizeof(pthread_t));
+        int *buckets = calloc(n, sizeof(int));
+        j = 0;
+        for (i = 0; i < n1; i++) {
+            buckets[j] += 1;
+            j++;
+            if (j >= n) j = 0;
         }
-    }
+        struct arg_struct *args = malloc(n*sizeof(struct arg_struct));
+        int **results = calloc(n, sizeof(int*));
+        int current_line = 0;
+        for (i = 0; i < n; i++) {
+            args[i].n1 = n1; args[i].m1 = m1; args[i].n2 = n2; args[i].m2 = m2;
+            args[i].matrix1 = copyArray(matrix1, n1*m1);
+            args[i].matrix2 = copyArray(matrix2, n2*m2);
+            args[i].n = buckets[i];
+            results[i] = calloc(2*m2*buckets[i], sizeof(int));
+            args[i].line = current_line;
+            current_line += args[i].n;
+            pthread_create(&threads[i], NULL, threadedMultiplyLineColumn, (void*)&args[i]);
+        }
+        current_line = 0;
+        int *matrix12 = (int*)calloc(n1*m2, sizeof(int));
+        int k = 0;
+        for (i = 0; i < n; i++) {
+            pthread_join(threads[i], (void**)&results[i]);
+            for (j = 0; j < 2*m2*buckets[i]; j+=2) {
+                matrix12[ID(m2,results[i][j+1],k)] = results[i][j];
+                k++;
+                if (k >= m2) k = 0;
+            }
+        }
+    clock_gettime(CLOCK_MONOTONIC, &finish);
+    elapsed = (finish.tv_sec - start.tv_sec);
+    elapsed += (finish.tv_nsec - start.tv_nsec)/1000000000.0;
+    printf("Elapsed threaded: %f\n", elapsed);
+
+    clock_gettime(CLOCK_MONOTONIC, &start);
+        int *matrix122 = (int*)calloc(n1*m2, sizeof(int));
+        matrix122 = multiplyMatrix(matrix1, n1, m1, matrix2, n2, m2);
+    clock_gettime(CLOCK_MONOTONIC, &finish);
+    elapsed = (finish.tv_sec - start.tv_sec);
+    elapsed += (finish.tv_nsec - start.tv_nsec)/1000000000.0;
+    printf("Elapsed normal: %f\n", elapsed);
 
     free(matrix1);
     free(matrix2);
+    free(matrix12);
     return 0;
 }
