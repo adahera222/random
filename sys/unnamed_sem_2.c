@@ -9,6 +9,7 @@ sem_t can_eat;
 int current_round = 0;
 int state_change = 0;
 int* states;
+int* rank;
 sem_t* forks;
 int n = 0;
 
@@ -43,27 +44,40 @@ void *stateProcess(void *arg) {
     }
 }
 
+int max(int *array, int size) {
+    int m = 0;
+    int i;
+    for (i = 0; i < size; i++) {
+        if (array[i] > m) m = array[i];
+    }
+    return m;
+}
+
 // 1 = thinking, 2 = hungry, 3 = eating
 void *beAPhilosopher(void *arg) {
     int s = *(int*)arg;
     while (1) {
         states[s] = 1;
         state_change = 1;
+        rank[s]++;
         sleep(rand() % 1 + 1);
         states[s] = 2;
         state_change = 1;
         sleep(rand() % 1 + 1);
         sem_wait(&can_eat);
-        sem_wait(&forks[s]);
-        sem_wait(&forks[(s+1)%n]);
-        states[s] = 3;
-        state_change = 1;
-        sleep(rand() % 1 + 1);
-        current_round++;
-        states[s] = 1;
-        state_change = 1;
-        sem_post(&forks[s]);
-        sem_post(&forks[(s+1)%n]);
+        if (rank[s] == max(rank, n)) {
+            sem_wait(&forks[s]);
+            sem_wait(&forks[(s+1)%n]);
+            states[s] = 3;
+            state_change = 1;
+            rank[s] = 0;
+            sleep(rand() % 1 + 1);
+            current_round++;
+            states[s] = 1;
+            state_change = 1;
+            sem_post(&forks[s]);
+            sem_post(&forks[(s+1)%n]);
+        }
         sem_post(&can_eat);
     }
 }
@@ -76,6 +90,7 @@ int main(int argc, char **argv) {
     forks = malloc(n*sizeof(sem_t));
     int *fi = calloc(n, sizeof(int));
     states = calloc(n, sizeof(int));
+    rank = calloc(n, sizeof(int));
 
     int i; 
     sem_init(&can_eat, 0, (int)n/2);
