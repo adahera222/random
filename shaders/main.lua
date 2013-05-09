@@ -60,25 +60,12 @@ blur = love.graphics.newPixelEffect[[
 function love.load()
     local w, h = love.graphics.getWidth(), love.graphics.getHeight()
     gaben = love.graphics.newImage('gaben.jpg')
-
-    blur:send("image_size", {w, h})
-    blur:send("intensity", 3)
-    t = 0
-
-    bc1, bc2 = love.graphics.newCanvas(), love.graphics.newCanvas()
 end
 
 function love.update(dt)
-    t = t + dt
-    blur:send("intensity", 3*math.sin(t/2))
+
 end
 
 function love.draw()
-    bc1:clear()
-    bc2:clear()
-    
-    love.graphics.setPixelEffect(blur)
-    bc1:renderTo(function() love.graphics.draw(gaben, 0, 0, 0, 0.5, 0.5) end)
-    bc2:renderTo(function() love.graphics.draw(bc1, 0, 0) end)
-    love.graphics.draw(bc2, 0, 0)
+
 end
