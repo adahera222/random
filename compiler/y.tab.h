@@ -97,7 +97,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 41 "parser.y"
+#line 40 "parser.y"
 
     int number;
     struct hash_node* node;

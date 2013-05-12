@@ -5,7 +5,7 @@ word v[10]:0 0 0 0 0 0 0 0 0 0;
 word mat[1000];
 word $pt:0;
 
-word main()
+word main(word a, word b)
   word i:'a';
   byte a:5;
   bool b:FALSE;

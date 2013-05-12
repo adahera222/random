@@ -36,37 +36,33 @@ void yyerror(char *);
 
 %token TOKEN_ERROR   290
 
+%left OPERATOR_OR OPERATOR_AND
+%left '<' '>' OPERATOR_LE OPERATOR_GE OPERATOR_EQ OPERATOR_NE
+%left '+' '-'
+%left '*' '/'
 
-/* exemplo de aula... */
 %union {
     int number;
     struct hash_node* node;
 }
-/* pra fazer coisas desse tipo... */
-/*%token <number>LIT_INTEGER; */
-/*%token <node>IDENTIFIER */
-
-/*vardec: : KW_INT IDENTIFIER '=' LIT_INTEGER {fprintf(stderr,"Var %s recebe %d \n", $2->text, $4)}
- */
-/*campo do hash_node*/
 
 %%
 
 PROG: LIST_DEC
-        ;
+    ;
 
 LIST_DEC: DEC LIST_DEC
         |
         ;
 
 DEC: DEC_VAR ';'
-    | DEC_VET ';'
-    | DEC_FUN
-    ;
+   | DEC_VET ';'
+   | DEC_FUN
+   ;
 
 DEC_VAR: TYPE TK_IDENTIFIER ':' LIT
-        | TYPE '$' TK_IDENTIFIER ':' LIT
-        ;
+       | TYPE '$' TK_IDENTIFIER ':' LIT
+       ;
 
 TYPE: KW_WORD
     | KW_BYTE
@@ -74,54 +70,53 @@ TYPE: KW_WORD
     ;
 
 LIT: LIT_INTEGER
-    | LIT_FALSE
-    | LIT_TRUE
-    | LIT_CHAR
-    | LIT_STRING
-    ;
+   | LIT_FALSE
+   | LIT_TRUE
+   | LIT_CHAR
+   | LIT_STRING
+   ;
 
 DEC_VET: TYPE TK_IDENTIFIER '[' LIT_INTEGER ']'
-        | TYPE TK_IDENTIFIER '[' LIT_INTEGER ']' ':' LIST_VAL
-        ;
+       | TYPE TK_IDENTIFIER '[' LIT_INTEGER ']' ':' LIST_VAL
+       ;
 
 LIST_VAL: LIT LIST_VAL
         |
         ;
 
 DEC_FUN: TYPE TK_IDENTIFIER '(' LIST_DEC_PARAM ')' LIST_DEC_LOC COMMAND
-        ;
+       ;
 
-LIST_DEC_LOC: DEC_VAR ';' LIST_DEC_LOC
+LIST_DEC_LOC: LIST_DEC_LOC ';' DEC_VAR
             |
             ;
 
-/* quebra em duas partes para questao de nao poder ter virgula no ultimo */
-LIST_DEC_PARAM: LIST_DEC_PARAM_SEP DEC_PARAM
-                |
-                ;
+LIST_DEC_PARAM: DEC_PARAM LIST_DEC_PARAM_SEP
+              |
+              ;
 
-LIST_DEC_PARAM_SEP: LIST_DEC_PARAM ','
-                    |
-                    ;
+LIST_DEC_PARAM_SEP: ',' LIST_DEC_PARAM
+                  |
+                  ;
 
 DEC_PARAM: TYPE TK_IDENTIFIER
-            ;
+         ;
 
 COMMAND: BLOCO
-        | IF
-        | LOOP
-        | TK_IDENTIFIER '=' EXP
-        | KW_INPUT EXP
-        | KW_OUTPUT LIST_PARAM
-        | KW_RETURN EXP
-        | KW_RETURN
-        | TK_IDENTIFIER '(' LIST_PARAM ')'
-        | TK_IDENTIFIER '(' ')'
-        |
-        ;
+       | IF
+       | LOOP
+       | TK_IDENTIFIER '=' EXP
+       | KW_INPUT EXP
+       | KW_OUTPUT LIST_PARAM
+       | KW_RETURN EXP
+       | KW_RETURN
+       | TK_IDENTIFIER '(' LIST_PARAM ')'
+       | TK_IDENTIFIER '(' ')'
+       |
+       ;
 
 BLOCO: '{' LIST_COM '}'
-        ;
+     ;
 
 /* quebra em duas partes para questao de nao poder ter virgula no ultimo */
 LIST_COM: LIST_COM_SEP COMMAND
@@ -131,50 +126,44 @@ LIST_COM_SEP: LIST_COM ';'
             |
             ;
 
-/* comando pode ser vazio, entao vai aceitar isso aqui (then <nada>)... */
 IF: KW_IF '(' EXP ')' KW_THEN COMMAND
-    | KW_IF '(' EXP ')' KW_THEN COMMAND KW_ELSE COMMAND
-    ;
+  | KW_IF '(' EXP ')' KW_THEN COMMAND KW_ELSE COMMAND
+  ;
 
-/* comando pode ser vazio, entao vai aceitar isso aqui... (?) */
 LOOP: KW_LOOP '(' EXP ')' COMMAND
     ;
 
-/* 2f seria float (?) */
 EXP: TK_IDENTIFIER
-    | '&' TK_IDENTIFIER
-    | '*' TK_IDENTIFIER
-    | LIT
-    | EXP OP EXP
-    | '(' EXP ')'
-    | FUN
-    ;
+   | '&' TK_IDENTIFIER
+   | '*' TK_IDENTIFIER
+   | LIT
+   | EXP '*' EXP
+   | EXP '/' EXP
+   | EXP '+' EXP
+   | EXP '-' EXP
+   | EXP '<' EXP
+   | EXP '>' EXP
+   | EXP OPERATOR_LE EXP
+   | EXP OPERATOR_GE EXP
+   | EXP OPERATOR_EQ EXP
+   | EXP OPERATOR_NE EXP
+   | EXP OPERATOR_AND EXP
+   | EXP OPERATOR_OR EXP
+   | '(' EXP ')'
+   | FUN
+   ;
 
 FUN: TK_IDENTIFIER '(' LIST_PARAM ')'
-    | TK_IDENTIFIER '(' ')'
-    ;
+   | TK_IDENTIFIER '(' ')'
+   ;
 
 /* quebra em duas partes para questao de nao poder ter virgula no ultimo */
 LIST_PARAM: LIST_PARAM_SEP EXP
-            ;
+          ;
 
 LIST_PARAM_SEP: LIST_PARAM ','
-                |
-                ;
-
-OP: '*'
-    | '/'
-    | '+'
-    | '-'
-    | '<'
-    | '>'
-    | '!'
-    | OPERATOR_LE
-    | OPERATOR_GE
-    | OPERATOR_EQ
-    | OPERATOR_AND
-    | OPERATOR_OR
-    ;
+              |
+              ;
 
 %%
 

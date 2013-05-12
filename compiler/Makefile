@@ -5,7 +5,7 @@ lex.yy.c: lex.yy.c
 		gcc -c lex.yy.c
 
 lex.yy.o: scanner.l y.tab.o
-		lex --header-file=lex.yy.h scanner.l
+		flex scanner.l
 
 main.o: main.c
 		gcc -c main.c
