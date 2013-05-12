@@ -33,7 +33,7 @@ screen = love.graphics.newPixelEffect[[
 ]]
 
 -- Simple 3x3 box blur
-blur = love.graphics.newPixelEffect[[
+simple_blur = love.graphics.newPixelEffect[[
     extern vec2 image_size;
     extern number intensity = 1.0;
 
@@ -57,6 +57,39 @@ blur = love.graphics.newPixelEffect[[
     }
 ]]
 
+simple_sobel = love.graphics.newPixelEffect[[
+    extern vec2 image_size;
+    extern number intensity = 1.0;
+
+    float lookup(Image tex, vec2 p, float dx, float dy) {
+        vec4 color = Texel(tex, p + vec2(intensity*dx, intensity*dy)/image_size);
+        return 0.2126*color.r + 0.7152*color.g + 0.0722*color.b;
+    }
+
+    vec4 effect(vec4 color, Image tex, vec2 tc, vec2 pc) {
+        float gx = 0.0;
+        gx += -1.0*lookup(tex, tc, -1.0, -1.0);
+        gx += -2.0*lookup(tex, tc, -1.0,  0.0);
+        gx += -1.0*lookup(tex, tc, -1.0,  1.0);
+        gx +=  1.0*lookup(tex, tc,  1.0, -1.0);
+        gx +=  2.0*lookup(tex, tc,  1.0,  0.0);
+        gx +=  1.0*lookup(tex, tc,  1.0,  1.0);
+
+        float gy = 0.0;
+        gy += -1.0*lookup(tex, tc, -1.0, -1.0);
+        gy += -2.0*lookup(tex, tc,  0.0, -1.0);
+        gy += -1.0*lookup(tex, tc,  1.0, -1.0);
+        gy +=  1.0*lookup(tex, tc, -1.0,  1.0);
+        gy +=  2.0*lookup(tex, tc,  0.0,  1.0);
+        gy +=  1.0*lookup(tex, tc,  1.0,  1.0);
+
+        float g = gx*gx + gy*gy;
+        color = Texel(tex, tc);
+        color += vec4(g, 0.0, g, 1.0);
+        return color;
+    }
+]]
+
 function love.load()
     local w, h = love.graphics.getWidth(), love.graphics.getHeight()
     gaben = love.graphics.newImage('gaben.jpg')
@@ -67,5 +100,10 @@ function love.update(dt)
 end
 
 function love.draw()
-
+    love.graphics.draw(gaben, 0, 0, 0, 0.5, 0.5)
 end
+
+function love.keypressed(key)
+    if key == 'q' then love.event.push('quit') end
+end
+
