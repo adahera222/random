@@ -1,7 +1,5 @@
 #include "hash.h"
 
-#define MAX_CHILDREN 4
-
 #define AST_LIST_DEC 1
 #define AST_DEC 2
 #define AST_DEC_VAR 3
@@ -20,7 +18,7 @@
 #define AST_ATR 16
 #define AST_INPUT 17
 #define AST_OUTPUT 18
-#define AST_RET 19
+#define AST_RETURN 19
 #define AST_CALL 20
 #define AST_BLOCO 21
 #define AST_LIST_COM 22
@@ -44,11 +42,21 @@
 #define AST_LIST_PARAM 40
 #define AST_VEC_SIZE 41
 #define AST_LIT 42
+#define AST_PAREN 43
+#define AST_LIST_DEC_PARAM_SEP 44
+#define AST_LIST_COM_SEP 45
+#define AST_LIST_PARAM_SEP 46
+#define AST_DEC_LOC_VAR 47
+#define AST_CALL_EMPTY 48
+#define AST_EMPTY 49
+#define AST_ATR_IF 50
 
 typedef struct astree_node {
     int type;
     HASH_NODE *symbol;
-    struct astree_node *children[MAX_CHILDREN];
+    struct astree_node *children[4];
 } AST;
 
 AST* astCreate(int type, HASH_NODE *symbol, AST *s0, AST *s1, AST *s2, AST *s3);
+void astPrint(AST *node, int level);
+void astPrintNode(AST *node);

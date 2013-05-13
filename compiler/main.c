@@ -9,13 +9,16 @@
 int yyparse(void);
 
 int main(int argc, char *argv[]) {
-    
-    if (argc < 2) exit(1);   
-        yyin = fopen(argv[1], "r");
-    
+    yyin = fopen(argv[1], "r");
+
+    yyout = fopen(argv[2], "w");
+    if (yyout == NULL) perror(argv[2]);
+
     initMe();
-    
     yyparse();
+
+    fclose(yyin);
+    fclose(yyout);
     
     printf("Nenhum erro sintatico.\n");
     return 0;
