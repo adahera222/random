@@ -37,7 +37,7 @@ HASH_NODE* hashFind(char *key) {
     return NULL;
 }
 
-void hashInsert(char *key, int value) {
+HASH_NODE* hashInsert(char *key, int value) {
     unsigned long idx = hashf(key) % SIZE;
     HASH_NODE *n = calloc(1, sizeof(HASH_NODE));
     n->key = calloc(1, strlen(key)+1);
@@ -45,6 +45,7 @@ void hashInsert(char *key, int value) {
     n->value = value;
     n->next = table[idx];
     table[idx] = n;
+    return n;
 }
 
 void hashPrint() {

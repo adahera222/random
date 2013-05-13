@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "astree.h"
 int yylex(void);
 void yyerror(char *);
 
@@ -27,12 +28,12 @@ void yyerror(char *);
 %token OPERATOR_AND  274
 %token OPERATOR_OR   275
 
-%token TK_IDENTIFIER 280
-%token LIT_INTEGER   281
-%token LIT_FALSE     283
-%token LIT_TRUE      284
-%token LIT_CHAR      285
-%token LIT_STRING    286
+%token<symbol> TK_IDENTIFIER 280
+%token<symbol> LIT_INTEGER   281
+%token<symbol> LIT_FALSE     283
+%token<symbol> LIT_TRUE      284
+%token<symbol> LIT_CHAR      285
+%token<symbol> LIT_STRING    286
 
 %token TOKEN_ERROR   290
 
@@ -42,127 +43,132 @@ void yyerror(char *);
 %left '*' '/'
 
 %union {
-    int number;
-    struct hash_node* node;
+    HASH_NODE *symbol;
+    AST *astree;
 }
+
+%type<astree> PROG LIST_DEC DEC DEC_VAR DEC_VET DEC_FUN TYPE LIT LIST_VAL LIST_DEC_LOC
+              LIST_DEC_PARAM LIST_DEC_PARAM_SEP DEC_PARAM COMMAND BLOCO IF LOOP EXP 
+              FUN LIST_PARAM LIST_PARAM_SEP LIST_COM LIST_COM_SEP
 
 %%
 
-PROG: LIST_DEC
+PROG: LIST_DEC { $$ = $1; }
     ;
 
-LIST_DEC: DEC LIST_DEC
-        |
+LIST_DEC: DEC LIST_DEC { $$ = astCreate(AST_LIST_DEC, 0, $1, $2, 0, 0); }
+        | { $$ = astCreate(AST_LIST_DEC, 0, 0, 0, 0, 0); }
         ;
 
-DEC: DEC_VAR ';'
-   | DEC_VET ';'
-   | DEC_FUN
+DEC: DEC_VAR ';' { $$ = astCreate(AST_DEC, 0, $1, 0, 0, 0); }
+   | DEC_VET ';' { $$ = astCreate(AST_DEC, 0, $1, 0, 0, 0); }
+   | DEC_FUN     { $$ = astCreate(AST_DEC, 0, $1, 0, 0, 0); }
    ;
 
-DEC_VAR: TYPE TK_IDENTIFIER ':' LIT
-       | TYPE '$' TK_IDENTIFIER ':' LIT
+DEC_VAR: TYPE TK_IDENTIFIER ':' LIT { $$ = astCreate(AST_DEC_VAR, $2, $1, $4, 0, 0); }
+       | TYPE '$' TK_IDENTIFIER ':' LIT { $$ = astCreate(AST_DEC_PTR, $3, $1, $5, 0, 0); }
        ;
 
-TYPE: KW_WORD
-    | KW_BYTE
-    | KW_BOOL
+TYPE: KW_WORD { $$ = astCreate(AST_WORD, 0, 0, 0, 0, 0); }
+    | KW_BYTE { $$ = astCreate(AST_BYTE, 0, 0, 0, 0, 0); }
+    | KW_BOOL { $$ = astCreate(AST_BOOL, 0, 0, 0, 0, 0); }
     ;
 
-LIT: LIT_INTEGER
-   | LIT_FALSE
-   | LIT_TRUE
-   | LIT_CHAR
-   | LIT_STRING
+LIT: LIT_INTEGER { $$ = astCreate(AST_SYMBOL, $1, 0, 0, 0, 0); }
+   | LIT_FALSE { $$ = astCreate(AST_SYMBOL, $1, 0, 0, 0, 0); }
+   | LIT_TRUE { $$ = astCreate(AST_SYMBOL, $1, 0, 0, 0, 0); }
+   | LIT_CHAR { $$ = astCreate(AST_SYMBOL, $1, 0, 0, 0, 0); }
+   | LIT_STRING { $$ = astCreate(AST_SYMBOL, $1, 0, 0, 0, 0); }
    ;
 
-DEC_VET: TYPE TK_IDENTIFIER '[' LIT_INTEGER ']'
-       | TYPE TK_IDENTIFIER '[' LIT_INTEGER ']' ':' LIST_VAL
+DEC_VET: TYPE TK_IDENTIFIER '[' LIT_INTEGER ']' { $$ = astCreate(AST_DEC_VET, $2, $1, astCreate(AST_VEC_SIZE, $4, 0, 0, 0, 0), 0, 0); }
+       | TYPE TK_IDENTIFIER '[' LIT_INTEGER ']' ':' LIST_VAL { $$ = astCreate(AST_DEC_VET, $2, $1, astCreate(AST_VEC_SIZE, $4, 0, 0, 0, 0), astCreate(AST_LIST_VAL, 0, $7, 0, 0, 0), 0); }
        ;
 
-LIST_VAL: LIT LIST_VAL
-        |
+LIST_VAL: LIT LIST_VAL { $$ = astCreate(AST_LIST_VAL, 0, astCreate(AST_LIT, 0, $1, 0, 0, 0), $2, 0, 0); }
+        | { $$ = astCreate(AST_LIST_VAL, 0, 0, 0, 0, 0); }
         ;
 
-DEC_FUN: TYPE TK_IDENTIFIER '(' LIST_DEC_PARAM ')' LIST_DEC_LOC COMMAND
+DEC_FUN: TYPE TK_IDENTIFIER '(' LIST_DEC_PARAM ')' LIST_DEC_LOC COMMAND { $$ = astCreate(AST_DEC_FUN, $2, $1, $4, $6, $7); }
        ;
 
-LIST_DEC_LOC: LIST_DEC_LOC ';' DEC_VAR
-            |
+/* try to fix 6shift/reduce here later */
+LIST_DEC_LOC: DEC_VAR ';' LIST_DEC_LOC { $$ = astCreate(AST_LIST_DEC_LOC, 0, $1, $3, 0, 0); }
+            | { $$ = astCreate(AST_LIST_DEC_LOC, 0, 0, 0, 0, 0); }
             ;
 
-LIST_DEC_PARAM: DEC_PARAM LIST_DEC_PARAM_SEP
-              |
+LIST_DEC_PARAM: DEC_PARAM LIST_DEC_PARAM_SEP { $$ = astCreate(AST_LIST_DEC_PARAM, 0, $1, $2, 0, 0); }
+              | { $$ = astCreate(AST_LIST_DEC_PARAM, 0, 0, 0, 0, 0); }
               ;
 
-LIST_DEC_PARAM_SEP: ',' LIST_DEC_PARAM
-                  |
+LIST_DEC_PARAM_SEP: ',' LIST_DEC_PARAM { $$ = astCreate(AST_LIST_DEC_PARAM, 0, $2, 0, 0, 0); }
+                  | { $$ = astCreate(AST_LIST_DEC_PARAM, 0, 0, 0, 0, 0); }
                   ;
 
-DEC_PARAM: TYPE TK_IDENTIFIER
+DEC_PARAM: TYPE TK_IDENTIFIER { $$ = astCreate(AST_DEC_PARAM, $2, $1, 0, 0, 0); }
          ;
 
-COMMAND: BLOCO
-       | IF
-       | LOOP
-       | TK_IDENTIFIER '=' EXP
-       | KW_INPUT EXP
-       | KW_OUTPUT LIST_PARAM
-       | KW_RETURN EXP
-       | KW_RETURN
-       | TK_IDENTIFIER '(' LIST_PARAM ')'
-       | TK_IDENTIFIER '(' ')'
-       |
+COMMAND: BLOCO { $$ = astCreate(AST_COMMAND, 0, $1, 0, 0, 0); }
+       | IF { $$ = astCreate(AST_COMMAND, 0, $1, 0, 0, 0); }
+       | LOOP { $$ = astCreate(AST_COMMAND, 0, $1, 0, 0, 0); }
+       | TK_IDENTIFIER '=' EXP { $$ = astCreate(AST_ATR, $1, $3, 0, 0, 0); }
+       | KW_INPUT EXP { $$ = astCreate(AST_INPUT, 0, $2, 0, 0, 0); }
+       | KW_OUTPUT LIST_PARAM { $$ = astCreate(AST_OUTPUT, 0, $2, 0, 0, 0); }
+       | KW_RETURN EXP { $$ = astCreate(AST_RET, 0, $2, 0, 0, 0); }
+       | KW_RETURN { $$ = astCreate(AST_RET, 0, 0, 0, 0, 0); }
+       | TK_IDENTIFIER '(' LIST_PARAM ')' { $$ = astCreate(AST_CALL, $1, $3, 0, 0, 0); }
+       | TK_IDENTIFIER '(' ')' { $$ = astCreate(AST_CALL, $1, 0, 0, 0, 0); }
+       | { $$ = astCreate(AST_COMMAND, 0, 0, 0, 0, 0); }
        ;
 
-BLOCO: '{' LIST_COM '}'
+BLOCO: '{' LIST_COM '}' { $$ = astCreate(AST_BLOCO, 0, $2, 0, 0, 0); }
      ;
 
 /* quebra em duas partes para questao de nao poder ter virgula no ultimo */
-LIST_COM: LIST_COM_SEP COMMAND
+LIST_COM: LIST_COM_SEP COMMAND { $$ = astCreate(AST_LIST_COM, 0, astCreate(AST_COMMAND, 0, $2, 0, 0, 0), $1, 0, 0); }
         ;
 
-LIST_COM_SEP: LIST_COM ';'
-            |
+LIST_COM_SEP: LIST_COM ';' { $$ = astCreate(AST_LIST_COM, 0, $1, 0, 0, 0); }
+            | { $$ = astCreate(AST_LIST_COM, 0, 0, 0, 0, 0); }
             ;
 
-IF: KW_IF '(' EXP ')' KW_THEN COMMAND
-  | KW_IF '(' EXP ')' KW_THEN COMMAND KW_ELSE COMMAND
+IF: KW_IF '(' EXP ')' KW_THEN COMMAND { $$ = astCreate(AST_IF, 0, $3, $6, 0, 0); }
+  | KW_IF '(' EXP ')' KW_THEN COMMAND KW_ELSE COMMAND { $$ = astCreate(AST_IF, 0, $3, $6, $8, 0); }
   ;
 
-LOOP: KW_LOOP '(' EXP ')' COMMAND
+LOOP: KW_LOOP '(' EXP ')' COMMAND { $$ = astCreate(AST_LOOP, 0, $3, $5, 0, 0); }
     ;
 
-EXP: TK_IDENTIFIER
-   | '&' TK_IDENTIFIER
-   | '*' TK_IDENTIFIER
-   | LIT
-   | EXP '*' EXP
-   | EXP '/' EXP
-   | EXP '+' EXP
-   | EXP '-' EXP
-   | EXP '<' EXP
-   | EXP '>' EXP
-   | EXP OPERATOR_LE EXP
-   | EXP OPERATOR_GE EXP
-   | EXP OPERATOR_EQ EXP
-   | EXP OPERATOR_NE EXP
-   | EXP OPERATOR_AND EXP
-   | EXP OPERATOR_OR EXP
-   | '(' EXP ')'
-   | FUN
+EXP: TK_IDENTIFIER { $$ = astCreate(AST_SYMBOL, $1, 0, 0, 0, 0); }
+   | '&' TK_IDENTIFIER { $$ = astCreate(AST_DEREF, $2, 0, 0, 0, 0); }
+   | '*' TK_IDENTIFIER { $$ = astCreate(AST_REF, $2, 0, 0, 0, 0); }
+   | LIT { $$ = astCreate(AST_LIT, 0, $1, 0, 0, 0); }
+   | EXP '*' EXP { $$ = astCreate(AST_MUL, 0, $1, $3, 0, 0); }
+   | EXP '/' EXP { $$ = astCreate(AST_DIV, 0, $1, $3, 0, 0); }
+   | EXP '+' EXP { $$ = astCreate(AST_SUM, 0, $1, $3, 0, 0); }
+   | EXP '-' EXP { $$ = astCreate(AST_SUB, 0, $1, $3, 0, 0); }
+   | EXP '<' EXP { $$ = astCreate(AST_LT, 0, $1, $3, 0, 0); }
+   | EXP '>' EXP { $$ = astCreate(AST_GT, 0, $1, $3, 0, 0); }
+   | EXP OPERATOR_LE EXP { $$ = astCreate(AST_LE, 0, $1, $3, 0, 0); }
+   | EXP OPERATOR_GE EXP { $$ = astCreate(AST_GE, 0, $1, $3, 0, 0); }
+   | EXP OPERATOR_EQ EXP { $$ = astCreate(AST_EQ, 0, $1, $3, 0, 0); }
+   | EXP OPERATOR_NE EXP { $$ = astCreate(AST_NE, 0, $1, $3, 0, 0); }
+   | EXP OPERATOR_AND EXP { $$ = astCreate(AST_AND, 0, $1, $3, 0, 0); }
+   | EXP OPERATOR_OR EXP { $$ = astCreate(AST_OR, 0, $1, $3, 0, 0); }
+   | '(' EXP ')' { $$ = $2; }
+   | FUN { $$ = astCreate(AST_FUN, 0, $1, 0, 0, 0); }
    ;
 
-FUN: TK_IDENTIFIER '(' LIST_PARAM ')'
-   | TK_IDENTIFIER '(' ')'
+FUN: TK_IDENTIFIER '(' LIST_PARAM ')' { $$ = astCreate(AST_CALL, $1, $3, 0, 0, 0); }
+   | TK_IDENTIFIER '(' ')' { $$ = astCreate(AST_CALL, $1, 0, 0, 0, 0); }
    ;
 
 /* quebra em duas partes para questao de nao poder ter virgula no ultimo */
-LIST_PARAM: LIST_PARAM_SEP EXP
+LIST_PARAM: LIST_PARAM_SEP EXP { $$ = astCreate(AST_LIST_PARAM, 0, $2, $1, 0, 0); }
           ;
 
-LIST_PARAM_SEP: LIST_PARAM ','
-              |
+LIST_PARAM_SEP: LIST_PARAM ',' { $$ = astCreate(AST_LIST_PARAM, 0, $1, 0, 0, 0); }
+              | { $$ = astCreate(AST_LIST_PARAM, 0, 0, 0, 0, 0); }
               ;
 
 %%

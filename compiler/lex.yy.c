@@ -441,7 +441,7 @@ char *yytext;
 /* Felipe Gonzalez, Renan Drabach */
 
 #include <stdio.h>
-    
+#include "astree.h"
 #include "y.tab.h"
 #include "scanner.h"
 
@@ -749,22 +749,22 @@ return KW_RETURN;
 case 11:
 YY_RULE_SETUP
 #line 38 "scanner.l"
-hashInsert(yytext, SYMBOL_LIT_TRUE); return LIT_TRUE;
+yylval.symbol = hashInsert(yytext, SYMBOL_LIT_TRUE); return LIT_TRUE;
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
 #line 39 "scanner.l"
-hashInsert(yytext, SYMBOL_LIT_TRUE); return LIT_TRUE;
+yylval.symbol = hashInsert(yytext, SYMBOL_LIT_TRUE); return LIT_TRUE;
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
 #line 40 "scanner.l"
-hashInsert(yytext, SYMBOL_LIT_FALSE); return LIT_FALSE;
+yylval.symbol = hashInsert(yytext, SYMBOL_LIT_FALSE); return LIT_FALSE;
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
 #line 41 "scanner.l"
-hashInsert(yytext, SYMBOL_LIT_FALSE); return LIT_FALSE;
+yylval.symbol = hashInsert(yytext, SYMBOL_LIT_FALSE); return LIT_FALSE;
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
@@ -804,22 +804,22 @@ return OPERATOR_OR;
 case 22:
 YY_RULE_SETUP
 #line 49 "scanner.l"
-hashInsert(yytext, SYMBOL_IDENTIFIER); return TK_IDENTIFIER;
+yylval.symbol = hashInsert(yytext, SYMBOL_IDENTIFIER); return TK_IDENTIFIER;
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
 #line 50 "scanner.l"
-hashInsert(yytext, SYMBOL_LIT_INTEGER); return LIT_INTEGER;
+yylval.symbol = hashInsert(yytext, SYMBOL_LIT_INTEGER); return LIT_INTEGER;
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
 #line 51 "scanner.l"
-hashInsert(yytext, SYMBOL_LIT_CHAR); return LIT_CHAR;
+yylval.symbol = hashInsert(yytext, SYMBOL_LIT_CHAR); return LIT_CHAR;
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
 #line 52 "scanner.l"
-hashInsert(yytext, SYMBOL_LIT_STRING); return LIT_STRING;
+yylval.symbol = hashInsert(yytext, SYMBOL_LIT_STRING); return LIT_STRING;
 	YY_BREAK
 case 26:
 YY_RULE_SETUP

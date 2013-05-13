@@ -11,6 +11,6 @@ typedef struct hash_node {
 } HASH_NODE;
 
 void hashInit();
-void hashInsert(char *key, int value);
+HASH_NODE* hashInsert(char *key, int value);
 HASH_NODE* hashFind(char *key);
 void hashPrint();

@@ -1,6 +1,7 @@
 /* Felipe Gonzalez, Renan Drabach */
 
 #include <stdio.h>
+#include "astree.h"
 #include "lex.yy.h"
 #include "scanner.h"
 #include "y.tab.h"
