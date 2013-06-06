@@ -20,6 +20,6 @@ int main(int argc, char *argv[]) {
     fclose(yyin);
     fclose(yyout);
     
-    printf("Nenhum erro sintatico.\n");
+    printf("No syntax error.\n");
     return 0;
 }

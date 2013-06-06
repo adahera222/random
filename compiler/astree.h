@@ -16,6 +16,8 @@
 #define AST_DEC_PARAM 14
 #define AST_COMMAND 15
 #define AST_ATR 16
+#define AST_ATR_VET 52
+#define AST_ATR_IF 50
 #define AST_INPUT 17
 #define AST_OUTPUT 18
 #define AST_RETURN 19
@@ -40,19 +42,22 @@
 #define AST_OR 38
 #define AST_FUN 39
 #define AST_LIST_PARAM 40
-#define AST_VEC_SIZE 41
+#define AST_VET_SIZE 41
 #define AST_LIT 42
+#define AST_SYMBOL_LIT 54
 #define AST_PAREN 43
 #define AST_LIST_DEC_PARAM_SEP 44
 #define AST_LIST_COM_SEP 45
 #define AST_LIST_PARAM_SEP 46
 #define AST_DEC_LOC_VAR 47
+#define AST_DEC_LOC_PTR 51
 #define AST_CALL_EMPTY 48
 #define AST_EMPTY 49
-#define AST_ATR_IF 50
+#define AST_VET 53
 
 typedef struct astree_node {
     int type;
+    int line;
     HASH_NODE *symbol;
     struct astree_node *children[4];
 } AST;

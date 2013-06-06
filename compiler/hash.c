@@ -5,8 +5,6 @@
 #include <string.h>
 #include "hash.h"
 
-#define SIZE 1000
-
 unsigned long hashf(char *key) {
     unsigned long hash = 5381;
     int c;
@@ -15,8 +13,6 @@ unsigned long hashf(char *key) {
     }
     return hash;
 }
-
-HASH_NODE *table[SIZE];
 
 void hashInit() {
     int i;
@@ -38,10 +34,12 @@ HASH_NODE* hashFind(char *key) {
 }
 
 HASH_NODE* hashInsert(char *key, int value) {
-    unsigned long idx = hashf(key) % SIZE;
-    HASH_NODE *n = calloc(1, sizeof(HASH_NODE));
+    HASH_NODE *n;
+    if (n = hashFind(key)) return n;
+    n = calloc(1, sizeof(HASH_NODE));
     n->key = calloc(1, strlen(key)+1);
     strcpy(n->key, key);
+    unsigned long idx = hashf(key) % SIZE;
     n->value = value;
     n->next = table[idx];
     table[idx] = n;
@@ -49,12 +47,13 @@ HASH_NODE* hashInsert(char *key, int value) {
 }
 
 void hashPrint() {
+    printf("\n");
     HASH_NODE *n;
     int i;
     for (i = 0; i < SIZE; i++) {
         n = table[i];
         while (n != 0) {
-            printf("%s %d\n", n->key, n->value); 
+            printf("key: %s, \tvalue: %d, \tdata_type: %d\n", n->key, n->value, n->data_type); 
             n = n->next;
         }
     }

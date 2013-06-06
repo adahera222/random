@@ -53,7 +53,7 @@ void yyerror(char *);
 
 %%
 
-PROG: LIST_DEC { $$ = $1; astPrint($$, 1); astPrintFile($$); }
+PROG: LIST_DEC { $$ = $1; astPrintFile($$); declarations($$); usage($$); hashPrint(); }
     ;
 
 LIST_DEC: DEC LIST_DEC { $$ = astCreate(AST_LIST_DEC, 0, $1, $2, 0, 0); }
@@ -65,34 +65,34 @@ DEC: DEC_VAR ';' { $$ = astCreate(AST_DEC, 0, $1, 0, 0, 0); }
    | DEC_FUN     { $$ = astCreate(AST_DEC, 0, $1, 0, 0, 0); }
    ;
 
-DEC_VAR: TYPE TK_IDENTIFIER ':' LIT { $$ = astCreate(AST_DEC_VAR, $2, $1, $4, 0, 0); }
-       | TYPE '$' TK_IDENTIFIER ':' LIT { $$ = astCreate(AST_DEC_PTR, $3, $1, $5, 0, 0); }
+DEC_VAR: TYPE TK_IDENTIFIER ':' LIT { $$ = astCreate(AST_DEC_VAR, $2, $1, $4, 0, 0); $2->data_type = $1->type; }
+       | TYPE '$' TK_IDENTIFIER ':' LIT { $$ = astCreate(AST_DEC_PTR, $3, $1, $5, 0, 0); $3->data_type = $1->type; }
        ;
 
-DEC_LOC_VAR: TYPE TK_IDENTIFIER ':' LIT { $$ = astCreate(AST_DEC_LOC_VAR, $2, $1, $4, 0, 0); }
-           | TYPE '$' TK_IDENTIFIER ':' LIT { $$ = astCreate(AST_DEC_LOC_VAR, $3, $1, $5, 0, 0); }
+DEC_LOC_VAR: TYPE TK_IDENTIFIER ':' LIT { $$ = astCreate(AST_DEC_LOC_VAR, $2, $1, $4, 0, 0); $2->data_type = $1->type; }
+           | TYPE '$' TK_IDENTIFIER ':' LIT { $$ = astCreate(AST_DEC_LOC_PTR, $3, $1, $5, 0, 0); $3->data_type = $1->type; }
 
 TYPE: KW_WORD { $$ = astCreate(AST_WORD, 0, 0, 0, 0, 0); }
     | KW_BYTE { $$ = astCreate(AST_BYTE, 0, 0, 0, 0, 0); }
     | KW_BOOL { $$ = astCreate(AST_BOOL, 0, 0, 0, 0, 0); }
     ;
 
-LIT: LIT_INTEGER { $$ = astCreate(AST_SYMBOL, $1, 0, 0, 0, 0); }
-   | LIT_FALSE { $$ = astCreate(AST_SYMBOL, $1, 0, 0, 0, 0); }
-   | LIT_TRUE { $$ = astCreate(AST_SYMBOL, $1, 0, 0, 0, 0); }
-   | LIT_CHAR { $$ = astCreate(AST_SYMBOL, $1, 0, 0, 0, 0); }
-   | LIT_STRING { $$ = astCreate(AST_SYMBOL, $1, 0, 0, 0, 0); }
+LIT: LIT_INTEGER { $$ = astCreate(AST_SYMBOL_LIT, $1, 0, 0, 0, 0); $1->data_type = DT_INT; }
+   | LIT_FALSE { $$ = astCreate(AST_SYMBOL_LIT, $1, 0, 0, 0, 0); $1->data_type = DT_BOOL; }
+   | LIT_TRUE { $$ = astCreate(AST_SYMBOL_LIT, $1, 0, 0, 0, 0); $1->data_type = DT_BOOL; }
+   | LIT_CHAR { $$ = astCreate(AST_SYMBOL_LIT, $1, 0, 0, 0, 0); $1->data_type = DT_CHAR; }
+   | LIT_STRING { $$ = astCreate(AST_SYMBOL_LIT, $1, 0, 0, 0, 0); $1->data_type = DT_STR; }
    ;
 
-DEC_VET: TYPE TK_IDENTIFIER '[' LIT_INTEGER ']' { $$ = astCreate(AST_DEC_VET, $2, $1, astCreate(AST_VEC_SIZE, $4, 0, 0, 0, 0), 0, 0); }
-       | TYPE TK_IDENTIFIER '[' LIT_INTEGER ']' ':' LIST_VAL { $$ = astCreate(AST_DEC_VET, $2, $1, astCreate(AST_VEC_SIZE, $4, 0, 0, 0, 0), astCreate(AST_LIST_VAL, 0, $7, 0, 0, 0), 0); }
+DEC_VET: TYPE TK_IDENTIFIER '[' LIT_INTEGER ']' { $$ = astCreate(AST_DEC_VET, $2, $1, astCreate(AST_VET_SIZE, $4, 0, 0, 0, 0), 0, 0); $2->data_type = $1->type; }
+       | TYPE TK_IDENTIFIER '[' LIT_INTEGER ']' ':' LIST_VAL { $$ = astCreate(AST_DEC_VET, $2, $1, astCreate(AST_VET_SIZE, $4, 0, 0, 0, 0), astCreate(AST_LIST_VAL, 0, $7, 0, 0, 0), 0); $2->data_type = $1->type; }
        ;
 
 LIST_VAL: LIT LIST_VAL { $$ = astCreate(AST_LIST_VAL, 0, $1, $2, 0, 0); }
         | { $$ = astCreate(0, 0, 0, 0, 0, 0); }
         ;
 
-DEC_FUN: TYPE TK_IDENTIFIER '(' LIST_DEC_PARAM ')' LIST_DEC_LOC COMMAND { $$ = astCreate(AST_DEC_FUN, $2, $1, $4, $6, $7); }
+DEC_FUN: TYPE TK_IDENTIFIER '(' LIST_DEC_PARAM ')' LIST_DEC_LOC COMMAND { $$ = astCreate(AST_DEC_FUN, $2, $1, $4, $6, $7); $2->data_type = $1->type;}
        ;
 
 /* try to fix 6shift/reduce here later */
@@ -108,13 +108,14 @@ LIST_DEC_PARAM_SEP: ',' LIST_DEC_PARAM { $$ = astCreate(AST_LIST_DEC_PARAM_SEP, 
                   | { $$ = astCreate(0, 0, 0, 0, 0, 0); }
                   ;
 
-DEC_PARAM: TYPE TK_IDENTIFIER { $$ = astCreate(AST_DEC_PARAM, $2, $1, 0, 0, 0); }
+DEC_PARAM: TYPE TK_IDENTIFIER { $$ = astCreate(AST_DEC_PARAM, $2, $1, 0, 0, 0); $2->data_type = $1->type; }
          ;
 
 COMMAND: BLOCO { $$ = astCreate(AST_COMMAND, 0, $1, 0, 0, 0); }
        | IF { $$ = astCreate(AST_COMMAND, 0, $1, 0, 0, 0); }
        | LOOP { $$ = astCreate(AST_COMMAND, 0, $1, 0, 0, 0); }
        | TK_IDENTIFIER '=' EXP { $$ = astCreate(AST_ATR, $1, $3, 0, 0, 0); }
+       | TK_IDENTIFIER '[' EXP ']' '=' EXP { $$ = astCreate(AST_ATR_VET, $1, $3, $6, 0, 0); }
        | KW_INPUT EXP { $$ = astCreate(AST_INPUT, 0, $2, 0, 0, 0); }
        | KW_OUTPUT LIST_PARAM { $$ = astCreate(AST_OUTPUT, 0, $2, 0, 0, 0); }
        | KW_RETURN EXP { $$ = astCreate(AST_RETURN, 0, $2, 0, 0, 0); }
@@ -144,6 +145,7 @@ LOOP: KW_LOOP '(' EXP ')' COMMAND { $$ = astCreate(AST_LOOP, 0, $3, $5, 0, 0); }
 EXP: TK_IDENTIFIER { $$ = astCreate(AST_SYMBOL, $1, 0, 0, 0, 0); }
    | '&' TK_IDENTIFIER { $$ = astCreate(AST_REF, $2, 0, 0, 0, 0); }
    | '*' TK_IDENTIFIER { $$ = astCreate(AST_DEREF, $2, 0, 0, 0, 0); }
+   | TK_IDENTIFIER '[' EXP ']' { $$ = astCreate(AST_VET, $1, $3, 0, 0, 0); }
    | LIT { $$ = astCreate(AST_LIT, 0, $1, 0, 0, 0); }
    | EXP '*' EXP { $$ = astCreate(AST_MUL, 0, $1, $3, 0, 0); }
    | EXP '/' EXP { $$ = astCreate(AST_DIV, 0, $1, $3, 0, 0); }

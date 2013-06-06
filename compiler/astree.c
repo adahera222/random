@@ -1,4 +1,5 @@
 #include "astree.h"
+#include "scanner.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -8,6 +9,7 @@ AST* astCreate(int type, HASH_NODE *symbol, AST *s0, AST *s1, AST *s2, AST *s3) 
     AST *n = calloc(1, sizeof(AST));
     n->type = type;
     n->symbol = symbol;
+    n->line = getLineNumber();
     n->children[0] = s0;
     n->children[1] = s1;
     n->children[2] = s2;
@@ -62,11 +64,18 @@ void astPrintFile(AST *node) {
             fprintf(yyout, ";\n");
             break;
 
+        case AST_VET:
+            fprintf(yyout, "%s[", node->symbol->key);
+            astPrintFile(node->children[0]);
+            fprintf(yyout, "]");
+            break;
+
         case AST_WORD: fprintf(yyout, "word"); break;
         case AST_BYTE: fprintf(yyout, "byte"); break;
         case AST_BOOL: fprintf(yyout, "bool"); break;
         case AST_SYMBOL: fprintf(yyout, "%s", node->symbol->key); break;
-        case AST_VEC_SIZE: fprintf(yyout, "%s", node->symbol->key); break;
+        case AST_SYMBOL_LIT: fprintf(yyout, "%s", node->symbol->key); break;
+        case AST_VET_SIZE: fprintf(yyout, "%s", node->symbol->key); break;
         case AST_LIT: astPrintFile(node->children[0]); break;
 
         case AST_LIST_VAL:
@@ -88,6 +97,13 @@ void astPrintFile(AST *node) {
         case AST_DEC_LOC_VAR:
             astPrintFile(node->children[0]);
             fprintf(yyout, " %s:", node->symbol->key);
+            astPrintFile(node->children[1]);
+            fprintf(yyout, ";\n");
+            break;
+
+        case AST_DEC_LOC_PTR:
+            astPrintFile(node->children[0]);
+            fprintf(yyout, " $%s:", node->symbol->key);
             astPrintFile(node->children[1]);
             fprintf(yyout, ";\n");
             break;
@@ -119,6 +135,13 @@ void astPrintFile(AST *node) {
         case AST_ATR:
             fprintf(yyout, "%s = ", node->symbol->key);
             astPrintFile(node->children[0]);
+            break;
+
+        case AST_ATR_VET:
+            fprintf(yyout, "%s[", node->symbol->key);
+            astPrintFile(node->children[0]);
+            fprintf(yyout, "] = ");
+            astPrintFile(node->children[1]);
             break;
 
         case AST_INPUT:
@@ -318,7 +341,7 @@ void astPrintNode(AST *node) {
         case AST_BOOL: printf("Bool"); break;
         case AST_SYMBOL: printf("Symbol"); break;
         case AST_DEC_VET: printf("Vector Declaration"); break;
-        case AST_VEC_SIZE: printf("Vector Size"); break;
+        case AST_VET_SIZE: printf("Vector Size"); break;
         case AST_LIT: printf("Literal");
         case AST_LIST_VAL: printf("List"); break;
         case AST_DEC_FUN: printf("Function Declaration"); break;
