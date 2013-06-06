@@ -53,7 +53,7 @@ void yyerror(char *);
 
 %%
 
-PROG: LIST_DEC { $$ = $1; astPrintFile($$); declarations($$); usage($$); hashPrint(); }
+PROG: LIST_DEC { $$ = $1; astPrintFile($$); declarations($$); usage($$); datatypes($$); hashPrint(); }
     ;
 
 LIST_DEC: DEC LIST_DEC { $$ = astCreate(AST_LIST_DEC, 0, $1, $2, 0, 0); }
@@ -77,11 +77,11 @@ TYPE: KW_WORD { $$ = astCreate(AST_WORD, 0, 0, 0, 0, 0); }
     | KW_BOOL { $$ = astCreate(AST_BOOL, 0, 0, 0, 0, 0); }
     ;
 
-LIT: LIT_INTEGER { $$ = astCreate(AST_SYMBOL_LIT, $1, 0, 0, 0, 0); $1->data_type = DT_INT; }
-   | LIT_FALSE { $$ = astCreate(AST_SYMBOL_LIT, $1, 0, 0, 0, 0); $1->data_type = DT_BOOL; }
-   | LIT_TRUE { $$ = astCreate(AST_SYMBOL_LIT, $1, 0, 0, 0, 0); $1->data_type = DT_BOOL; }
-   | LIT_CHAR { $$ = astCreate(AST_SYMBOL_LIT, $1, 0, 0, 0, 0); $1->data_type = DT_CHAR; }
-   | LIT_STRING { $$ = astCreate(AST_SYMBOL_LIT, $1, 0, 0, 0, 0); $1->data_type = DT_STR; }
+LIT: LIT_INTEGER { $$ = astCreate(AST_SYMBOL_LIT, $1, 0, 0, 0, 0); $1->data_type = L_INT; }
+   | LIT_FALSE { $$ = astCreate(AST_SYMBOL_LIT, $1, 0, 0, 0, 0); $1->data_type = L_BOOL; }
+   | LIT_TRUE { $$ = astCreate(AST_SYMBOL_LIT, $1, 0, 0, 0, 0); $1->data_type = L_BOOL; }
+   | LIT_CHAR { $$ = astCreate(AST_SYMBOL_LIT, $1, 0, 0, 0, 0); $1->data_type = L_CHAR; }
+   | LIT_STRING { $$ = astCreate(AST_SYMBOL_LIT, $1, 0, 0, 0, 0); $1->data_type = L_STR; }
    ;
 
 DEC_VET: TYPE TK_IDENTIFIER '[' LIT_INTEGER ']' { $$ = astCreate(AST_DEC_VET, $2, $1, astCreate(AST_VET_SIZE, $4, 0, 0, 0, 0), 0, 0); $2->data_type = $1->type; }
@@ -146,7 +146,11 @@ EXP: TK_IDENTIFIER { $$ = astCreate(AST_SYMBOL, $1, 0, 0, 0, 0); }
    | '&' TK_IDENTIFIER { $$ = astCreate(AST_REF, $2, 0, 0, 0, 0); }
    | '*' TK_IDENTIFIER { $$ = astCreate(AST_DEREF, $2, 0, 0, 0, 0); }
    | TK_IDENTIFIER '[' EXP ']' { $$ = astCreate(AST_VET, $1, $3, 0, 0, 0); }
-   | LIT { $$ = astCreate(AST_LIT, 0, $1, 0, 0, 0); }
+   | LIT_INTEGER { $$ = astCreate(AST_SYMBOL_LIT, $1, 0, 0, 0, 0); $1->data_type = L_INT; }
+   | LIT_FALSE { $$ = astCreate(AST_SYMBOL_LIT, $1, 0, 0, 0, 0); $1->data_type = L_BOOL; }
+   | LIT_TRUE { $$ = astCreate(AST_SYMBOL_LIT, $1, 0, 0, 0, 0); $1->data_type = L_BOOL; }
+   | LIT_CHAR { $$ = astCreate(AST_SYMBOL_LIT, $1, 0, 0, 0, 0); $1->data_type = L_CHAR; }
+   | LIT_STRING { $$ = astCreate(AST_SYMBOL_LIT, $1, 0, 0, 0, 0); $1->data_type = L_STR; }
    | EXP '*' EXP { $$ = astCreate(AST_MUL, 0, $1, $3, 0, 0); }
    | EXP '/' EXP { $$ = astCreate(AST_DIV, 0, $1, $3, 0, 0); }
    | EXP '+' EXP { $$ = astCreate(AST_SUM, 0, $1, $3, 0, 0); }

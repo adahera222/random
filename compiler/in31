@@ -1,10 +1,11 @@
 word a:0;
 byte b:5;
-word v[10]:0 0 0 0 0 0 0 0 0 0; 
+word v[10]:0 0 0 0 0 0 0 0 0 0;
 word $pt:0;
+word c:"dsh";
 word main()
 {
     pt = &a;
-    pt[1] = v;
     a = *pt;
+    a = pt-b;
 }

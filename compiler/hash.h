@@ -16,10 +16,10 @@
 #define SYMBOL_POINTER 9
 #define SYMBOL_VECTOR 10
 #define SYMBOL_FUNCTION 11
-#define DT_INT 12
-#define DT_BOOL 13
-#define DT_CHAR 14
-#define DT_STR 15
+#define L_INT 12
+#define L_BOOL 13
+#define L_CHAR 14
+#define L_STR 15
 
 typedef struct hash_node {
     char *key;
