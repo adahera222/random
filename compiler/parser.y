@@ -92,7 +92,7 @@ LIST_VAL: LIT LIST_VAL { $$ = astCreate(AST_LIST_VAL, 0, $1, $2, 0, 0); }
         | { $$ = astCreate(0, 0, 0, 0, 0, 0); }
         ;
 
-DEC_FUN: TYPE TK_IDENTIFIER '(' LIST_DEC_PARAM ')' LIST_DEC_LOC COMMAND { $$ = astCreate(AST_DEC_FUN, $2, $1, $4, $6, $7); $2->data_type = $1->type;}
+DEC_FUN: TYPE TK_IDENTIFIER '(' LIST_DEC_PARAM ')' LIST_DEC_LOC COMMAND { $$ = astCreate(AST_DEC_FUN, $2, $1, $4, $6, $7); $2->data_type = $1->type; $2->params = $4; }
        ;
 
 /* try to fix 6shift/reduce here later */
@@ -100,12 +100,12 @@ LIST_DEC_LOC: DEC_LOC_VAR ';' LIST_DEC_LOC { $$ = astCreate(AST_LIST_DEC_LOC, 0,
             | { $$ = astCreate(0, 0, 0, 0, 0, 0); }
             ;
 
-LIST_DEC_PARAM: DEC_PARAM LIST_DEC_PARAM_SEP { $$ = astCreate(AST_LIST_DEC_PARAM, 0, $1, $2, 0, 0); }
-              | { $$ = astCreate(0, 0, 0, 0, 0, 0); }
+LIST_DEC_PARAM: LIST_DEC_PARAM_SEP DEC_PARAM { $$ = astCreate(AST_LIST_DEC_PARAM, 0, $1, $2, 0, 0); }
+              | { $$ = astCreate(AST_EMPTY, 0, 0, 0, 0, 0); }
               ;
 
-LIST_DEC_PARAM_SEP: ',' LIST_DEC_PARAM { $$ = astCreate(AST_LIST_DEC_PARAM_SEP, 0, $2, 0, 0, 0); }
-                  | { $$ = astCreate(0, 0, 0, 0, 0, 0); }
+LIST_DEC_PARAM_SEP: LIST_DEC_PARAM ',' { $$ = astCreate(AST_LIST_DEC_PARAM_SEP, 0, $1, 0, 0, 0); }
+                  | { $$ = astCreate(AST_EMPTY, 0, 0, 0, 0, 0); }
                   ;
 
 DEC_PARAM: TYPE TK_IDENTIFIER { $$ = astCreate(AST_DEC_PARAM, $2, $1, 0, 0, 0); $2->data_type = $1->type; }
@@ -175,7 +175,7 @@ LIST_PARAM: LIST_PARAM_SEP EXP { $$ = astCreate(AST_LIST_PARAM, 0, $1, $2, 0, 0)
           ;
 
 LIST_PARAM_SEP: LIST_PARAM ',' { $$ = astCreate(AST_LIST_PARAM_SEP, 0, $1, 0, 0, 0); }
-              | { $$ = astCreate(0, 0, 0, 0, 0, 0); }
+              | { $$ = astCreate(AST_EMPTY, 0, 0, 0, 0, 0); }
               ;
 
 %%

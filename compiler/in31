@@ -3,9 +3,13 @@ byte b:5;
 word v[10]:0 0 0 0 0 0 0 0 0 0;
 word $pt:0;
 word c:"dsh";
-word main()
+bool c:1;
+bool d:true;
+bool e:'d';
+word main(word a, bool b)
 {
     pt = &a;
     a = *pt;
-    a = pt-b;
+    a = pt-pt;
+    main(a, b, c);
 }

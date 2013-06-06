@@ -124,8 +124,8 @@ void astPrintFile(AST *node) {
             break;
 
         case AST_LIST_DEC_PARAM_SEP:
-            fprintf(yyout, ", ");
             astPrintFile(node->children[0]);
+            fprintf(yyout, ", ");
             break;
 
         case AST_COMMAND: 

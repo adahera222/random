@@ -1,5 +1,7 @@
 #include <stdio.h>
-#include "sem.h"
+#include "astree.h"
+
+void fparams(AST *n);
 
 void declarations(AST *n) {
     if (!n) return;
@@ -74,12 +76,40 @@ void usage(AST *n) {
             else if (n->symbol->value == SYMBOL_VECTOR) fprintf(stderr, "%d> %s should be function, not vector.\n", n->line, n->symbol->key);
             else if (n->symbol->value == SYMBOL_POINTER) fprintf(stderr, "%d> %s should be function, not pointer.\n", n->line, n->symbol->key);
             else if (n->symbol->value != SYMBOL_FUNCTION) fprintf(stderr, "%d> %s not previously declared.\n", n->line, n->symbol->key);
-            else if (n->symbol->value == SYMBOL_FUNCTION) { fprintf(stderr, "OK\n"); };
+            else if (n->symbol->value == SYMBOL_FUNCTION) fparams(n);
         }
     }
 
     int i;
     for (i = 0; i < 4; i++) usage(n->children[i]);
+}
+
+int getParamType(AST *n) {
+    return 1;
+}
+
+void lparams(AST *n, AST *dec_params, AST *call_params) {
+    if (dec_params == 0 && call_params == 0) return;
+    if ((dec_params == 0 && call_params != 0) || (dec_params != 0 && call_params == 0)) {
+        fprintf(stderr, "%d> invalid number of parameters on %s function call.\n", n->line, n->symbol->key);
+        return;
+    }
+
+    lparams(n, dec_params->children[0], call_params->children[0]);
+}
+
+void fparams(AST *n) {
+    if (!n) return;
+
+    if (n->type == AST_CALL_EMPTY) {
+        if (n->symbol->params->type != AST_EMPTY) {
+            fprintf(stderr, "%d> missing parameters on %s function call.\n", n->line, n->symbol->key);
+        }
+    } else if (n->type == AST_CALL) {
+        if (n->symbol->params->type != AST_EMPTY) {
+            lparams(n, n->symbol->params, n->children[0]);
+        }
+    }
 }
 
 int isOP(AST *n) {
@@ -105,13 +135,13 @@ int isOPBOOL(AST *n) {
 
 int isNC(AST *n) {
     if (n->symbol->data_type != L_INT && n->symbol->data_type != L_CHAR && 
-        n->symbol->data_type != AST_BYTE && n->symbol->data_type != AST_WORD) 
+        n->symbol->data_type != AST_BYTE && n->symbol->data_type != AST_WORD && n->symbol->data_type != L_STR) 
         return 0;
     return 1;
 }
 
 int isB(AST *n) {
-    if (n->symbol->data_type != L_BOOL && n->symbol->data_type != AST_BOOL)
+    if (n->symbol->data_type != L_BOOL && n->symbol->data_type != AST_BOOL && n->symbol->data_type != L_STR)
         return 0;
     return 1;
 }
@@ -182,18 +212,16 @@ void datatypes(AST *n) {
     } else if (n->type == AST_SUB || n->type == AST_DIV || n->type == AST_MUL) {
         if (!isOPAR(n->children[0])) {
             if (n->children[0]->type == AST_SYMBOL || n->children[0]->type == AST_SYMBOL_LIT || n->children[0]->type == AST_VET) {
-                //fprintf(stderr, "%d\n", n->children[0]->symbol->value);
-                if (!isNC(n->children[0])) {
-                        fprintf(stderr, "%d> %s should be an integer or character.\n"); 
+                if (!isNC(n->children[0]) || n->children[0]->symbol->value == SYMBOL_POINTER) {
+                    fprintf(stderr, "%d> %s should be an integer or character.\n", n->line, n->children[0]->symbol->key); 
                 }
             } else fprintf(stderr, "%d> invalid operator type.\n", n->line);
         }
 
         if (!isOPAR(n->children[1])) {
             if (n->children[1]->type == AST_SYMBOL || n->children[1]->type == AST_SYMBOL_LIT || n->children[1]->type == AST_VET) {
-                //fprintf(stderr, "%d\n", n->children[1]->symbol->value);
-                if (!isNC(n->children[1])) {
-                    fprintf(stderr, "%d> %s should be an integer or character.\n"); 
+                if (!isNC(n->children[1]) || n->children[1]->symbol->value == SYMBOL_POINTER) {
+                    fprintf(stderr, "%d> %s should be an integer or character.\n", n->line, n->children[0]->symbol->key); 
                 }
             } else fprintf(stderr, "%d> invalid operator type.\n", n->line);
         }
