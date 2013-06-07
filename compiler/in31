@@ -6,10 +6,14 @@ word c:"dsh";
 bool c:1;
 bool d:true;
 bool e:'d';
-word main(word a, bool b)
+word f:1;
+bool g:true;
+word main(word a, bool c)
 {
     pt = &a;
     a = *pt;
     a = pt-pt;
-    main(a, b, c);
+    a = 1+f;
+    main(d, a);
+    return d;
 }
