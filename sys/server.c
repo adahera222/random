@@ -13,6 +13,7 @@
 
 typedef struct userLoginInfo{
     int usrSocket;
+    int thread_id;
     char *login;
     char *name;
     UT_hash_handle hh;
@@ -60,6 +61,10 @@ usrInfo *users;
 time_t current_time;
 struct tm * time_info;
 char timestr[9];
+int current_t = 0;
+pthread_t userThreads[256];
+
+void broadcast(char *user, char *msg);
 
 int sendMsg(usrInfo *dest, char *msg) {
     int size = strlen(msg);
@@ -74,30 +79,75 @@ void talkTo(char *dstName, char *msg, usrInfo *src) {
     usrInfo *dest;
     getUser(dstName, dest);
     
-    if(dest) {
-        sendMsg(dest, msg);
+    if (dest) {
+        char pvt_msg[256];
+        strcpy(pvt_msg, "-> *");
+        strcat(pvt_msg, src->name);
+        strcat(pvt_msg, "*: ");
+        strcat(pvt_msg, msg);
+        sendMsg(dest, pvt_msg);
     } else {
-        sendMsg(src,"|UNREACHABLE| :(\n");
+        char not_found_msg[256];
+        strcpy(not_found_msg, "*** ");
+        strcpy(not_found_msg, dstName); 
+        strcat(not_found_msg, " is not connected");
+        sendMsg(src, not_found_msg);
     }
 }
 
 int handleMessageCommands(char *login, char *msg) {
     if (!strncmp(msg, "/nick", 5)) {
         usrInfo *target;
+        char change_name_msg[256];
         getUser(login, target);
+        strcpy(change_name_msg, "*** ");
+        strcat(change_name_msg, target->name);
         strncpy(target->name, msg+6, strlen(msg));
+        strcat(change_name_msg, " is now known as ");
+        char aux[256];
+        strncpy(aux, msg+6, strlen(msg));
+        strcat(change_name_msg, aux);
+        broadcast(NULL, change_name_msg);
         return 1;
     } else if (!strncmp(msg, "/list", 5)) {
         usrInfo *u;
         usrInfo *target;
         getUser(login, target);
         char user_list_msg[1024];
-        strcpy(user_list_msg, "Connected users:\n");
+        strcpy(user_list_msg, "\n");
+        strcat(user_list_msg, "*** Connected users:\n");
         for(u=users; u != NULL; u=u->hh.next) {
             strcat(user_list_msg, u->login);
             strcat(user_list_msg, "\n");
         }
         sendMsg(target, user_list_msg);
+        return 1;
+    } else if (!strncmp(msg, "/me", 3)) {
+        usrInfo *target;
+        getUser(login, target);
+        char me_msg[256];
+        strcpy(me_msg, "* ");
+        strcat(me_msg, target->name);
+        strcat(me_msg, " ");
+        char aux[256];
+        strncpy(aux, msg+4, strlen(msg));
+        strcat(me_msg, aux);
+        broadcast(NULL, me_msg);
+        return 1;
+    } else if (!strncmp(msg, "/msg", 4)) {
+        char *p;
+        usrInfo *target;
+        getUser(login, target);
+        char nickname[256];
+        char msgg[256];
+        strncpy(nickname, msg+5, strlen(msg));
+        p = strchr(nickname, ' ');
+        if (p) {
+            int pos = p - nickname;
+            strncpy(msgg, nickname+pos+1, strlen(nickname));
+            nickname[pos] = '\0';
+            talkTo(nickname, msgg, target);
+        } else sendMsg(target, "*** No message.");
         return 1;
     }
     return 0;
@@ -198,15 +248,15 @@ void *listenForUsers()
 		// Keep user login info in structure.
 		usrInfo *userLoginInfo = (usrInfo *) malloc(sizeof(usrInfo));
 		userLoginInfo->usrSocket = newsockfd;
+        userLoginInfo->thread_id = current_t;
 		userLoginInfo->login = (char *) malloc(sizeof(char)*256);
 		userLoginInfo->name= (char *) malloc(sizeof(char)*256);
 		strcpy(userLoginInfo->login, buffer);
 		strcpy(userLoginInfo->name, buffer);
 		
 		// Create thread to handle user.
-	    pthread_t *userThread = malloc(sizeof(pthread_t));
-	    pthread_create(userThread, NULL, handleUser, userLoginInfo);
-	    
+	    pthread_create(&userThreads[current_t], NULL, handleUser, userLoginInfo);
+        current_t++;
 	}
     close(newsockfd);
 	close(sockfd);

@@ -11,20 +11,22 @@
 
 #define PORT 4000
 
+int alive = 1;
+
 void *printReceived(void *arg) {
     int n, sockfd = * ( (int *) arg );
     char buffer[256];
     
     // Print.
-	while(1) {
+	while(alive) {
 	    // Clean. 
 	    bzero(buffer, 256);
 	    
 	    // Read from the socket.
         n = read(sockfd, buffer, 256);
-        if (n < 0) 
-		    fprintf(stderr,"ERROR reading from socket\n");
+        if (n < 0) fprintf(stderr,"ERROR reading from socket\n");
         fprintf(stderr,"%s\n",buffer);
+        if (!strcmp(buffer, "Closing...")) alive = 0;
     }
 }
 
@@ -73,7 +75,7 @@ int main(int argc, char *argv[])
     pthread_create(readThread, NULL, printReceived, &sockfd);
     
     // Send messages.
-    while(1) {
+    while(alive) {
         bzero(buffer, 256);
         fgets(buffer, 256, stdin);
         len = strlen(buffer);
@@ -81,8 +83,7 @@ int main(int argc, char *argv[])
         
 	    /* write in the socket */
 	    n = write(sockfd, buffer, strlen(buffer));
-        if (n < 0) 
-		    printf("ERROR writing to socket\n");
+        if (n < 0) printf("ERROR writing to socket\n");
     }
     
 	close(sockfd);
