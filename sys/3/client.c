@@ -6,33 +6,34 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
-
 #include <string.h>
-
 #include <pthread.h>
 
 #define PORT 4000
+
+int alive = 1;
 
 void *printReceived(void *arg) {
     int n, sockfd = * ( (int *) arg );
     char buffer[256];
     
     // Print.
-	while(1) {
+	while(alive) {
 	    // Clean. 
 	    bzero(buffer, 256);
-	    
+
 	    // Read from the socket.
         n = read(sockfd, buffer, 256);
-        if (n < 0) 
-		    fprintf(stderr,"ERROR reading from socket\n");
-        fprintf(stderr,"%s\n",buffer);
+        if (n < 0) fprintf(stderr,"ERROR reading from socket\n");
+        
+	    if (strstr(buffer, "/TERMINATE")) { alive = 0; exit(0); }
+        else fprintf(stderr,"%s\n",buffer);
     }
 }
 
 int main(int argc, char *argv[])
 {
-    int sockfd, n;
+    int sockfd, n, len;
     struct sockaddr_in serv_addr;
     struct hostent *server;
 	
@@ -61,28 +62,29 @@ int main(int argc, char *argv[])
         printf("ERROR connecting\n");
 
     // Login
-    printf("Enter login: ");
+    printf("Username: ");
     bzero(buffer, 256);
     fgets(buffer, 256, stdin);    
+    len = strlen(buffer);
+    buffer[len-1] = '\0';
 	/* write in the socket */
 	n = write(sockfd, buffer, strlen(buffer));
-    if (n < 0) 
-       printf("ERROR writing to socket\n");
+    if (n < 0) printf("ERROR writing to socket\n");
     
     // Listen for incoming messages.
     pthread_t *readThread = malloc(sizeof(pthread_t));
     pthread_create(readThread, NULL, printReceived, &sockfd);
     
     // Send messages.
-    while(1) {
-        printf("Enter the message: ");
+    while(alive) {
         bzero(buffer, 256);
         fgets(buffer, 256, stdin);
+        len = strlen(buffer);
+        buffer[len-1] = '\0';
         
 	    /* write in the socket */
 	    n = write(sockfd, buffer, strlen(buffer));
-        if (n < 0) 
-		    printf("ERROR writing to socket\n");
+        if (n < 0) printf("ERROR writing to socket\n");
     }
     
 	close(sockfd);
