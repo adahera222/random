@@ -6,9 +6,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
-
 #include <string.h>
-
 #include <pthread.h>
 
 #define PORT 4000
@@ -32,7 +30,7 @@ void *printReceived(void *arg) {
 
 int main(int argc, char *argv[])
 {
-    int sockfd, n;
+    int sockfd, n, len;
     struct sockaddr_in serv_addr;
     struct hostent *server;
 	
@@ -61,13 +59,14 @@ int main(int argc, char *argv[])
         printf("ERROR connecting\n");
 
     // Login
-    printf("Enter login: ");
+    printf("Username: ");
     bzero(buffer, 256);
     fgets(buffer, 256, stdin);    
+    len = strlen(buffer);
+    buffer[len-1] = '\0';
 	/* write in the socket */
 	n = write(sockfd, buffer, strlen(buffer));
-    if (n < 0) 
-       printf("ERROR writing to socket\n");
+    if (n < 0) printf("ERROR writing to socket\n");
     
     // Listen for incoming messages.
     pthread_t *readThread = malloc(sizeof(pthread_t));
@@ -75,9 +74,10 @@ int main(int argc, char *argv[])
     
     // Send messages.
     while(1) {
-        printf("Enter the message: ");
         bzero(buffer, 256);
         fgets(buffer, 256, stdin);
+        len = strlen(buffer);
+        buffer[len-1] = '\0';
         
 	    /* write in the socket */
 	    n = write(sockfd, buffer, strlen(buffer));

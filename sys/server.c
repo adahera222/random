@@ -1,14 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <time.h>
 #include <unistd.h>
 #include <sys/types.h> 
 #include <sys/socket.h>
 #include <netinet/in.h>
-
 #include <pthread.h>
-
 #include "uthash.h"
 
 #define PORT 4000
@@ -16,6 +14,7 @@
 typedef struct userLoginInfo{
     int usrSocket;
     char *login;
+    char *name;
     UT_hash_handle hh;
 } usrInfo;
 
@@ -58,6 +57,10 @@ usrInfo *users;
     HASH_FIND_STR(users, name, res); \
     unlockUserHash(); \
 
+time_t current_time;
+struct tm * time_info;
+char timestr[9];
+
 int sendMsg(usrInfo *dest, char *msg) {
     int size = strlen(msg);
     if(size > 0) {
@@ -78,10 +81,50 @@ void talkTo(char *dstName, char *msg, usrInfo *src) {
     }
 }
 
-void broadcast(char *msg) {
+int handleMessageCommands(char *login, char *msg) {
+    if (!strncmp(msg, "/nick", 5)) {
+        usrInfo *target;
+        getUser(login, target);
+        strncpy(target->name, msg+6, strlen(msg));
+        return 1;
+    } else if (!strncmp(msg, "/list", 5)) {
+        usrInfo *u;
+        usrInfo *target;
+        getUser(login, target);
+        char user_list_msg[1024];
+        strcpy(user_list_msg, "Connected users:\n");
+        for(u=users; u != NULL; u=u->hh.next) {
+            strcat(user_list_msg, u->login);
+            strcat(user_list_msg, "\n");
+        }
+        sendMsg(target, user_list_msg);
+        return 1;
+    }
+    return 0;
+}
+
+void broadcast(char *user, char *msg) {
     usrInfo *u;
+
+    // Get current time and append it to broadcasted message
+    time(&current_time);
+    strftime(timestr, sizeof(timestr), "%H:%M:%S", localtime(&current_time));
+    char user_msg[256];
+    strcpy(user_msg, "[");
+    strcat(user_msg, timestr);
+    strcat(user_msg, "] ");
+
+    // Append user so you can see who the message was sent from... 
+    // If user == NULL then the message was sent from the server.
+    if (user) {
+        strcat(user_msg, user);
+        strcat(user_msg, ": ");
+    }
+    strcat(user_msg, msg);
+
+    // Send it to everyone!
     for(u=users; u != NULL; u=u->hh.next) {
-        sendMsg(u, msg);
+        sendMsg(u, user_msg);
     }
 }
 
@@ -94,10 +137,10 @@ void *handleUser(void *arg) {
     addUser(usr);
     
     // Tell everyone!
-    printf("%s Entered the server\n", usr->login);
-    strcpy(buffer, usr->login);
-    strcat(buffer, " ENTERED!\n");
-    broadcast(buffer);
+    printf("%s joined the server!\n", usr->name);
+    strcpy(buffer, usr->name);
+    strcat(buffer, " joined the server!");
+    broadcast(NULL, buffer);
     
     // Receive messages.
     while(1) {
@@ -108,8 +151,10 @@ void *handleUser(void *arg) {
         if (n < 0) 
 		    printf("ERROR reading from socket\n");
 		else
-		    printf("%s RECEIVED\n",buffer);
-        broadcast(buffer);
+		    printf("%s RECEIVED\n", buffer);
+
+        // Only broadcast if the message wasn't a command.
+        if (!handleMessageCommands(usr->login, buffer)) broadcast(usr->name, buffer);
     }  
     // Logout.
     rmvUser(usr);
@@ -154,7 +199,9 @@ void *listenForUsers()
 		usrInfo *userLoginInfo = (usrInfo *) malloc(sizeof(usrInfo));
 		userLoginInfo->usrSocket = newsockfd;
 		userLoginInfo->login = (char *) malloc(sizeof(char)*256);
+		userLoginInfo->name= (char *) malloc(sizeof(char)*256);
 		strcpy(userLoginInfo->login, buffer);
+		strcpy(userLoginInfo->name, buffer);
 		
 		// Create thread to handle user.
 	    pthread_t *userThread = malloc(sizeof(pthread_t));
