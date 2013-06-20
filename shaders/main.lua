@@ -93,6 +93,8 @@ simple_sobel = love.graphics.newPixelEffect[[
 function love.load()
     local w, h = love.graphics.getWidth(), love.graphics.getHeight()
     gaben = love.graphics.newImage('gaben.jpg')
+    simple_blur:send("image_size", {gaben:getWidth(), gaben:getHeight()})
+    simple_blur:send("intensity", 3)
 end
 
 function love.update(dt)
@@ -100,7 +102,8 @@ function love.update(dt)
 end
 
 function love.draw()
-    love.graphics.draw(gaben, 0, 0, 0, 0.5, 0.5)
+    love.graphics.setPixelEffect(simple_blur)
+    love.graphics.draw(gaben, 0, 0)
 end
 
 function love.keypressed(key)

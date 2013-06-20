@@ -98,14 +98,14 @@ int handleMessageCommands(char *login, char *msg) {
         usrInfo *target;
         char change_name_msg[256];
         getUser(login, target);
-	rmvUser(target);
- 	strcpy(change_name_msg, "*** ");
+        rmvUser(target);
+        strcpy(change_name_msg, "*** ");
         strcat(change_name_msg, target->login);
-	strncpy(target->login, msg+6, strlen(msg));
+        strncpy(target->login, msg+6, strlen(msg));
         strncpy(target->login, msg+6, strlen(msg));	
-	addUser(target);
+        addUser(target);
         strcat(change_name_msg, " is now known as ");
-	strcat(change_name_msg, target->login);
+        strcat(change_name_msg, target->login);
         broadcast(NULL, change_name_msg);
         return 1;
     } else if (!strncmp(msg, "/list", 5)) {
@@ -205,17 +205,17 @@ void *handleUser(void *arg) {
 		    printf("%s RECEIVED\n", buffer);
 
         // Only broadcast if the message wasn't a command.
-	int r = handleMessageCommands(usr->login, buffer);
-	if (!r) broadcast(usr->login, buffer);
-	else if (r==-1) {
-		char left_msg[256];
-		strcpy(left_msg, "*** ");
-		strcat(left_msg, usr->login);
-		strcat(left_msg, " left the server!\n");
-		broadcast(NULL, left_msg);
-		sendMsg(usr, "/TERMINATE");
-		break;
-	}
+        int r = handleMessageCommands(usr->login, buffer);
+        if (!r) broadcast(usr->login, buffer);
+        else if (r==-1) {
+            char left_msg[256];
+            strcpy(left_msg, "*** ");
+            strcat(left_msg, usr->login);
+            strcat(left_msg, " left the server!\n");
+            broadcast(NULL, left_msg);
+            sendMsg(usr, "/TERMINATE");
+            break;
+        }
     }  
 
     // Logout.
@@ -270,7 +270,7 @@ void *listenForUsers()
 		pthread_t userThread;
 	    pthread_create(&userThread, NULL, handleUser, userLoginInfo);
 	}
-    	close(newsockfd);
+    close(newsockfd);
 	close(sockfd);
 	
 }
