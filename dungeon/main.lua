@@ -3,10 +3,35 @@ struct = require 'struct'
 math.randomseed(os.time())
 math.random(); math.random(); math.random();
 
+Point = struct('x', 'y')
+Rectangle = struct('x', 'y', 'w', 'h')
+
 function love.load()
-    Point = struct('x', 'y')
-    Rectangle = struct('x', 'y', 'w', 'h')
-    cells = generateCells(2, 10)
+    dungeon_w, dungeon_h = 16, 16
+    min_room_w, min_room_h = 16, 16
+
+    dungeon = {}
+    for i = 1, dungeon_h do
+        dungeon[i] = {}
+        for j = 1, dungeon_w do
+            dungeon[i][j] = 0
+        end
+    end
+
+    printDungeon()
+end
+
+function printDungeon()
+    local str = ""
+    for i = 1, dungeon_h do
+        str = ""
+        str = str .. "[ " 
+        for j = 1, dungeon_w do
+            str = str .. dungeon[i][j] .. " "
+        end
+        str = str .. "]"
+        print(str)
+    end
 end
 
 function love.update(dt)
@@ -14,42 +39,5 @@ function love.update(dt)
 end
 
 function love.draw()
-    for _, cell in ipairs(cells) do
-        love.graphics.rectangle('line', cell.x+400, cell.y+300, cell.w, cell.h)
-    end
-end
 
-function generateCells(n, r)
-    local cells = {}
-    for i = 1, n do
-        local cell = Rectangle(math.random(-r, r), math.random(-r, r), math.random(18, 56), math.random(18, 56))
-        table.insert(cells, cell)
-    end
-    return cells
-end
-
-function colliding(c, cell)
-    local lu, ld, ru, rd = Point(c.x-c.w, c.y-c.h), Point(c.x-c.w, c.y+c.h), Point(c.x+c.w, c.y-c.h), Point(c.x+c.w, c.y+c.h)
-    local corners = {lu, ld, ru, rd}
-    for _, corner in ipairs(corners) do
-        if corner.x >= cell.x-cell.w and corner.x <= cell.w+cell.w and corner.y >= cell.y-cell.h and corner.y <= cell.y+cell.h then
-            return true, corner.x-cell.x, corner.y-cell.y
-        end
-    end
-    return false
-end
-
-function isOverlapping(cell, cells)
-    for _, c in ipairs(cells) do
-        local col, dx, dy = colliding(c, cell)
-        if col then return col, dx, dy end
-    end
-    return false
-end
-
-function separateCells(cells)
-    for _, c in ipairs(cells) do
-        local col, dx, dy = isOverlapping(c, cells) 
-    end
-    return cells
 end
