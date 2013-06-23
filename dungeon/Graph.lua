@@ -15,19 +15,16 @@ function Graph:__tostring()
         str = string.sub(str, 0, -3)
         str = str .. "\n"
     end
-    str = str .. "\n"
-    str = str .. "Nodes: \n"
+    str = str .. "\nNodes: \n"
     for _, node in ipairs(self.nodes) do
         str = str .. node .. "\n"
     end
-    str = str .. "\n"
-    str = str .. "Edges: \n"
+    str = str .. "\nEdges: \n"
     for _, edge in ipairs(self.edges) do
         str = str .. edge[1] .. ", " .. edge[2]
         str = str .. "\n"
     end
-    str = str .. "\n"
-    str = str .. "Floyd Warshall Distances: \n"
+    str = str .. "\nFloyd Warshall Distances: \n"
     for node, _ in pairs(self.floyd_dists) do
         for _node, _ in pairs(self.floyd_dists[node]) do
             str = str .. "(" .. node .. ", " .. _node .. ") = " .. self.floyd_dists[node][_node]
