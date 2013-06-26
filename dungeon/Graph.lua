@@ -48,16 +48,22 @@ function Graph:findNodes()
 end
 
 function Graph:addNode(node)
-    assert(not self.adjacency_list[node], "Node '" .. node .. "' already exists") 
-    self.adjacency_list[node] = {}
+    if node then
+        if not self.adjacency_list[node] then
+            self.adjacency_list[node] = {}
+        end
+    end
 end
 
 function Graph:removeNode(node)
-    assert(self.adjacency_list[node], "Node '" .. node .. "' does not exist.")
-    for _node, list in pairs(self.adjacency_list) do
-        self:removeEdge(node, _node)
+    if node then
+        if self.adjacency_list[node] then
+            for _node, list in pairs(self.adjacency_list) do
+                self:removeEdge(node, _node)
+            end
+            self.adjacency_list[node] = nil
+        end
     end
-    self.adjacency_list[node] = nil
 end
 
 function Graph:getEdge(node1, node2)
@@ -89,26 +95,40 @@ function Graph:findEdges()
     end
 end
 
+local function containsNode(table, node)
+    for _, v in ipairs(table) do
+        if v == node then return true end
+    end
+    return false
+end
+
 function Graph:addEdge(node1, node2)
-    assert(self.adjacency_list[node1] and self.adjacency_list[node2],
-          "Nodes '" .. node1 .. "' or '" .. node2 .. "' do not exist.")
-    table.insert(self.adjacency_list[node1], node2)
-    table.insert(self.adjacency_list[node2], node1)
+    if node1 and node2 then
+        if self.adjacency_list[node1] and self.adjacency_list[node2] then
+            if not containsNode(self.adjacency_list[node1], node2) and
+               not containsNode(self.adjacency_list[node2], node1) then 
+                table.insert(self.adjacency_list[node1], node2)
+                table.insert(self.adjacency_list[node2], node1)
+            end
+        end
+    end
 end
 
 function Graph:removeEdge(node1, node2)
-    assert(self.adjacency_list[node1] and self.adjacency_list[node2],
-          "Nodes '" .. node1 .. "' or '" .. node2 .. "' do not exist.")
-    for i, node in ipairs(self.adjacency_list[node1]) do
-        if node == node2 then 
-            table.remove(self.adjacency_list[node1], i) 
-            break
-        end
-    end
-    for i, node in ipairs(self.adjacency_list[node2]) do
-        if node == node1 then
-            table.remove(self.adjacency_list[node2], i) 
-            break
+    if node1 and node2 then
+        if self.adjacency_list[node1] and self.adjacency_list[node2] then
+            for i, node in ipairs(self.adjacency_list[node1]) do
+                if node == node2 then 
+                    table.remove(self.adjacency_list[node1], i) 
+                    break
+                end
+            end
+            for i, node in ipairs(self.adjacency_list[node2]) do
+                if node == node1 then
+                    table.remove(self.adjacency_list[node2], i) 
+                    break
+                end
+            end
         end
     end
 end
