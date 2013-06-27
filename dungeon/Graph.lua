@@ -36,8 +36,9 @@ function Graph:__tostring()
 end
 
 function Graph:getNode(node)
-    assert(self.adjacency_list[node], "Node '" .. node .. "' does not exist.")
-    return self.adjacency_list[node]
+    if self.adjacency_list[node] then
+        return self.adjacency_list[node]
+    end
 end
 
 function Graph:findNodes()
@@ -67,12 +68,12 @@ function Graph:removeNode(node)
 end
 
 function Graph:getEdge(node1, node2)
-    assert(self.adjacency_list[node1] and self.adjacency_list[node2],
-          "Nodes '" .. node1 .. "' or '" .. node2 .. "' do not exist.")
-    for _, node in ipairs(self.adjacency_list[node1]) do
-        if node == node2 then return true end
+    if self.adjacencey_list[node1] and self.adjacency_list[node2] then
+        for _, node in ipairs(self.adjacency_list[node1]) do
+            if node == node2 then return true end
+        end
+        return false
     end
-    return false
 end
 
 local function containsEdge(table, edge)
