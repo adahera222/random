@@ -1,13 +1,13 @@
 require 'Graph'
 
-GridNode = struct('id', 'w', 'h', 'color', 'in_path_original', 'in_path_additional')
+GridNode = struct('id', 'w', 'h', 'color', 'in_path_original', 'in_path_additional', 'joined')
 local node_w, node_h = 32, 32
 
 Dungeon = {}
 Dungeon.__index = Dungeon
 
 function Dungeon.new(w, h)
-    return setmetatable({w = w or 1, h = h or 1, grid = {}, graph = Graph(), draw_state = 'grid'}, Dungeon)
+    return setmetatable({w = w or 1, h = h or 1, grid = {}, draw_state = 'grid'}, Dungeon)
 end
 
 function Dungeon:__tostring()
@@ -26,7 +26,6 @@ end
 
 function Dungeon:generateDungeon()
     self:initializeGrid()
-    self:generateGraph()
     self:colorNodes()
     self:pathFind()
     self:randomizeRoomSizes()
@@ -40,29 +39,6 @@ function Dungeon:initializeGrid()
         for j = 1, self.w do
             self.grid[i][j] = GridNode(k, node_w, node_h)
             k = k + 1
-        end
-    end
-end
-
-function Dungeon:generateGraph()
-    self.graph:findNodes()
-    self.graph:findEdges()
-    for i = 1, self.h do
-        for j = 1, self.w do
-            local current = self:getGridXY(j, i) and self:getGridXY(j, i).id
-            local left = self:getGridXY(j-1, i) and self:getGridXY(j-1, i).id
-            local right = self:getGridXY(j+1, i) and self:getGridXY(j+1, i).id
-            local up = self:getGridXY(j, i-1) and self:getGridXY(j, i-1).id
-            local down = self:getGridXY(j, i+1) and self:getGridXY(j, i+1).id
-            self.graph:addNode(current)
-            self.graph:addNode(left)
-            self.graph:addNode(right)
-            self.graph:addNode(up)
-            self.graph:addNode(down)
-            self.graph:addEdge(current, left)
-            self.graph:addEdge(current, right)
-            self.graph:addEdge(current, up)
-            self.graph:addEdge(current, down)
         end
     end
 end
@@ -248,9 +224,40 @@ function Dungeon:pathFind()
     end
 end
 
+-- Joins all rooms inside the area x, y, x1+w, y1+h and returns true if join was successful, false otherwise.
+function Dungeon:join(x, y, w, h)
+    if not self.grid[y+h-1] then return false end
+    if not self.grid[y+h-1][x+w-1] then return false end
+    for i = x, x+w-1 do
+        for j = y, y+h-1 do
+            if self.grid[j][i].joined then return false end
+            self.grid[j][i].id = self.grid[y][x].id
+            self.grid[j][i].color = self.grid[y][x].color
+            if not self.grid[j][i].in_path_original then
+                self.grid[j][i].in_path_additional = true
+            end
+        end
+    end
+end
+
 function Dungeon:randomizeRoomSizes()
-    local widths = {32, 64}
-    local heights = {32, 64}
+    local not_joined_path_nodes = {}
+    local getNotJoinedPathNodes = function()
+        not_joined_path_nodes = {}
+        for i = 1, self.h do
+            for j = 1, self.w do
+                if not self.grid[i][j].joined then
+                    table.insert(not_joined_path_nodes, {x = j, y = i})
+                end
+            end
+        end
+    end
+
+    local rooms = {}
+    while #rooms > 0 do
+        getNotJoinedPathNodes()
+
+    end
 end
 
 function Dungeon:draw()
