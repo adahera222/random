@@ -17,10 +17,10 @@ function love.draw()
 end
 
 function love.keypressed(key)
-    local draw_states = {'grid', 'colored', 'path', 'filled_path'}
+    local draw_states = {'grid', 'colored', 'path', 'filled_path', 'join', 'connect', 'disconnect'}
     if key == 'n' then
         n = n + 1
-        if n > 4 then n = 1 end
+        if n > 7 then n = 1 end
         dungeon.draw_state = draw_states[n]
     end
 end
