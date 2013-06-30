@@ -1,13 +1,13 @@
 require 'Graph'
 
-GridNode = struct('id', 'w', 'h', 'color', 'in_path_original', 'in_path_additional', 'joined', 'original')
+GridNode = struct('id', 'w', 'h', 'color', 'in_path_original', 'in_path_additional', 'joined', 'original', 'ff_color')
 local node_w, node_h = 32, 32
 
 Dungeon = {}
 Dungeon.__index = Dungeon
 
 function Dungeon.new(w, h)
-    return setmetatable({w = w or 1, h = h or 1, grid = {}, connections_grid = {}, connections_room = {}, draw_state = 'grid'}, Dungeon)
+    return setmetatable({w = w or 1, h = h or 1, grid = {}, connections_grid = {}, connections_room = {}, ff_buckets = {}, draw_state = 'grid'}, Dungeon)
 end
 
 function Dungeon:__tostring()
@@ -29,8 +29,6 @@ function Dungeon:generateDungeon()
     self:colorNodes()
     self:pathFind()
     self:randomizeRoomSizes()
-    self:generateConnections()
-    self:disconnect()
 end
 
 function Dungeon:initializeGrid()
@@ -55,6 +53,30 @@ end
 
 function Dungeon:getNeighbors(x, y)
     return self:getGridXY(x-1, y), self:getGridXY(x, y-1), self:getGridXY(x+1, y), self:getGridXY(x, y+1)
+end
+
+function Dungeon:getNeighborsById(id)
+    local id_positions = {}
+    for i = 1, self.h do
+        for j = 1, self.w do
+            if self.grid[i][j].id == id then table.insert(id_positions, {x = j, y = i}) end
+        end
+    end
+    local contains = function(table, value)
+        for _, v in ipairs(table) do
+            if v == value then return true end
+        end
+        return false
+    end
+    local neighbors_id = {}
+    for _, p in ipairs(id_positions) do
+        local left, right, up, down = self:getNeighbors(p.x, p.y)
+        if left then if left.id ~= id then if not contains(neighbors_id, left.id) then table.insert(neighbors_id, left.id) end end end
+        if right then if right.id ~= id then if not contains(neighbors_id, right.id) then table.insert(neighbors_id, right.id) end end end
+        if up then if up.id ~= id then if not contains(neighbors_id, up.id) then table.insert(neighbors_id, up.id) end end end
+        if down then if down.id ~= id then if not contains(neighbors_id, down.id) then table.insert(neighbors_id, down.id) end end end
+    end
+    return neighbors_id
 end
 
 function Dungeon:colorNodes()
@@ -321,6 +343,10 @@ function Dungeon:generateConnections()
             end
         end
     end
+    self:calculateConnectionsRoom()
+end
+
+function Dungeon:calculateConnectionsRoom()
     self.connections_room = {}
     for i = 1, self.h do
         for j = 1, self.w do
@@ -347,7 +373,278 @@ end
 function Dungeon:disconnect()
     local n_rooms = 0
     for _, _ in pairs(self.connections_room) do n_rooms = n_rooms + 1 end
-    local room_connections = {math.floor(0.2*n_rooms), math.floor(0.4*n_rooms), math.floor(0.2*n_rooms), math.floor(0.2*n_rooms)} 
+    -- How many rooms should have 1, 2, 3 or >4 connections
+    local desired_connections = {math.floor(0.2*n_rooms), math.floor(0.5*n_rooms), math.floor(0.2*n_rooms), math.floor(0.1*n_rooms)} 
+    -- How many rooms have 1, 2, 3 or >4 connections
+    local connections_room = {0, 0, 0, 0}
+
+    local calculateLocalConnectionsRoom = function()
+        connections_room = {0, 0, 0, 0}
+        -- Figure out how many rooms per number of connections
+        for id, n in pairs(self.connections_room) do
+            if n > 0 then
+                if n < 4 then connections_room[n] = connections_room[n] + 1
+                else connections_room[4] = connections_room[4] + 1 end
+            end
+        end
+    end
+    calculateLocalConnectionsRoom()
+
+    local rooms_connection = {}
+    local calculateRoomsConnection = function()
+        rooms_connection = {{}, {}, {}, {}}
+        -- n_rooms -> room id
+        for id, n in pairs(self.connections_room) do
+            if not rooms_connection[n] then rooms_connection[n] = {} end
+            table.insert(rooms_connection[n], id)
+        end
+    end
+    calculateRoomsConnection()
+
+    local getByIdAndDirection = function(id, dir)
+        local positions = {}
+        for i = 1, self.h do
+            for j = 1, self.w do
+                if self.grid[i][j].id == id then
+                    local c = self.connections_grid[j .. i]
+                    if c.left and dir == 'left' then table.insert(positions, {x = j, y = i}) end
+                    if c.right and dir == 'right' then table.insert(positions, {x = j, y = i}) end
+                    if c.up and dir == 'up' then table.insert(positions, {x = j, y = i}) end
+                    if c.down and dir == 'down' then table.insert(positions, {x = j, y = i}) end
+                end
+            end
+        end
+        return positions
+    end
+
+    local directions = {'left', 'right', 'up', 'down'}
+    -- Remove extra rooms with n connections
+    local removeConnections = function(n)
+        while #rooms_connection[n] > 0 and (connections_room[n] > desired_connections[n]) do 
+            local i = math.random(1, #rooms_connection[n])
+            local current_id = rooms_connection[n][i]
+            local direction = directions[math.random(1, #directions)]
+            local positions = getByIdAndDirection(current_id, direction)
+            if #positions > 0 then
+                local p = positions[math.random(1, #positions)]
+                self.connections_grid[p.x .. p.y][direction] = nil
+                local x, y = p.x, p.y
+                local opposite_direction = {left = 'right', right = 'left', up = 'down', down = 'up'}
+                if direction == 'left' then x = x - 1 end
+                if direction == 'right' then x = x + 1 end
+                if direction == 'up' then y = y - 1 end
+                if direction == 'down' then y = y + 1 end
+                self.connections_grid[x .. y][opposite_direction[direction]] = nil
+                table.remove(rooms_connection[n], i)
+            end
+            self:calculateConnectionsRoom()
+            calculateLocalConnectionsRoom()
+            calculateRoomsConnection()
+        end
+    end
+
+    removeConnections(4)
+    if connections_room[3] > desired_connections[3] then removeConnections(3) end
+    if connections_room[2] > desired_connections[2] then removeConnections(2) end
+
+    print("Connections: ", connections_room[1], connections_room[2], connections_room[3], connections_room[4])
+    print("Desired: ", desired_connections[1], desired_connections[2], desired_connections[3], desired_connections[4])
+end
+
+function Dungeon:setffColor(id, color)
+    for i = 1, self.h do
+        for j = 1, self.w do
+            if self.grid[i][j].in_path_original or self.grid[i][j].in_path_additional then
+                if self.grid[i][j].id == id then
+                    self.grid[i][j].ff_color = color
+                end
+            end
+        end
+    end
+end
+
+function Dungeon:floodFill(id, color)
+    local contains = function(table, value)
+        for _, v in ipairs(table) do
+            if v == value then return true end
+        end
+        return false
+    end
+
+    if not self.ff_buckets[color] then self.ff_buckets[color] = {} end
+    if not contains(self.ff_buckets[color], id) then 
+        table.insert(self.ff_buckets[color], id)
+        self:setffColor(id, color)
+    else return end
+
+    local neighbors = self:getNeighborsById(id)
+    for _, neighbor_id in ipairs(neighbors) do
+        if self:isIdInPath(neighbor_id) then
+            if self:isConnectionBetween(id, neighbor_id) then
+                if not contains(self.ff_buckets[color], neighbor_id) then 
+                    self:floodFill(neighbor_id, color)
+                end
+            end
+        end
+    end
+end
+
+function Dungeon:isIdInPath(id)
+    for i = 1, self.h do
+        for j = 1, self.w do
+            if self.grid[i][j].id == id then
+                if not self.grid[i][j].in_path_original and not self.grid[i][j].in_path_additional then
+                    return false
+                end
+            end
+        end
+    end
+    return true
+end
+
+function Dungeon:isConnectionBetween(id1, id2)
+    local id1_positions = {}
+    for i = 1, self.h do
+        for j = 1, self.w do
+            if self.grid[i][j].id == id1 then table.insert(id1_positions, {x = j, y = i}) end
+        end
+    end
+    for _, p in ipairs(id1_positions) do
+        local left, up, right, down = self:getNeighbors(p.x, p.y)
+        local neighbors = {left = left, up = up, right = right, down = down}
+        for dir, n in pairs(neighbors) do
+            if n.in_path_original or n.in_path_additional then
+                if n.id == id2 then
+                    if self.connections_grid[p.x .. p.y] then
+                        if self.connections_grid[p.x .. p.y][dir] then
+                            return true
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return false
+end
+
+function Dungeon:reconnect()
+    local doWork = function()
+        self.ff_buckets = {}
+
+        local contains = function(table, value)
+            for _, v in ipairs(table) do
+                if v == value then return true end
+            end
+            return false
+        end
+
+        local ids_not_flood_filled = {}
+        for i = 1, self.h do
+            for j = 1, self.w do
+                if self.grid[i][j].in_path_original or self.grid[i][j].in_path_additional then
+                    if not contains(ids_not_flood_filled, self.grid[i][j].id) then
+                        table.insert(ids_not_flood_filled, self.grid[i][j].id)
+                    end
+                end
+            end
+        end
+
+        local updateNotFloodFilled = function()
+            local remove = function(id)
+                for i = #ids_not_flood_filled, 1, -1 do
+                    if id == ids_not_flood_filled[i] then table.remove(ids_not_flood_filled, i) end
+                end
+            end
+            for v, ids in pairs(self.ff_buckets) do
+                for _, n in ipairs(ids) do
+                    remove(n)
+                end
+            end
+        end
+
+        local current_color = 1
+        while #ids_not_flood_filled > 0 do
+            self:floodFill(ids_not_flood_filled[math.random(1, #ids_not_flood_filled)], current_color)
+            updateNotFloodFilled()
+            current_color = current_color + 1
+        end
+    end
+
+    local getPositionsById = function(id)
+        local positions = {}
+        for i = 1, self.h do
+            for j = 1, self.w do
+                if self.grid[i][j].in_path_original or self.grid[i][j].in_path_additional then
+                    if self.grid[i][j].id == id then table.insert(positions, {x = j, y = i}) end
+                end
+            end
+        end
+        return positions
+    end
+
+    local connect = function()
+        local r = math.random(1, #self.ff_buckets)
+        local positions = {}
+        for _, id in ipairs(self.ff_buckets[r]) do
+            local positions = getPositionsById(id)
+            for _, p in ipairs(positions) do
+                local current = self.grid[p.y][p.x]
+                local left, up, right, down = self:getNeighbors(p.x, p.y)
+                if left then if current.ff_color ~= left.ff_color then
+                    if left.in_path_original or left.in_path_additional then
+                        local x, y = p.x - 1, p.y
+                        self.connections_grid[p.x .. p.y]['left'] = true
+                        if self.connections_grid[x.. y] then self.connections_grid[x .. y]['right'] = true end
+                        return
+                    end
+                end end
+                if right then if current.ff_color ~= right.ff_color then
+                    if right.in_path_original or right.in_path_additional then
+                        local x, y = p.x + 1, p.y
+                        self.connections_grid[p.x .. p.y]['right'] = true
+                        if self.connections_grid[x .. y] then self.connections_grid[x .. y]['left'] = true end
+                        return
+                    end
+                end end
+                if up then if current.ff_color ~= up.ff_color then
+                    if up.in_path_original or up.in_path_additional then
+                        local x, y = p.x, p.y - 1
+                        self.connections_grid[p.x .. p.y]['up'] = true
+                        if self.connections_grid[x .. y] then self.connections_grid[x .. y]['down'] = true end
+                        return
+                    end
+                end end
+                if down then if current.ff_color ~= down.ff_color then
+                    if down.in_path_original or down.in_path_additional then
+                        local x, y = p.x, p.y + 1
+                        self.connections_grid[p.x .. p.y]['down'] = true
+                        if self.connections_grid[x .. y] then self.connections_grid[x .. y]['up'] = true end
+                        return
+                    end
+                end end
+            end
+        end
+    end
+
+    doWork()
+    print(#self.ff_buckets)
+    while #self.ff_buckets > 1 do
+        doWork()
+        --[[
+        for color, list in pairs(self.ff_buckets) do
+            print("Color: " .. color)
+            local str = ""
+            for _, id in ipairs(list) do
+                str = str .. id .. ", "
+            end
+            print(str)
+            print(#list)
+            print()
+        end
+        print("---------------")
+        ]]--
+        if #self.ff_buckets > 1 then connect() end
+    end
 end
 
 function Dungeon:draw()
@@ -437,7 +734,7 @@ function Dungeon:draw()
                 end
             end
         end
-    elseif self.draw_state == 'connect' then
+    elseif self.draw_state == 'connect' or self.draw_state == 'disconnect' or self.draw_state == 'reconnect' then
         for i = 1, self.h do
             for j = 1, self.w do
                 if self.grid[i][j].in_path_original or self.grid[i][j].in_path_additional then
@@ -457,19 +754,17 @@ function Dungeon:draw()
                 end
             end
         end
-        love.graphics.setColor(224, 224, 224, 255)
+        love.graphics.setColor(228, 228, 228, 255)
         local w, h = node_w, node_h
         for xy, dirs in pairs(self.connections_grid) do
             if self.grid[dirs.y][dirs.x].in_path_original or self.grid[dirs.y][dirs.x].in_path_additional then
-                if dirs.left then love.graphics.rectangle('fill', dirs.x*w-w/8, dirs.y*h+h/3, w/4, h/4) end
-                if dirs.right then love.graphics.rectangle('fill', dirs.x*w+w-w/8, dirs.y*h+h/3, w/4, h/4) end
-                if dirs.up then love.graphics.rectangle('fill', dirs.x*w+w/2-w/8, dirs.y*h-h/8, w/4, h/4) end
-                if dirs.down then love.graphics.rectangle('fill', dirs.x*w+w/2-w/8, dirs.y*h+h-h/8, w/4, h/4) end
+                if dirs.left then love.graphics.rectangle('line', dirs.x*w-w/8, dirs.y*h+h/3, w/4, h/4) end
+                if dirs.right then love.graphics.rectangle('line', dirs.x*w+w-w/8, dirs.y*h+h/3, w/4, h/4) end
+                if dirs.up then love.graphics.rectangle('line', dirs.x*w+w/2-w/8, dirs.y*h-h/8, w/4, h/4) end
+                if dirs.down then love.graphics.rectangle('line', dirs.x*w+w/2-w/8, dirs.y*h+h-h/8, w/4, h/4) end
             end
         end
         love.graphics.setColor(255, 255, 255, 255)
-    elseif self.draw_state == 'disconnect' then
-
     end
 end
 

@@ -17,10 +17,13 @@ function love.draw()
 end
 
 function love.keypressed(key)
-    local draw_states = {'grid', 'colored', 'path', 'filled_path', 'join', 'connect', 'disconnect'}
+    local draw_states = {'grid', 'colored', 'path', 'filled_path', 'join', 'connect', 'disconnect', 'reconnect'}
     if key == 'n' then
         n = n + 1
-        if n > 7 then n = 1 end
+        if n == 6 then dungeon:generateConnections() end
+        if n == 7 then dungeon:disconnect() end
+        if n == 8 then dungeon:reconnect() end
+        if n > 8 then n = 1 end
         dungeon.draw_state = draw_states[n]
     end
 end
