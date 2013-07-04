@@ -1,4 +1,4 @@
-require 'Graph'
+local struct = require 'struct'
 
 GridNode = struct('id', 'w', 'h', 'color', 'in_path_original', 'in_path_additional', 'joined', 'original', 'ff_color')
 local node_w, node_h = 32, 32
@@ -6,8 +6,10 @@ local node_w, node_h = 32, 32
 Dungeon = {}
 Dungeon.__index = Dungeon
 
-function Dungeon.new(w, h)
-    return setmetatable({w = w or 1, h = h or 1, grid = {}, connections_grid = {}, connections_room = {}, ff_buckets = {}, draw_state = 'grid'}, Dungeon)
+function Dungeon.new(w, h, n_colors, add_path, room_sizes, desired_con)
+    return setmetatable({w = w or 1, h = h or 1, n_colors = n_colors,
+                        red_neighbor = true, add_path = add_path, room_sizes = room_sizes, desired_con = desired_con,
+                        grid = {}, connections_grid = {}, connections_room = {}, ff_buckets = {}}, Dungeon)
 end
 
 function Dungeon:__tostring()
@@ -25,10 +27,13 @@ function Dungeon:__tostring()
 end
 
 function Dungeon:generateDungeon()
-    self:initializeGrid()
+    self:initializeGrid() 
     self:colorNodes()
     self:pathFind()
     self:randomizeRoomSizes()
+    self:generateConnections()
+    self:disconnect()
+    self:reconnect()
 end
 
 function Dungeon:initializeGrid()
@@ -81,9 +86,14 @@ end
 
 function Dungeon:colorNodes()
     local total_rooms = self.w*self.h
-    local n_red_rooms = math.floor(total_rooms*0.25)
-    local n_blue_rooms = math.ceil(total_rooms*0.35)
-    local n_green_rooms = math.floor(total_rooms*0.4)
+    if self.n_colors[1] + self.n_colors[2] + self.n_colors[3] ~= 1 then
+        self.n_colors[1] = 0.25
+        self.n_colors[2] = 0.35
+        self.n_colors[3] = 0.4
+    end
+    local n_red_rooms = math.floor(total_rooms*self.n_colors[1])
+    local n_blue_rooms = math.ceil(total_rooms*self.n_colors[2])
+    local n_green_rooms = math.floor(total_rooms*self.n_colors[3])
     local colored_rooms = {}
 
     local isRoomColored = function(x, y)
@@ -110,11 +120,21 @@ function Dungeon:colorNodes()
         else return false end
     end
 
-    -- Colors n_red_rooms red such that no red room has another red room as neighbor 
+    -- Colors n_red_rooms red such that no red room has another red room as neighbor (preferably)
     local red_rooms = 0
+    local red_tolerance = 0
     while red_rooms < n_red_rooms do
         local x, y = math.random(1, self.w), math.random(1, self.h) 
-        if not isRoomColored(x, y) and not areNeighborsColored(x, y, 'red', 0) then
+        if self.red_neighbor then
+            if not isRoomColored(x, y) and not areNeighborsColored(x, y, 'red', 0) then
+                self.grid[y][x].color = 'red'
+                table.insert(colored_rooms, {x = x, y = y})
+                red_rooms = red_rooms + 1
+                red_tolerance = 0
+            end
+            red_tolerance = red_tolerance + 1
+            if red_tolerance > 1000 then self.red_neighbor = false end
+        else 
             self.grid[y][x].color = 'red'
             table.insert(colored_rooms, {x = x, y = y})
             red_rooms = red_rooms + 1
@@ -192,10 +212,15 @@ function Dungeon:pathFind()
     for i = 1, self.h do
         map[i] = {}
         for j = 1, self.w do
-            if self.grid[i][j].color then
-                if self.grid[i][j].color == 'red' then map[i][j] = 1
+            if self.red_neighbor then
+                if self.grid[i][j].color then
+                    if self.grid[i][j].color == 'red' then map[i][j] = 1
+                    else map[i][j] = 0 end
                 else map[i][j] = 0 end
-            else map[i][j] = 0 end
+            else
+                if self.grid[i][j].color then map[i][j] = 0
+                else map[i][j] = 0 end
+            end
         end
     end
 
@@ -228,18 +253,12 @@ function Dungeon:pathFind()
                         end
                     end
                 end
-                addToPathIfColor(x-1, y, 'red')
-                addToPathIfColor(x+1, y, 'red')
-                addToPathIfColor(x, y-1, 'red')
-                addToPathIfColor(x, y+1, 'red')
-                addToPathIfColor(x-1, y, 'blue')
-                addToPathIfColor(x+1, y, 'blue')
-                addToPathIfColor(x, y-1, 'blue')
-                addToPathIfColor(x, y+1, 'blue')
-                addToPathIfColor(x-1, y, 'green')
-                addToPathIfColor(x+1, y, 'green')
-                addToPathIfColor(x, y-1, 'green')
-                addToPathIfColor(x, y+1, 'green')
+                for _, color in ipairs(self.add_path) do
+                    addToPathIfColor(x-1, y, color)
+                    addToPathIfColor(x+1, y, color)
+                    addToPathIfColor(x, y-1, color)
+                    addToPathIfColor(x, y+1, color)
+                end
             end
         else
             self.grid[y1][x1].color = n1_color
@@ -312,7 +331,7 @@ function Dungeon:randomizeRoomSizes()
             while not joined do
                 local p = not_joined_path_nodes[math.random(1, #not_joined_path_nodes)]
                 local x, y = p.x, p.y
-                local w, h = chooseWithProb({1, 2, 3}, {0.7, 0.25, 0.05}), chooseWithProb({1, 2, 3}, {0.7, 0.25, 0.05})
+                local w, h = chooseWithProb(self.room_sizes[1], self.room_sizes[2]), chooseWithProb(self.room_sizes[1], self.room_sizes[2])
                 joined = self:join(x, y, w, h)
             end
         end
@@ -374,7 +393,14 @@ function Dungeon:disconnect()
     local n_rooms = 0
     for _, _ in pairs(self.connections_room) do n_rooms = n_rooms + 1 end
     -- How many rooms should have 1, 2, 3 or >4 connections
-    local desired_connections = {math.floor(0.2*n_rooms), math.floor(0.5*n_rooms), math.floor(0.2*n_rooms), math.floor(0.1*n_rooms)} 
+    if self.desired_con[1] + self.desired_con[2] + self.desired_con[3] + self.desired_con[4] ~= 1 then
+        self.desired_con[1] = 0.2
+        self.desired_con[2] = 0.5
+        self.desired_con[3] = 0.2
+        self.desired_con[4] = 0.1
+    end
+    local desired_connections = {math.floor(self.desired_con[1]*n_rooms), math.floor(self.desired_con[2]*n_rooms), 
+                                 math.floor(self.desired_con[3]*n_rooms), math.floor(self.desired_con[4]*n_rooms)} 
     -- How many rooms have 1, 2, 3 or >4 connections
     local connections_room = {0, 0, 0, 0}
 
@@ -447,8 +473,10 @@ function Dungeon:disconnect()
     if connections_room[3] > desired_connections[3] then removeConnections(3) end
     if connections_room[2] > desired_connections[2] then removeConnections(2) end
 
+    --[[
     print("Connections: ", connections_room[1], connections_room[2], connections_room[3], connections_room[4])
     print("Desired: ", desired_connections[1], desired_connections[2], desired_connections[3], desired_connections[4])
+    ]]--
 end
 
 function Dungeon:setffColor(id, color)
@@ -627,145 +655,44 @@ function Dungeon:reconnect()
     end
 
     doWork()
-    print(#self.ff_buckets)
     while #self.ff_buckets > 1 do
         doWork()
-        --[[
-        for color, list in pairs(self.ff_buckets) do
-            print("Color: " .. color)
-            local str = ""
-            for _, id in ipairs(list) do
-                str = str .. id .. ", "
-            end
-            print(str)
-            print(#list)
-            print()
-        end
-        print("---------------")
-        ]]--
         if #self.ff_buckets > 1 then connect() end
     end
 end
 
 function Dungeon:draw()
     love.graphics.setColor(255, 255, 255, 255)
-    if self.draw_state == 'grid' then
-        for i = 1, self.h do
-            for j = 1, self.w do
-                if self.grid[i][j] then
+    for i = 1, self.h do
+        for j = 1, self.w do
+            if self.grid[i][j].in_path_original or self.grid[i][j].in_path_additional then
+                if self.grid[i][j].original then
                     local w, h = node_w, node_h
-                    love.graphics.rectangle('line', j*w, i*h, w, h)
-                end
-            end
-        end
-    elseif self.draw_state == 'colored' then
-        for i = 1, self.h do
-            for j = 1, self.w do
-                if self.grid[i][j] then
-                    local w, h = node_w, node_h
-                    love.graphics.rectangle('line', j*w, i*h, w, h)
-                    if self.grid[i][j].color == 'red' then love.graphics.setColor(192, 64, 64, 255) end
-                    if self.grid[i][j].color == 'blue' then love.graphics.setColor(64, 64, 192, 255) end
-                    if self.grid[i][j].color == 'green' then love.graphics.setColor(64, 192, 64, 255) end
-                    love.graphics.rectangle('fill', j*w+w/8, i*h+h/8, w-w/4, h-h/4)
-                    love.graphics.setColor(255, 255, 255, 255)
-                end
-            end
-        end
-    elseif self.draw_state == 'path' then
-        for i = 1, self.h do
-            for j = 1, self.w do
-                if self.grid[i][j] then
-                    local w, h = node_w, node_h
-                    love.graphics.rectangle('line', j*w, i*h, w, h)
-                    if self.grid[i][j].in_path_original then
-                        if self.grid[i][j].color == 'red' then love.graphics.setColor(192, 64, 64, 255) end
-                        if self.grid[i][j].color == 'blue' then love.graphics.setColor(64, 64, 192, 255) end
-                        if self.grid[i][j].color == 'green' then love.graphics.setColor(64, 192, 64, 255) end
-                        love.graphics.rectangle('fill', j*w+w/8, i*h+h/8, w-w/4, h-h/4)
-                    else
-                        if self.grid[i][j].color == 'red' then love.graphics.setColor(48, 16, 16, 255) end
-                        if self.grid[i][j].color == 'blue' then love.graphics.setColor(16, 16, 48, 255) end
-                        if self.grid[i][j].color == 'green' then love.graphics.setColor(16, 48, 16, 255) end
-                        love.graphics.rectangle('fill', j*w+w/8, i*h+h/8, w-w/4, h-h/4)
-                    end
-                    love.graphics.setColor(255, 255, 255, 255)
-                end
-            end
-        end
-    elseif self.draw_state == 'filled_path' then
-        for i = 1, self.h do
-            for j = 1, self.w do
-                if self.grid[i][j] then
-                    local w, h = node_w, node_h
-                    love.graphics.rectangle('line', j*w, i*h, w, h)
+                    local self_w, self_h = self.grid[i][j].w*node_w, self.grid[i][j].h*node_h
+                    love.graphics.rectangle('line', j*w, i*h, self_w, self_h)
                     if self.grid[i][j].in_path_original or self.grid[i][j].in_path_additional then
                         if self.grid[i][j].color == 'red' then love.graphics.setColor(192, 64, 64, 255) end
                         if self.grid[i][j].color == 'blue' then love.graphics.setColor(64, 64, 192, 255) end
                         if self.grid[i][j].color == 'green' then love.graphics.setColor(64, 192, 64, 255) end
-                        love.graphics.rectangle('fill', j*w+w/8, i*h+h/8, w-w/4, h-h/4)
-                    else
-                        if self.grid[i][j].color == 'red' then love.graphics.setColor(48, 16, 16, 255) end
-                        if self.grid[i][j].color == 'blue' then love.graphics.setColor(16, 16, 48, 255) end
-                        if self.grid[i][j].color == 'green' then love.graphics.setColor(16, 48, 16, 255) end
-                        love.graphics.rectangle('fill', j*w+w/8, i*h+h/8, w-w/4, h-h/4)
-                    end
-                    love.graphics.setColor(255, 255, 255, 255)
-                end
-            end
-        end
-    elseif self.draw_state == 'join' then
-        for i = 1, self.h do
-            for j = 1, self.w do
-                if self.grid[i][j].in_path_original or self.grid[i][j].in_path_additional then
-                    if self.grid[i][j].original then
-                        local w, h = node_w, node_h
-                        local self_w, self_h = self.grid[i][j].w*node_w, self.grid[i][j].h*node_h
-                        love.graphics.rectangle('line', j*w, i*h, self_w, self_h)
-                        if self.grid[i][j].in_path_original or self.grid[i][j].in_path_additional then
-                            if self.grid[i][j].color == 'red' then love.graphics.setColor(192, 64, 64, 255) end
-                            if self.grid[i][j].color == 'blue' then love.graphics.setColor(64, 64, 192, 255) end
-                            if self.grid[i][j].color == 'green' then love.graphics.setColor(64, 192, 64, 255) end
-                            love.graphics.rectangle('fill', j*w+w/8, i*h+h/8, self_w-w/4, self_h-h/4)
-                            love.graphics.setColor(255, 255, 255, 255)
-                            love.graphics.print(self.grid[i][j].id, j*w+4, i*h+4)
-                        end
+                        love.graphics.rectangle('fill', j*w+w/8, i*h+h/8, self_w-w/4, self_h-h/4)
+                        love.graphics.setColor(255, 255, 255, 255)
+                        -- love.graphics.print(self.grid[i][j].id, j*w+4, i*h+4)
                     end
                 end
             end
         end
-    elseif self.draw_state == 'connect' or self.draw_state == 'disconnect' or self.draw_state == 'reconnect' then
-        for i = 1, self.h do
-            for j = 1, self.w do
-                if self.grid[i][j].in_path_original or self.grid[i][j].in_path_additional then
-                    if self.grid[i][j].original then
-                        local w, h = node_w, node_h
-                        local self_w, self_h = self.grid[i][j].w*node_w, self.grid[i][j].h*node_h
-                        love.graphics.rectangle('line', j*w, i*h, self_w, self_h)
-                        if self.grid[i][j].in_path_original or self.grid[i][j].in_path_additional then
-                            if self.grid[i][j].color == 'red' then love.graphics.setColor(192, 64, 64, 255) end
-                            if self.grid[i][j].color == 'blue' then love.graphics.setColor(64, 64, 192, 255) end
-                            if self.grid[i][j].color == 'green' then love.graphics.setColor(64, 192, 64, 255) end
-                            love.graphics.rectangle('fill', j*w+w/8, i*h+h/8, self_w-w/4, self_h-h/4)
-                            love.graphics.setColor(255, 255, 255, 255)
-                            -- love.graphics.print(self.grid[i][j].id, j*w+4, i*h+4)
-                        end
-                    end
-                end
-            end
-        end
-        love.graphics.setColor(228, 228, 228, 255)
-        local w, h = node_w, node_h
-        for xy, dirs in pairs(self.connections_grid) do
-            if self.grid[dirs.y][dirs.x].in_path_original or self.grid[dirs.y][dirs.x].in_path_additional then
-                if dirs.left then love.graphics.rectangle('line', dirs.x*w-w/8, dirs.y*h+h/3, w/4, h/4) end
-                if dirs.right then love.graphics.rectangle('line', dirs.x*w+w-w/8, dirs.y*h+h/3, w/4, h/4) end
-                if dirs.up then love.graphics.rectangle('line', dirs.x*w+w/2-w/8, dirs.y*h-h/8, w/4, h/4) end
-                if dirs.down then love.graphics.rectangle('line', dirs.x*w+w/2-w/8, dirs.y*h+h-h/8, w/4, h/4) end
-            end
-        end
-        love.graphics.setColor(255, 255, 255, 255)
     end
+    love.graphics.setColor(228, 228, 228, 255)
+    local w, h = node_w, node_h
+    for xy, dirs in pairs(self.connections_grid) do
+        if self.grid[dirs.y][dirs.x].in_path_original or self.grid[dirs.y][dirs.x].in_path_additional then
+            if dirs.left then love.graphics.rectangle('line', dirs.x*w-w/8, dirs.y*h+h/3, w/4, h/4) end
+            if dirs.right then love.graphics.rectangle('line', dirs.x*w+w-w/8, dirs.y*h+h/3, w/4, h/4) end
+            if dirs.up then love.graphics.rectangle('line', dirs.x*w+w/2-w/8, dirs.y*h-h/8, w/4, h/4) end
+            if dirs.down then love.graphics.rectangle('line', dirs.x*w+w/2-w/8, dirs.y*h+h-h/8, w/4, h/4) end
+        end
+    end
+    love.graphics.setColor(255, 255, 255, 255)
 end
 
 setmetatable(Dungeon, {__call = function(_, ...) return Dungeon.new(...) end})
