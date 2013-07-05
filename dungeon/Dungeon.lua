@@ -1,6 +1,5 @@
 local struct = require 'struct'
-
-GridNode = struct('id', 'w', 'h', 'color', 'in_path_original', 'in_path_additional', 'joined', 'original', 'ff_color')
+local GridNode = struct('id', 'w', 'h', 'color', 'in_path_original', 'in_path_additional', 'joined', 'original', 'ff_color')
 local node_w, node_h = 32, 32
 
 Dungeon = {}
@@ -695,4 +694,4 @@ function Dungeon:draw()
     love.graphics.setColor(255, 255, 255, 255)
 end
 
-setmetatable(Dungeon, {__call = function(_, ...) return Dungeon.new(...) end})
+setmetatable(Dungeon, {__call = function(_, ...) local d = Dungeon.new(...); d:generateDungeon(); return d end})
