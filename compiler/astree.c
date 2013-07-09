@@ -375,7 +375,7 @@ void astPrintNode(AST *node) {
         case AST_PAREN: printf("()"); break;
         case AST_FUN: printf("Function"); break;
         case AST_LIST_PARAM: printf("Parameter List"); break;
-        default: printf("None"); break;
+        default: printf("None type %d", node->type); break;
     }
 
     if (node->symbol != 0) printf(", %s", node->symbol->key);

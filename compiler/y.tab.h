@@ -97,7 +97,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 45 "parser.y"
+#line 46 "parser.y"
 
     HASH_NODE *symbol;
     AST *astree;

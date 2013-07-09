@@ -4,7 +4,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "astree.h"
+/*#include "astree.h"*/
+#include "tac.h"
 int yylex(void);
 void yyerror(char *);
 
@@ -49,11 +50,17 @@ void yyerror(char *);
 
 %type<astree> PROG LIST_DEC DEC DEC_VAR DEC_VET DEC_FUN TYPE LIT LIST_VAL LIST_DEC_LOC
               LIST_DEC_PARAM LIST_DEC_PARAM_SEP DEC_PARAM COMMAND BLOCO IF LOOP EXP 
-              FUN LIST_PARAM LIST_COM DEC_LOC_VAR LIST_PARAM_SEP LIST_COM_SEP
+              LIST_PARAM LIST_COM DEC_LOC_VAR LIST_PARAM_SEP LIST_COM_SEP
 
 %%
 
-PROG: LIST_DEC { $$ = $1; astPrintFile($$); declarations($$); usage($$); datatypes($$); hashPrint(); }
+PROG: LIST_DEC { $$ = $1; //astPrintFile($$); 
+                            declarations($$); 
+                            usage($$); 
+                            datatypes($$); 
+                            hashPrint(); 
+                            astPrint($$,0);
+                            generateASM(generateCode($$)); }
     ;
 
 LIST_DEC: DEC LIST_DEC { $$ = astCreate(AST_LIST_DEC, 0, $1, $2, 0, 0); }
@@ -164,10 +171,7 @@ EXP: TK_IDENTIFIER { $$ = astCreate(AST_SYMBOL, $1, 0, 0, 0, 0); }
    | EXP OPERATOR_AND EXP { $$ = astCreate(AST_AND, 0, $1, $3, 0, 0); }
    | EXP OPERATOR_OR EXP { $$ = astCreate(AST_OR, 0, $1, $3, 0, 0); }
    | '(' EXP ')' { $$ = astCreate(AST_PAREN, 0, $2, 0, 0, 0); }
-   | FUN { $$ = astCreate(AST_FUN, 0, $1, 0, 0, 0); }
-   ;
-
-FUN: TK_IDENTIFIER '(' LIST_PARAM ')' { $$ = astCreate(AST_CALL, $1, $3, 0, 0, 0); }
+   | TK_IDENTIFIER '(' LIST_PARAM ')' { $$ = astCreate(AST_CALL, $1, $3, 0, 0, 0); }
    | TK_IDENTIFIER '(' ')' { $$ = astCreate(AST_CALL_EMPTY, $1, 0, 0, 0, 0); }
    ;
 

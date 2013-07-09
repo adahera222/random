@@ -3,7 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "hash.h"
+//#include "hash.h"
+#include "tac.h"
 
 unsigned long hashf(char *key) {
     unsigned long hash = 5381;
@@ -58,5 +59,28 @@ void hashPrint() {
         }
     }
 }
+//--------------------------------------------------------
+HASH_NODE* make_label()
+{
+	static int nextTemp = 0;
+	//char buffer[256] = {0};
+    char buffer[256];
+    
+	sprintf(buffer, "__Label_%d__", ++nextTemp);
+    
+	return hashInsert(buffer, TAC_SYMBOL_LABEL);
+}
+
+// aula
+HASH_NODE* make_temp()
+{
+    static int nextTemp = 0;
+    char buffer[256];
+    
+    sprintf(buffer, "__Temporary_%d", ++nextTemp);
+    
+    return hashInsert(buffer, TAC_SYMBOL_TEMPORARY);
+}
+
 
 

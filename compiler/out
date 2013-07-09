@@ -1,30 +1,33 @@
-word a:0;
-word v[10]:0 0 0 0 0 0 0 0 0 0  ;
-word mat[1000];
-word $pt:0;
-word incn(word x, word n)
-{
-return (x+n);
-
-}
-word main()
-word i:0;
-{
-output "Digite um numero: ";
-loop ((i<10))
-{
-a = incn(a, 1);
-i = (i+1);
-
-};
-output "Incrementado algumas vezes fica ", a, "\n";
-
-}
-word outra()
-{
-
-}
-word maisuma()
-{
-
-}
+.data
+_2: .long 2
+LC0: .ascii "%d\12\0"
+.data
+_a: .long 1
+.data
+_b: .long 4
+.text
+.def _fun
+_fun:
+pushl %ebp
+movl %esp, %ebp
+movl _a, %eax
+movl %eax, _b
+movl _b, %eax
+popl %ebp
+ret
+.text
+.def _main
+_main:
+pushl %ebp
+movl %esp, %ebp
+andl $-16, %esp
+subl $16, %esp
+call ___main
+movl _2, %eax
+movl %eax, _a
+movl _a, %eax
+movl %eax, 4(%esp)
+movl $LC0, (%esp)
+call _printf
+leave
+ret

@@ -1,0 +1,9 @@
+word a:1;
+word b:4;
+word v[2];
+word main()
+{
+    v[0] = 1;
+    v[1] = 2;
+    output v[1];
+}

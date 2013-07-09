@@ -34,3 +34,7 @@ void hashInit();
 HASH_NODE* hashInsert(char *key, int value);
 HASH_NODE* hashFind(char *key);
 void hashPrint();
+
+HASH_NODE* make_label();
+HASH_NODE* make_temp();
+

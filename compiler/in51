@@ -1,0 +1,32 @@
+word a:5;
+word vet[2];
+word b:10;
+
+//word main(word c, word d)
+word main()
+{
+    c = (2 + 4 - 6) * (d / 8);
+    a = 2 || 4;
+    output a>2;
+    //so pega o ultimo
+    output c, a, 45;
+    
+    input b;
+    
+    if (1)
+    then a = 2
+    else a = 3;
+    
+    fun(arg1, arg2);
+    //nome do vetor
+    a = vet[1];
+    vet[1] = 9999;
+    a = 1111;
+    
+    return a;
+}
+
+word fun()
+{
+    
+}
