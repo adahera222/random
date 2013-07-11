@@ -43,6 +43,8 @@
 #define TAC_VAR 32
 #define TAC_VET 33
 #define TAC_VET_SIZE 34
+#define TAC_LIST_VAL 35
+#define TAC_JJ 36
 
 typedef struct tac_node
 {
@@ -67,6 +69,7 @@ TAC* genCode(AST* node);
 
 TAC* make_binary_operation(TAC *code0, TAC *code1, int opType);
 TAC* make_if_then(TAC *code0, TAC *code1, TAC *code2);
+TAC* make_loop(TAC *code0, TAC *code1);
 
 void print_vectCode(TAC* code0,TAC* code1,TAC* code2,TAC* code3);
 

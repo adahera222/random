@@ -52,7 +52,7 @@ TAC* genCode(AST* node)
     switch (node->type) {
         case AST_DEC_VAR:
             fprintf(stderr, "AST_DEC_VAR...\n");print_vectCode(code[0],code[1],code[2],code[3]);
-            result = tac_create(TAC_VAR,node->symbol,(code[1] ? code[1]->target:0),0);
+            result = tac_create(TAC_VAR,node->symbol,(code[1] ? code[1]->target:0),(code[2] ? code[2]->target:0));
             break;
         case AST_DEC_VET:
             fprintf(stderr, "AST_DEC_VET...\n");print_vectCode(code[0],code[1],code[2],code[3]);
@@ -61,6 +61,11 @@ TAC* genCode(AST* node)
         case AST_VET_SIZE:
             fprintf(stderr, "AST_VET_SIZE...\n");print_vectCode(code[0],code[1],code[2],code[3]);
             result = tac_create(TAC_VET_SIZE,node->symbol,0,0);
+            break;
+        case AST_LIST_VAL:
+            fprintf(stderr, "AST_LIST_VAL...\n");print_vectCode(code[0],code[1],code[2],code[3]);
+            result = tac_create(TAC_LIST_VAL,node->children[0]->symbol,0,0);
+            fprintf(stderr, "AST_LIST_VAL\n");
             break;
         case AST_SYMBOL_LIT:
             fprintf(stderr, "AST_SYMBOL_LIT...\n");print_vectCode(code[0],code[1],code[2],code[3]);
@@ -144,6 +149,10 @@ TAC* genCode(AST* node)
         case AST_IF: fprintf(stderr, "AST_IF...\n");print_vectCode(code[0],code[1],code[2],code[3]);
             result = make_if_then(code[0], code[1], code[2]);fprintf(stderr, "AST_IF\n");
             break;
+
+        case AST_LOOP: fprintf(stderr, "AST_LOOP...\n");print_vectCode(code[0],code[1],code[2],code[3]);
+            result = make_loop(code[0], code[1]);
+            break;
             
         case AST_VET: //acesso vetor
             fprintf(stderr, "AST_VET...\n");print_vectCode(code[0],code[1],code[2],code[3]);
@@ -211,6 +220,21 @@ TAC* make_binary_operation(TAC *code0, TAC *code1, int opType)
 {
     return tac_join(tac_join(code0, code1),
                     tac_create(opType, make_temp(), code0?code0->target:0, code1?code1->target:0));
+}
+
+TAC* make_loop(TAC *code0, TAC *code1) {
+    HASH_NODE *labelCode = make_label();
+    HASH_NODE *labelCheck = make_label();
+    TAC *jmpToCode;
+    TAC *jmpToCheck;
+    TAC *lblCode;
+    TAC *lblCheck;
+    lblCode = tac_create(TAC_LABEL, labelCode, 0, 0);
+    lblCheck = tac_create(TAC_LABEL, labelCheck, 0, 0);
+    jmpToCheck = tac_create(TAC_JUMP, labelCheck, 0, 0); 
+    jmpToCode = tac_create(TAC_JZ, labelCode, code0 ? code0->target:0, 0);
+
+    return tac_join(jmpToCheck, tac_join(lblCode, tac_join(code1, tac_join(lblCheck, tac_join(code0, jmpToCode)))));
 }
 
 // cond, then, else

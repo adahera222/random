@@ -60,6 +60,7 @@ void tac_print_one(TAC* tac)
 		case TAC_LOOP: printf("TAC_LOOP");break;
         case TAC_MOV: printf("TAC_MOV");break;
         case TAC_JZ: printf("TAC_JZ");break;
+        case TAC_JJ: printf("TAC_JJ");break;
         default: printf("tipo nao encontrado: %d", tac->type);break;
     }
     
@@ -319,10 +320,24 @@ void generateASM(TAC *list) {
             case TAC_FUN_CALL: 
                 fprintf(yyout, "call _%s\nmovl %%eax, _%s\n", tac->op1->key, tac->target->key);
                 break;
-            case TAC_LOOP: printf("TAC_LOOP");break;
+            case TAC_LOOP: break;
             case TAC_MOV: 
                 fprintf(yyout, "movl _%s, %%eax\nmovl %%eax, _%s\n", tac->op1->key, tac->target->key);
                 break;
+            case TAC_JJ:
+                switch (cur_op) {
+                    case TAC_GT: fprintf(yyout, "jg %s\n", tac->target->key); break;
+                    case TAC_LT: fprintf(yyout, "jl %s\n", tac->target->key); break;
+                    case TAC_GE: fprintf(yyout, "jge %s\n", tac->target->key); break;
+                    case TAC_LE: fprintf(yyout, "jle %s\n", tac->target->key); break;
+                    case TAC_EQ: fprintf(yyout, "je %s\n", tac->target->key); break;
+                    case TAC_NE: fprintf(yyout, "jne %s\n", tac->target->key); break;
+                    case TAC_AND:
+                        fprintf(yyout, "je %s\n", tac->target->key);
+                        fprintf(yyout, "testl %%edx, %%edx\nje %s\n", tac->target->key);
+                        break;
+                    case TAC_OR: break;
+                }
             case TAC_JZ: 
                 switch (cur_op) {
                     case TAC_GT: fprintf(yyout, "jle %s\n", tac->target->key); break;

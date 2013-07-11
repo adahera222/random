@@ -4,7 +4,10 @@
 	.align 4
 _a:
 	.long	1
-	.comm	_v, 8, 2
+	.globl	_b
+	.align 4
+_b:
+	.long	4
 	.def	___main;	.scl	2;	.type	32;	.endef
 	.section .rdata,"dr"
 LC0:
@@ -23,9 +26,18 @@ LFB6:
 	andl	$-16, %esp
 	subl	$16, %esp
 	call	___main
+	jmp	L2
+L3:
 	movl	_a, %eax
-	movl	%eax, _v
-	movl	$5, _v+4
+	incl	%eax
+	movl	%eax, _a
+	movl	_b, %eax
+	decl	%eax
+	movl	%eax, _b
+L2:
+	movl	_b, %eax
+	testl	%eax, %eax
+	jg	L3
 	movl	_a, %eax
 	movl	%eax, 4(%esp)
 	movl	$LC0, (%esp)

@@ -1,10 +1,12 @@
 #include <stdio.h>
 
 int a = 1;
-int v[2];
+int b = 4;
 int main() {
-    v[0] = a;
-    v[1] = 5;
+    while (b > 0) {
+        a++;
+        b--;
+    }
     printf("%d\n", a);
 }
 

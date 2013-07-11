@@ -92,7 +92,7 @@ LIT: LIT_INTEGER { $$ = astCreate(AST_SYMBOL_LIT, $1, 0, 0, 0, 0); $1->data_type
    ;
 
 DEC_VET: TYPE TK_IDENTIFIER '[' LIT_INTEGER ']' { $$ = astCreate(AST_DEC_VET, $2, $1, astCreate(AST_VET_SIZE, $4, 0, 0, 0, 0), 0, 0); $2->data_type = $1->type; }
-       | TYPE TK_IDENTIFIER '[' LIT_INTEGER ']' ':' LIST_VAL { $$ = astCreate(AST_DEC_VET, $2, $1, astCreate(AST_VET_SIZE, $4, 0, 0, 0, 0), astCreate(AST_LIST_VAL, 0, $7, 0, 0, 0), 0); $2->data_type = $1->type; }
+       | TYPE TK_IDENTIFIER '[' LIT_INTEGER ']' ':' LIST_VAL { $$ = astCreate(AST_DEC_VET, $2, $1, astCreate(AST_VET_SIZE, $4, 0, 0, 0, 0), $7, 0); $2->data_type = $1->type; }
        ;
 
 LIST_VAL: LIT LIST_VAL { $$ = astCreate(AST_LIST_VAL, 0, $1, $2, 0, 0); }

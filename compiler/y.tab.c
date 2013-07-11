@@ -1661,7 +1661,7 @@ yyreduce:
 
 /* Line 1455 of yacc.c  */
 #line 95 "parser.y"
-    { (yyval.astree) = astCreate(AST_DEC_VET, (yyvsp[(2) - (7)].symbol), (yyvsp[(1) - (7)].astree), astCreate(AST_VET_SIZE, (yyvsp[(4) - (7)].symbol), 0, 0, 0, 0), astCreate(AST_LIST_VAL, 0, (yyvsp[(7) - (7)].astree), 0, 0, 0), 0); (yyvsp[(2) - (7)].symbol)->data_type = (yyvsp[(1) - (7)].astree)->type; }
+    { (yyval.astree) = astCreate(AST_DEC_VET, (yyvsp[(2) - (7)].symbol), (yyvsp[(1) - (7)].astree), astCreate(AST_VET_SIZE, (yyvsp[(4) - (7)].symbol), 0, 0, 0, 0), (yyvsp[(7) - (7)].astree), 0); (yyvsp[(2) - (7)].symbol)->data_type = (yyvsp[(1) - (7)].astree)->type; }
     break;
 
   case 22:
