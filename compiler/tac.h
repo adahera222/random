@@ -45,6 +45,9 @@
 #define TAC_VET_SIZE 34
 #define TAC_LIST_VAL 35
 #define TAC_JJ 36
+#define TAC_PARAM 37
+#define TAC_FUN_CALL_PARAM 38
+#define TAC_DEC_PARAM 39
 
 typedef struct tac_node
 {

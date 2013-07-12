@@ -1,11 +1,27 @@
 word a:1;
 word b:4;
+word v[4];
+word fun(word c, word d, word e, word f, word g, word h, word i, word j, word k, word l) 
+{
+    loop (f >= 0)
+    {
+        c = c + 1;
+        d = d - 1;
+        e = e - 1;
+        f = f - 1;
+    };
+    return c+d+e;
+}
+word fun2(word a, word b) {
+    v[0] = a;
+    v[1] = b;
+    return v[0]+v[1];
+}
 word main()
 {
-    loop (b >= 0)
-    {
-        a = a + 1;
-        b = b - 1;
-    };
+    a = b * 3 + 1 + 2 - fun(1, b, 5, 5);
+    b = 1 + 2 + fun2(1, 3);
+    b = b + v[0];
     output a;
+    output b;
 }

@@ -50,6 +50,10 @@ TAC* genCode(AST* node)
     astPrintNode(node);fprintf(stderr, "processou...%d\n", count++);
     
     switch (node->type) {
+        case AST_DEC_PARAM:
+            fprintf(stderr, "AST_DEC_PARAM...\n");print_vectCode(code[0],code[1],code[2],code[3]);
+            result = tac_create(TAC_DEC_PARAM, node->symbol, 0, 0);
+            break;
         case AST_DEC_VAR:
             fprintf(stderr, "AST_DEC_VAR...\n");print_vectCode(code[0],code[1],code[2],code[3]);
             result = tac_create(TAC_VAR,node->symbol,(code[1] ? code[1]->target:0),(code[2] ? code[2]->target:0));
@@ -130,7 +134,7 @@ TAC* genCode(AST* node)
             break;
 
         case AST_DEC_FUN:fprintf(stderr, "AST_DEC_FUN...\n");print_vectCode(code[0],code[1],code[2],code[3]);
-            result = tac_join(tac_create(TAC_BEGINFUN, node->symbol, 0,0),
+            result = tac_join(tac_join(code[1], tac_join(code[2], tac_create(TAC_BEGINFUN, node->symbol,0,0))),
                               tac_join(code[3], tac_create(TAC_ENDFUN, node->symbol, 0, 0)));
             break;
             
@@ -164,6 +168,9 @@ TAC* genCode(AST* node)
             break;
             
         case AST_CALL:
+            fprintf(stderr, "AST_CALL...\n");print_vectCode(code[0],code[1],code[2],code[3]);
+            result = tac_join(code[0], tac_create(TAC_FUN_CALL_PARAM, make_temp(), node->symbol, (code[1] ? code[1]->target:0)));
+            break;
         case AST_CALL_EMPTY: 
             fprintf(stderr, "AST_CALL_EMPTY...\n");print_vectCode(code[0],code[1],code[2],code[3]);
             result = tac_join(code[0], 
@@ -186,6 +193,14 @@ TAC* genCode(AST* node)
         // mais/menos/outros nodos aqui talvez seja preciso...
         case AST_LIST_PARAM_SEP:
         case AST_LIST_PARAM:
+            fprintf(stderr, "AST_LIST_PARAM...\n");print_vectCode(code[0],code[1],code[2],code[3]);
+            result = tac_join(code[0], tac_create(TAC_PARAM, (code[1] ? code[1]->target:0),0,0));
+            break;
+        case AST_LIST_DEC_PARAM_SEP:
+        case AST_LIST_DEC_PARAM:
+            fprintf(stderr, "AST_DEC_LIST_PARAM...\n");print_vectCode(code[0],code[1],code[2],code[3]);
+            result = tac_join(code[0], tac_create(TAC_DEC_PARAM, (code[1] ? code[1]->target:0),0,0));
+            break;
         case AST_PAREN:
         case AST_COMMAND:
         case AST_BLOCO:
