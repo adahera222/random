@@ -13,6 +13,8 @@ int fun2(int c, int d) {
 
 int main() {
     a = fun(2, b, 1, 1, 2, 3, 4, 5, 6, 7);
+    b = fun2(1, 2);
     printf("%d\n", a);
+    printf("%d\n", b);
 }
 

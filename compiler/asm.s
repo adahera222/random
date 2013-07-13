@@ -78,7 +78,15 @@ LFB8:
 	movl	$2, (%esp)
 	call	_fun
 	movl	%eax, _a
+	movl	$2, 4(%esp)
+	movl	$1, (%esp)
+	call	_fun2
+	movl	%eax, _b
 	movl	_a, %eax
+	movl	%eax, 4(%esp)
+	movl	$LC0, (%esp)
+	call	_printf
+	movl	_b, %eax
 	movl	%eax, 4(%esp)
 	movl	$LC0, (%esp)
 	call	_printf

@@ -48,6 +48,7 @@
 #define TAC_PARAM 37
 #define TAC_FUN_CALL_PARAM 38
 #define TAC_DEC_PARAM 39
+#define TAC_LOC_VAR 40
 
 typedef struct tac_node
 {
