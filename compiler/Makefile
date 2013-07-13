@@ -1,5 +1,5 @@
-etapa5: lex.yy.o main.o hash.o astree.o sem.o tac.o genco.o y.tab.o
-		gcc lex.yy.c main.o hash.o astree.o sem.o tac.o genco.o y.tab.c -o etapa5
+compiler: lex.yy.o main.o hash.o astree.o sem.o tac.o genco.o y.tab.o
+		gcc lex.yy.c main.o hash.o astree.o sem.o tac.o genco.o y.tab.c -o compiler
 
 lex.yy.c: lex.yy.c
 		gcc -c lex.yy.c
@@ -29,4 +29,4 @@ y.tab.c: parser.y
 		bison -y -d parser.y
 
 clean:
-		rm lex.yy.c etapa5 *.o y.tab.c
+		rm lex.yy.c compiler *.o y.tab.c
