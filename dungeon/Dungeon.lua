@@ -1,4 +1,5 @@
 local struct = require 'struct'
+
 local GridNode = struct('id', 'w', 'h', 'color', 'in_path_original', 'in_path_additional', 'joined', 'original', 'ff_color')
 local node_w, node_h = 32, 32
 
@@ -16,7 +17,7 @@ function Dungeon:__tostring()
     for i = 1, self.h do
         str = str .. "[ "
         for j = 1, self.w do
-            str = str .. self.grid[i][j] .. ", \t"
+            str = str .. self.grid[i][j].id .. ", \t"
         end
         str = string.sub(str, 0, -3)
         str = str .. " ]\n"
@@ -26,13 +27,24 @@ function Dungeon:__tostring()
 end
 
 function Dungeon:generateDungeon()
+    print('INITIALIZING GRID...')
     self:initializeGrid() 
+    print('COLORING NODES...')
     self:colorNodes()
+    print('PATH FINDING...')
     self:pathFind()
+    print('RANDOMIZING ROOM SIZES...')
     self:randomizeRoomSizes()
+    print('GENERATING CONNECTIONS...')
     self:generateConnections()
+    print('DISCONNECTING...')
     self:disconnect()
+    print('RECONNECTING...')
     self:reconnect()
+    print('OVERWRITING PROTOCOLS...')
+    print('UPLOADING STREAMS...')
+    print('CONNECTING POSITRONIC SURFACES...')
+    print('ENTERING CYBERPSACE...')
 end
 
 function Dungeon:initializeGrid()
@@ -230,6 +242,7 @@ function Dungeon:pathFind()
     local finder = Pathfinder(grid, 'JPS', 0)
     finder:setMode('ORTHOGONAL')
     local path = false
+    local lock_counter = 0
     while not path do
         -- Choose initial and final nodes randomly
         local x1, y1, x2, y2 = math.random(1, range_x), math.random(1, range_y), math.random(self.w-range_x, self.w), math.random(self.h-range_y, self.h)
@@ -262,6 +275,24 @@ function Dungeon:pathFind()
         else
             self.grid[y1][x1].color = n1_color
             self.grid[y2][x2].color = n2_color
+        end
+
+        -- In case no paths are ever found simply remove red rooms as blockers
+        lock_counter = lock_counter + 1
+        if lock_counter > 5000 then
+            map = {}
+            for i = 1, self.h do
+                map[i] = {}
+                for j = 1, self.w do
+                    map[i][j] = 0
+                end
+            end
+
+            grid = Grid(map)
+            finder = Pathfinder(grid, 'JPS', 0)
+            finder:setMode('ORTHOGONAL')
+            path = false
+            lock_counter = 0
         end
     end
 end
@@ -657,6 +688,39 @@ function Dungeon:reconnect()
     while #self.ff_buckets > 1 do
         doWork()
         if #self.ff_buckets > 1 then connect() end
+    end
+end
+
+function Dungeon:findStartingRoom()
+    local max = 0
+    local possible_rooms = {}
+    local fallback = {}
+    for xy, dirs in pairs(self.connections_grid) do
+        if self.grid[dirs.y][dirs.x].in_path_original or self.grid[dirs.y][dirs.x].in_path_additional then
+            -- and not special room, etc, etc, etc
+            local n = 0
+            if dirs.left then n = n + 1 end
+            if dirs.right then n = n + 1 end
+            if dirs.up then n = n + 1 end
+            if dirs.down then n = n + 1 end
+            if n == 4 or n == 3 then
+                table.insert(possible_rooms, {x = dirs.x, y = dirs.y})
+            elseif n == 2 then
+                table.insert(fallback, {x = dirs.x, y = dirs.y})
+            end
+        end
+    end 
+    if #possible_rooms == 0 then return fallback[math.random(1, #fallback)] end
+    return possible_rooms[math.random(1, #possible_rooms)]
+end
+
+function Dungeon:getRoomConnections(x, y)
+    for xy, dirs in pairs(self.connections_grid) do
+        if self.grid[dirs.y][dirs.x].in_path_original or self.grid[dirs.y][dirs.x].in_path_additional then
+            if dirs.y == y and dirs.x == x then
+                return dirs
+            end
+        end
     end
 end
 
