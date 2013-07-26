@@ -1,10 +1,13 @@
 #include "tac.h"
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
 
 FILE *yyout;
 char functions[200][200][50];
 char locals[200][200][50];
+char symbols[200][50];
+int n_symbols = 0;
 
 TAC* tac_create(int type, HASH_NODE* target, HASH_NODE* op1, HASH_NODE* op2)
 {
@@ -174,7 +177,6 @@ char *getValue(char fun[], char key[], int n) {
         if (strcmp(locals[i][0], fun) == 0) {
             for (j = 1; j < 50; j++) {
                 if (strcmp(locals[i][j], key) == 0) { 
-                    fprintf(stderr, "%d %d\n", j, n_size);
                     int p = 8+(n_size-1+j-1)*4;
                     char *str = malloc(50*sizeof(char));
                     sprintf(str, "%d", p);
@@ -209,15 +211,35 @@ void generateASM(TAC *list) {
     // Go over list once to find all literals, outputs and label them
     int n_output = 0;
     TAC *lit = list;
-    char symbols[200][50];
-    int n_symbols = 0;
     while (lit) {
         switch (lit->type) {
             case TAC_SYMBOL_LIT: 
                 if (!contains(symbols, lit->target->key, n_symbols)) {
-                    fprintf(yyout, ".data\n_%s: .long %s\n", lit->target->key, lit->target->key); 
-                    strcpy(symbols[n_symbols], lit->target->key); 
-                    n_symbols++;
+                    if (isdigit((int)lit->target->key[0])) {
+                        fprintf(yyout, ".data\n_%s: .long %s\n", lit->target->key, lit->target->key); 
+                        strcpy(symbols[n_symbols], lit->target->key); 
+                        n_symbols++;
+                    } else if (lit->target->key[0] == '_') {
+                        fprintf(yyout, ".data\n_%s: .long 0\n", lit->target->key); 
+                        strcpy(symbols[n_symbols], lit->target->key); 
+                        n_symbols++;
+                    } else if (lit->target->key[0] == '\'') {
+                        fprintf(yyout, ".data\n_%s: .long %d\n", lit->target->key, (int)lit->target->key[1]); 
+                        strcpy(symbols[n_symbols], lit->target->key); 
+                        n_symbols++;
+                    } else if (lit->target->key[0] == 't' || lit->target->key[0] == 'T') {
+                        fprintf(yyout, ".data\n_%s: .long 1\n", lit->target->key);
+                        strcpy(symbols[n_symbols], lit->target->key); 
+                        n_symbols++;
+                    } else if (lit->target->key[0] == 'f' || lit->target->key[0] == 'F') {
+                        fprintf(yyout, ".data\n_%s: .long 0\n", lit->target->key);
+                        strcpy(symbols[n_symbols], lit->target->key); 
+                        n_symbols++;
+                    } else {
+                        fprintf(yyout, ".data\n_%s: .long 0\n", lit->target->key);
+                        strcpy(symbols[n_symbols], lit->target->key); 
+                        n_symbols++;
+                    }
                 }
                 break;
             case TAC_PARAM:
@@ -231,6 +253,22 @@ void generateASM(TAC *list) {
                             fprintf(yyout, ".data\n_%s: .long 0\n", lit->target->key); 
                             strcpy(symbols[n_symbols], lit->target->key); 
                             n_symbols++;
+                        } else if (lit->target->key[0] == '\'') {
+                            fprintf(yyout, ".data\n_%s: .long %d\n", lit->target->key, (int)lit->target->key[1]); 
+                            strcpy(symbols[n_symbols], lit->target->key); 
+                            n_symbols++;
+                        } else if (lit->target->key[0] == 't' || lit->target->key[0] == 'T') {
+                            fprintf(yyout, ".data\n_%s: .long 1\n", lit->target->key);
+                            strcpy(symbols[n_symbols], lit->target->key); 
+                            n_symbols++;
+                        } else if (lit->target->key[0] == 'f' || lit->target->key[0] == 'F') {
+                            fprintf(yyout, ".data\n_%s: .long 0\n", lit->target->key);
+                            strcpy(symbols[n_symbols], lit->target->key); 
+                            n_symbols++;
+                        } else {
+                            fprintf(yyout, ".data\n_%s: .long 0\n", lit->target->key);
+                            strcpy(symbols[n_symbols], lit->target->key); 
+                            n_symbols++;
                         }
                     }
                 }
@@ -242,12 +280,28 @@ void generateASM(TAC *list) {
                             fprintf(yyout, ".data\n_%s: .long %s\n", lit->op1->key, lit->op1->key); 
                             strcpy(symbols[n_symbols], lit->op1->key); 
                             n_symbols++;
+                        } else if (lit->op1->key[0] == '\'') {
+                            fprintf(yyout, ".data\n_%s: .long %d\n", lit->op1->key, (int)lit->op1->key[1]); 
+                            strcpy(symbols[n_symbols], lit->op1->key); 
+                            n_symbols++;
+                        } else if (lit->op1->key[0] == 't' || lit->op1->key[0] == 'T') {
+                            fprintf(yyout, ".data\n_%s: .long 1\n", lit->op1->key);
+                            strcpy(symbols[n_symbols], lit->op1->key); 
+                            n_symbols++;
+                        } else if (lit->op1->key[0] == 'f' || lit->op1->key[0] == 'F') {
+                            fprintf(yyout, ".data\n_%s: .long 0\n", lit->op1->key);
+                            strcpy(symbols[n_symbols], lit->op1->key); 
+                            n_symbols++;
                         }
                     }
                 }
                 break;
+            case TAC_INPUT:
+                fprintf(yyout, "LC%d: .string \"%%d\"\n", n_output);
+                n_output++;
+                break;
             case TAC_OUTPUT:
-                fprintf(yyout, "LC%d: .ascii \"%%d\\12\\0\"\n", n_output); 
+                fprintf(yyout, "LC%d: .string \"%%d\\n\"\n", n_output); 
                 n_output++;
                 break;
             case TAC_SUM:
@@ -386,13 +440,37 @@ void generateASM(TAC *list) {
     int cur_op = 0;
     int cur_param = 0;
     char cur_fun[50];
+    char key[50];
+    int compl = 0;
+    int iforloop = 0;
     while (tac) {
         switch(tac->type)
         {
             case TAC_SYMBOL: break;
             case TAC_SYMBOL_LIT: break;
             case TAC_VAR: 
-                fprintf(yyout, ".data\n_%s: .long %s\n", tac->target->key, tac->op1->key);
+                if (!contains(symbols, tac->target->key, n_symbols)) {
+                    if (isdigit((int)tac->op1->key[0])) {
+                        fprintf(yyout, ".data\n_%s: .long %s\n", tac->target->key, tac->op1->key);
+                        strcpy(symbols[n_symbols], tac->target->key); 
+                        n_symbols++;
+                    }
+                    else if (tac->op1->key[0] == '\'') {
+                        fprintf(yyout, ".data\n_%s: .long %d\n", tac->target->key, (int)tac->op1->key[1]);
+                        strcpy(symbols[n_symbols], tac->target->key); 
+                        n_symbols++;
+                    }
+                    else if (tac->op1->key[0] == 't' || tac->op1->key[0] == 'T') {
+                        fprintf(yyout, ".data\n_%s: .long 1\n", tac->target->key);
+                        strcpy(symbols[n_symbols], tac->target->key); 
+                        n_symbols++;
+                    }
+                    else if (tac->op1->key[0] == 'f' || tac->op1->key[0] == 'F') {
+                        fprintf(yyout, ".data\n_%s: .long 0\n", tac->target->key);
+                        strcpy(symbols[n_symbols], tac->target->key); 
+                        n_symbols++;
+                    }
+                }
                 break;
             case TAC_VET:
                 fprintf(yyout, ".data\n.comm _%s, %d\n", tac->target->key, atoi(tac->op1->key)*4);
@@ -414,9 +492,9 @@ void generateASM(TAC *list) {
                 break;
             case TAC_BEGINFUN: 
                 if (strcmp(tac->target->key, "main")) {
-                    fprintf(yyout, ".text\n.def _%s; .scl 2; .type 32; .endef\n_%s:\npushl %%ebp\nmovl %%esp, %%ebp\n", tac->target->key, tac->target->key);
+                    fprintf(yyout, ".text\n.globl %s\n.type %s, @function\n%s:\npushl %%ebp\nmovl %%esp, %%ebp\n", tac->target->key, tac->target->key, tac->target->key);
                 } else {
-                    fprintf(yyout, ".def ___main; .scl 2; .type 32; .endef\n.section .rdata,\"dr\"\n.text\n.def _main; .scl 2; .type 32; .endef\n_main:\npushl %%ebp\nmovl %%esp, %%ebp\nandl $-16, %%esp\nsubl $%d, %%esp\ncall ___main\n", 8+max_params*4);
+                    fprintf(yyout, ".text\n.globl main\n.type main, @function\nmain:\npushl %%ebp\nmovl %%esp, %%ebp\nandl $-16, %%esp\nsubl $%d, %%esp\n", 8+max_params*4);
                 }
                 strcpy(cur_fun, tac->target->key);
                 break;
@@ -448,42 +526,51 @@ void generateASM(TAC *list) {
                 break;
             case TAC_COPY: printf("TAC_COPY");break;
             case TAC_EQ: 
-                fprintf(yyout, "movl %s, %%eax\nmovl %s, %%edx\ncmpl %%eax, %%edx\n", 
+                /*
+                compl = atoi(tac->op2->key) - 1;
+                strcpy(key, "");
+                sprintf(key, "%d", compl);
+                */
+                fprintf(yyout, "movl %s, %%eax\nmovl %s, %%edx\ncmpl %%edx, %%eax\n", 
                         getValue(cur_fun, tac->op1->key, n_functions), getValue(cur_fun, tac->op2->key, n_functions));
                 cur_op = TAC_EQ;
                 break;
             case TAC_NE:
-                fprintf(yyout, "movl %s, %%eax\nmovl %s, %%edx\ncmpl %%eax, %%edx\n", 
+                fprintf(yyout, "movl %s, %%eax\nmovl %s, %%edx\ncmpl %%edx, %%eax\n", 
                         getValue(cur_fun, tac->op1->key, n_functions), getValue(cur_fun, tac->op2->key, n_functions));
                 cur_op = TAC_NE;
                 break;
             case TAC_GE: 
-                fprintf(yyout, "movl %s, %%eax\nmovl %s, %%edx\ncmpl %%eax, %%edx\n", 
+                fprintf(yyout, "movl %s, %%eax\nmovl %s, %%edx\ncmpl %%edx, %%eax\n", 
                         getValue(cur_fun, tac->op1->key, n_functions), getValue(cur_fun, tac->op2->key, n_functions));
                 cur_op = TAC_GE;
                 break;
             case TAC_LE: 
-                fprintf(yyout, "movl %s, %%eax\nmovl %s, %%edx\ncmpl %%eax, %%edx\n", 
+                fprintf(yyout, "movl %s, %%eax\nmovl %s, %%edx\ncmpl %%edx, %%eax\n", 
                         getValue(cur_fun, tac->op1->key, n_functions), getValue(cur_fun, tac->op2->key, n_functions));
                 cur_op = TAC_LE;
                 break;
             case TAC_GT: 
-                fprintf(yyout, "movl %s, %%eax\nmovl %s, %%edx\ncmpl %%eax, %%edx\n", 
+                fprintf(yyout, "movl %s, %%eax\nmovl %s, %%edx\ncmpl %%edx, %%eax\n", 
                         getValue(cur_fun, tac->op1->key, n_functions), getValue(cur_fun, tac->op2->key, n_functions));
                 cur_op = TAC_GT;
                 break;
             case TAC_LT: 
-                fprintf(yyout, "movl %s, %%eax\nmovl %s, %%edx\ncmpl %%eax, %%edx\n", 
+                fprintf(yyout, "movl %s, %%eax\nmovl %s, %%edx\ncmpl %%edx, %%eax\n", 
                         getValue(cur_fun, tac->op1->key, n_functions), getValue(cur_fun, tac->op2->key, n_functions));
                 cur_op = TAC_LT;
                 break;
-            case TAC_IF: break;
+            case TAC_IF: iforloop = 0; break;
             case TAC_OUTPUT: 
-                fprintf(yyout, "movl %s, %%eax\nmovl %%eax, 4(%%esp)\nmovl $LC%d, (%%esp)\ncall _printf\n", getValue(cur_fun, tac->target->key, n_functions), n_output);
+                fprintf(yyout, "movl %s, %%eax\nmovl %%eax, 4(%%esp)\nmovl $LC%d, (%%esp)\ncall printf\n", getValue(cur_fun, tac->target->key, n_functions), n_output);
                 n_output++;
                 cur_param = 0;
                 break;
-            case TAC_INPUT: printf("TAC_INPUT");break;
+            case TAC_INPUT: 
+                fprintf(yyout, "movl $%s, 4(%%esp)\nmovl $LC%d, (%%esp)\ncall __isoc99_scanf\n", getValue(cur_fun, tac->target->key, n_functions), n_output);
+                n_output++;
+                cur_param = 0;
+                break;
             case TAC_RETURN: 
                 fprintf(yyout, "movl %s, %%eax\n", getValue(cur_fun, tac->target->key, n_functions));
                 break;
@@ -513,31 +600,47 @@ void generateASM(TAC *list) {
                         getValue(cur_fun, tac->op2->key, n_functions), getValue(cur_fun, tac->target->key, n_functions), atoi(tac->op1->key)*4);
                 break;
             case TAC_FUN_CALL: 
-                fprintf(yyout, "call _%s\nmovl %%eax, %s\n", tac->op1->key, getValue(cur_fun, tac->target->key, n_functions));
+                fprintf(yyout, "call %s\nmovl %%eax, %s\n", tac->op1->key, getValue(cur_fun, tac->target->key, n_functions));
                 cur_param = 0;
                 break;
             case TAC_FUN_CALL_PARAM:
-                fprintf(yyout, "call _%s\nmovl %%eax, %s\n", tac->op1->key, getValue(cur_fun, tac->target->key, n_functions));
+                fprintf(yyout, "call %s\nmovl %%eax, %s\n", tac->op1->key, getValue(cur_fun, tac->target->key, n_functions));
                 cur_param = 0;
                 break;
-            case TAC_LOOP: break;
+            case TAC_LOOP: iforloop = 1; break;
             case TAC_MOV: 
                 fprintf(yyout, "movl %s, %%eax\nmovl %%eax, %s\n", 
                         getValue(cur_fun, tac->op1->key, n_functions), getValue(cur_fun, tac->target->key, n_functions));
                 break;
             case TAC_JZ: 
-                switch (cur_op) {
-                    case TAC_GT: fprintf(yyout, "jle %s\n", tac->target->key); break;
-                    case TAC_LT: fprintf(yyout, "jge %s\n", tac->target->key); break;
-                    case TAC_GE: fprintf(yyout, "jl %s\n", tac->target->key); break;
-                    case TAC_LE: fprintf(yyout, "jg %s\n", tac->target->key); break;
-                    case TAC_EQ: fprintf(yyout, "jne %s\n", tac->target->key); break;
-                    case TAC_NE: fprintf(yyout, "je %s\n", tac->target->key); break;
-                    case TAC_AND:
-                        fprintf(yyout, "je %s\n", tac->target->key);
-                        fprintf(yyout, "testl %%edx, %%edx\nje %s\n", tac->target->key);
-                        break;
-                    case TAC_OR: break;
+                if (!iforloop) {
+                    switch (cur_op) {
+                        case TAC_GT: fprintf(yyout, "jle %s\n", tac->target->key); break;
+                        case TAC_LT: fprintf(yyout, "jge %s\n", tac->target->key); break;
+                        case TAC_GE: fprintf(yyout, "jl %s\n", tac->target->key); break;
+                        case TAC_LE: fprintf(yyout, "jg %s\n", tac->target->key); break;
+                        case TAC_EQ: fprintf(yyout, "jne %s\n", tac->target->key); break;
+                        case TAC_NE: fprintf(yyout, "je %s\n", tac->target->key); break;
+                        case TAC_AND:
+                            fprintf(yyout, "je %s\n", tac->target->key);
+                            fprintf(yyout, "testl %%edx, %%edx\nje %s\n", tac->target->key);
+                            break;
+                        case TAC_OR: break;
+                    }
+                } else {
+                    switch (cur_op) {
+                        case TAC_GT: fprintf(yyout, "jg %s\n", tac->target->key); break;
+                        case TAC_LT: fprintf(yyout, "jl %s\n", tac->target->key); break;
+                        case TAC_GE: fprintf(yyout, "jge %s\n", tac->target->key); break;
+                        case TAC_LE: fprintf(yyout, "jle %s\n", tac->target->key); break;
+                        case TAC_EQ: fprintf(yyout, "je %s\n", tac->target->key); break;
+                        case TAC_NE: fprintf(yyout, "jne %s\n", tac->target->key); break;
+                        case TAC_AND:
+                            fprintf(yyout, "je %s\n", tac->target->key);
+                            fprintf(yyout, "testl %%edx, %%edx\nje %s\n", tac->target->key);
+                            break;
+                        case TAC_OR: break;
+                    }
                 }
                 break;
             default: break;

@@ -1,59 +1,64 @@
 .data
-_1: .long 1
+_5: .long 5
 .data
 ___Temporary_1: .long 0
-LC0: .ascii "%d\12\0"
 .data
-_a: .long 1
+_10: .long 10
 .data
-_b: .long 4
+_m: .long 0
+LC0: .string "%d\n"
+.data
+___Temporary_3: .long 0
+.data
+___Temporary_4: .long 0
+.data
+_a: .long 0
+.data
+_b: .long 0
+.data
+.comm _v, 36
+.data
+_x: .long 1
+.data
+_i: .long 97
 .text
-.def _fun; .scl 2; .type 32; .endef
-_fun:
-pushl %ebp
-movl %esp, %ebp
-movl _a, %eax
-popl %ebp
-ret
-.def ___main; .scl 2; .type 32; .endef
-.section .rdata,"dr"
-.text
-.def _main; .scl 2; .type 32; .endef
-_main:
+.globl main
+.type main, @function
+main:
 pushl %ebp
 movl %esp, %ebp
 andl $-16, %esp
-subl $48, %esp
-call ___main
-movl _1, %eax
+subl $12, %esp
+movl _5, %eax
 movl %eax, 0(%esp)
-movl _1, %eax
-movl %eax, 4(%esp)
-movl _1, %eax
-movl %eax, 8(%esp)
-movl _1, %eax
-movl %eax, 12(%esp)
-movl _1, %eax
-movl %eax, 16(%esp)
-movl _1, %eax
-movl %eax, 20(%esp)
-movl _1, %eax
-movl %eax, 24(%esp)
-movl _1, %eax
-movl %eax, 28(%esp)
-movl _1, %eax
-movl %eax, 32(%esp)
-movl _1, %eax
-movl %eax, 36(%esp)
-call _fun
+call f
 movl %eax, ___Temporary_1
 movl ___Temporary_1, %eax
 movl %eax, _a
-movl _a, %eax
-movl %eax, 0(%esp)
-movl _a, %eax
+leave
+ret
+.text
+.globl f
+.type f, @function
+f:
+pushl %ebp
+movl %esp, %ebp
+movl 8(%ebp), %eax
+movl _10, %edx
+cmpl %edx, %eax
+jge __Label_1__
+movl _m, %eax
+movl %eax, 4(%esp)
+movl 8(%ebp), %eax
 movl %eax, 4(%esp)
 movl $LC0, (%esp)
-call _printf
-leave
+call printf
+movl ___Temporary_3, %eax
+movl %eax, 0(%esp)
+call f
+movl %eax, ___Temporary_4
+movl ___Temporary_4, %eax
+movl %eax, _a
+__Label_1__:
+popl %ebp
 ret
