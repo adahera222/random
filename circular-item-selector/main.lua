@@ -22,9 +22,14 @@ function love.load()
     ti = 0.33
     br = 2*math.pi/#item_list
     r = 128
+    cc = 92
     item_info_list = {}
     for i = 1, #item_list do
-        item_info_list[i] = item_info(400+r*math.cos(i*br)-32, 300+r*math.sin(i*br)-32, 255)
+        if i == #item_list then
+            item_info_list[i] = item_info(400+r*math.cos(i*br)-32, 300+r*math.sin(i*br)-32, 255)
+        else
+            item_info_list[i] = item_info(400+r*math.cos(i*br)-32, 300+r*math.sin(i*br)-32, cc)
+        end
     end
     can_turn = true
 end
@@ -63,12 +68,21 @@ function love.keypressed(key)
         for i, item_info in ipairs(item_info_list) do
             tween(ti, item_info, {x = 400+r*math.cos((i+1)*br)-32}, 'inOutCubic')
             tween(ti, item_info, {y = 300+r*math.sin((i+1)*br)-32}, 'inOutCubic')
+            if i ~= #item_list-1 then
+                tween(ti, item_info, {c = cc}, 'inOutCubic')
+            else
+                tween(ti, item_info, {c = 255}, 'inOutCubic')
+            end
         end
         chrono:after(ti, function() 
             table.shiftRight(item_list)
             item_info_list = {}
             for i = 1, #item_list do
-                item_info_list[i] = item_info(400+r*math.cos(i*br)-32, 300+r*math.sin(i*br)-32, 255)
+                if i ~= #item_list then
+                    item_info_list[i] = item_info(400+r*math.cos(i*br)-32, 300+r*math.sin(i*br)-32, cc)
+                else
+                    item_info_list[i] = item_info(400+r*math.cos(i*br)-32, 300+r*math.sin(i*br)-32, 255)
+                end
             end
         end)
     end
@@ -76,12 +90,21 @@ function love.keypressed(key)
         for i, item_info in ipairs(item_info_list) do
             tween(ti, item_info, {x = 400+r*math.cos((i-1)*br)-32}, 'inOutCubic')
             tween(ti, item_info, {y = 300+r*math.sin((i-1)*br)-32}, 'inOutCubic')
+            if i ~= 1 then
+                tween(ti, item_info, {c = cc}, 'inOutCubic')
+            else
+                tween(ti, item_info, {c = 255}, 'inOutCubic')
+            end
         end
         chrono:after(ti, function() 
             table.shiftLeft(item_list) 
             item_info_list = {}
             for i = 1, #item_list do
-                item_info_list[i] = item_info(400+r*math.cos(i*br)-32, 300+r*math.sin(i*br)-32)
+                if i ~= #item_list then
+                    item_info_list[i] = item_info(400+r*math.cos(i*br)-32, 300+r*math.sin(i*br)-32, cc)
+                else
+                    item_info_list[i] = item_info(400+r*math.cos(i*br)-32, 300+r*math.sin(i*br)-32, 255)
+                end
             end
         end)
     end
