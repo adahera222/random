@@ -32,7 +32,6 @@ screen = love.graphics.newPixelEffect[[
     }
 ]]
 
--- Simple 3x3 box blur
 simple_blur = love.graphics.newPixelEffect[[
     extern vec2 image_size;
     extern number intensity = 1.0;
@@ -90,11 +89,35 @@ simple_sobel = love.graphics.newPixelEffect[[
     }
 ]]
 
+glassy_pixely = love.graphics.newPixelEffect[[
+    vec4 effect(vec4 color, Image tex, vec2 tc, vec2 pc) {
+        color = Texel(tex, tc);
+        if (mod(pc.x, 3.0) == 0.5 && mod(pc.y, 3.0) == 0.5) { // mid mid 
+        } else if (mod(pc.x+1, 3.0) == 0.5 && mod(pc.y-1, 3.0) == 0.5) { // left up
+            color = vec4(color.r-0.039, color.g-0.039, color.b-0.039, 1.0); 
+        } else if (mod(pc.x+1, 3.0) == 0.5 && mod(pc.y, 3.0) == 0.5) { // left mid
+        } else if (mod(pc.x+1, 3.0) == 0.5 && mod(pc.y+1, 3.0) == 0.5) { // left down
+        } else if (mod(pc.x, 3.0) == 0.5 && mod(pc.y-1, 3.0) == 0.5) { // mid up
+            color = vec4(color.r-0.039, color.g-0.039, color.b-0.039, 1.0); 
+        } else if (mod(pc.x, 3.0) == 0.5 && mod(pc.y+1, 3.0) == 0.5) { // mid down
+            color = vec4(color.r-0.1568, color.g-0.1568, color.b-0.1568, 1.0); 
+        } else if (mod(pc.x-1, 3.0) == 0.5 && mod(pc.y-1, 3.0) == 0.5) { // right up
+        } else if (mod(pc.x-1, 3.0) == 0.5 && mod(pc.y, 3.0) == 0.5) { // right mid
+            color = vec4(color.r-0.1568, color.g-0.1568, color.b-0.1568, 1.0);  
+        } else if (mod(pc.x-1, 3.0) == 0.5 && mod(pc.y+1, 3.0) == 0.5) { // right down
+            color = vec4(color.r-0.1568, color.g-0.1568, color.b-0.1568, 1.0); 
+        }
+        return color;
+    }
+]]
+
 function love.load()
     local w, h = love.graphics.getWidth(), love.graphics.getHeight()
     gaben = love.graphics.newImage('gaben.jpg')
+    --[[
     simple_blur:send("image_size", {gaben:getWidth(), gaben:getHeight()})
     simple_blur:send("intensity", 3)
+    ]]--
 end
 
 function love.update(dt)
@@ -102,7 +125,7 @@ function love.update(dt)
 end
 
 function love.draw()
-    love.graphics.setPixelEffect(simple_blur)
+    love.graphics.setPixelEffect(glassy_pixely)
     love.graphics.draw(gaben, 0, 0)
 end
 
