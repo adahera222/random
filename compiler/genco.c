@@ -256,7 +256,7 @@ TAC* make_loop(TAC *code0, TAC *code1) {
     jmpToCheck = tac_create(TAC_JUMP, labelCheck, 0, 0); 
     jmpToCode = tac_create(TAC_JZ, labelCode, code0 ? code0->target:0, 0);
 
-    return tac_join(jmpToCheck, tac_join(lblCode, tac_join(code1, tac_join(lblCheck, tac_join(code0, jmpToCode)))));
+    return tac_join(tac_create(TAC_LOOP, 0, 0, 0), tac_join(jmpToCheck, tac_join(lblCode, tac_join(code1, tac_join(lblCheck, tac_join(code0, jmpToCode))))));
 }
 
 // cond, then, else
@@ -271,11 +271,11 @@ TAC* make_if_then(TAC *code0, TAC *code1, TAC *code2)
     
     // else vazio, só if then
     if (!code2) {
-        return tac_join(
+        return tac_join(tac_create(TAC_IF, 0, 0, 0), tac_join(
                         tac_join(
                                  tac_join(code0, jmpIf), 
                                  code1), 
-                        lblElse);
+                        lblElse));
         
     // tem else, if then else
     } else {
@@ -286,7 +286,7 @@ TAC* make_if_then(TAC *code0, TAC *code1, TAC *code2)
         
         TAC *lblFim = tac_create(TAC_LABEL, labelFim, 0, 0);
         
-        return tac_join(
+        return tac_join(tac_create(TAC_IF, 0, 0, 0), tac_join(
                         tac_join(
                                  tac_join(
                                           tac_join(
@@ -296,7 +296,7 @@ TAC* make_if_then(TAC *code0, TAC *code1, TAC *code2)
                                                    jmpIncond),
                                           lblElse),
                                  code2),
-                        lblFim);
+                        lblFim));
     }
 }
 

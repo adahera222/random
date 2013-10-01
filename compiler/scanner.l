@@ -46,7 +46,7 @@ FALSE       yylval.symbol = hashInsert(yytext, SYMBOL_LIT_FALSE); return LIT_FAL
 <multiLineComment>\*\/      BEGIN(INITIAL);
 <multiLineComment>\n        ++line_number;
 <multiLineComment>. 
-\n                          ++line_number;
+[\n\r]                          ++line_number;
 \ 
 \t
 . printf("Lexical error on line %d: %s\n", line_number, yytext); return TOKEN_ERROR;

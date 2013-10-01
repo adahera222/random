@@ -1,0 +1,20 @@
+word a:0;
+word b:0;
+word v[9]; 
+bool x:TRUE;
+word i:'a';
+
+word main()
+  {
+      a = f(5);
+  }
+
+word f (word m)
+  { 
+      if (m < 10)
+      then {
+           output m;
+           a = f(m+1);
+    };
+  }
+  

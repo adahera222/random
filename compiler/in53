@@ -1,10 +1,47 @@
-word a:1;
-word b:4;
-word fun(word c, word d, word e, word f, word g, word h, word i, word j, word k, word l) 
-{
+word a:'a';
+bool b:true;
+word c:0;
+word f:0;
+word v[2];
+word fun1(word a, bool b, word c, byte d)
+    word a:0;
+    bool b:true;
+    word c:10;
+    {
+        return v[0]*v[1]+a+b+c+d;
+    }
+word cond() 
+    word a:0;
+    word b:5;
+    {
+    loop (b > 1) {
+        b = b - 1;
+        a = a + 1;
+    };
+    if (a > 4)
+    then a = 10
+    else a = 20;
+    return a;
+}
+word foo(word a) {
     return a;
 }
 word main() {
-    a = fun(1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
-    output a;
+    v[0] = 1;
+    v[1] = 1;
+    c = fun1(1, 2, 3, 4);
+    f = cond();
+    output c;
+    output f;
+    input f;
+    c = fun1(f, f, f, f);
+    output c;
+    c = 0;
+    v[0] = 0;
+    loop (c < 50) {
+        v[0] = v[0] + 1;
+        f = v[0];
+        output f;
+        c = c + foo(f);
+    };
 }
