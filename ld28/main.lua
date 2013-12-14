@@ -18,15 +18,17 @@ function love.load()
     require 'Resource'
     require 'ResourceFader'
     require 'People'
+    require 'PeopleFader'
 
     t = 0
     uid = 0
     game_width = love.graphics.getWidth()
     game_height = love.graphics.getHeight()
     timer = GTimer.new()
-    -- camera = Camera(2.5*game_width, game_height/2)
+    -- camera = Camera(3.5*game_width, game_height/2)
     camera = Camera()
     main_font_huge = love.graphics.newFont('Moon Flower.ttf', 128)
+    main_font_big = love.graphics.newFont('Moon Flower.ttf', 96)
 
     love.graphics.setBackgroundColor(232, 232, 232)
     love.graphics.setFont(main_font_huge)

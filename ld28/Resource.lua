@@ -6,8 +6,8 @@ function Resource:init(x, y, settings)
     self.outer_ring = self.size
     self.mid_ring = self.size/1.5
 
-    self.pulse_time = 2
-    self.pulse_tween_time = 2
+    self.pulse_time = settings.pulse or 2
+    self.pulse_tween_time = settings.pulse or 2
 
     timer:every(self.pulse_time, function()
         timer:tween(self.pulse_tween_time, self, {outer_ring = self.size + self.size/8}, 'out-elastic')
@@ -23,8 +23,9 @@ function Resource:init(x, y, settings)
         end)
     end)
     
+    self.drain_rate = self.pulse_time - self.pulse_time/2 or 1.5
     self.faders = {}
-    timer:every(self.pulse_time - self.pulse_time/2, function()
+    timer:every(self.drain_rate, function()
         table.insert(self.faders, ResourceFader(self.x, self.y, {size = self.size + 4}))
     end)
 end
