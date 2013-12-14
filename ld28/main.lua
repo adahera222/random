@@ -19,10 +19,13 @@ function love.load()
     t = 0
     uid = 0
     timer = GTimer.new()
+    camera = Camera()
     game_width = love.graphics.getWidth()
     game_height = love.graphics.getHeight()
+    main_font_huge = love.graphics.newFont('Moon Flower.ttf', 128)
 
     love.graphics.setBackgroundColor(232, 232, 232)
+    love.graphics.setFont(main_font_huge)
 
     intro = Intro()
 end
@@ -34,23 +37,17 @@ function love.update(dt)
 end
 
 function love.draw()
+    camera:attach()
     intro:draw()
+    camera:detach()
 end
 
 function love.mousepressed(x, y, button)
-
+    intro:mousepressed(x, y, button)
 end
 
 function love.mousereleased(x, y, button)
-
-end
-
-function love.keypressed(key)
-
-end
-
-function love.keyreleased(key)
-
+    intro:mousereleased(x, y, button)
 end
 
 -- 0.8
