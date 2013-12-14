@@ -10,20 +10,31 @@ function love.load()
     GTimer = require 'libraries/hump/timer'
     require 'libraries/anal/AnAL'
     require 'libraries/TEsound'
+    require 'utils'
+
+    require 'Entity'
+    require 'Intro'
+    require 'Planet'
 
     t = 0
+    uid = 0
     timer = GTimer.new()
     game_width = love.graphics.getWidth()
     game_height = love.graphics.getHeight()
+
+    love.graphics.setBackgroundColor(232, 232, 232)
+
+    intro = Intro()
 end
 
 function love.update(dt)
     t = t + dt
     timer:update(dt)
+    intro:update(dt)
 end
 
 function love.draw()
-    love.graphics.setBackgroundColor(232, 232, 232)
+    intro:draw()
 end
 
 function love.mousepressed(x, y, button)
