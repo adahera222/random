@@ -4,6 +4,7 @@ function Intro:init()
     self.first_state = true
     self.planet_state = false
     self.resource_state = false
+    self.people_state = false
     self.can_click_next = false
 
     self.first_alpha = 0
@@ -17,6 +18,9 @@ function Intro:init()
 
     self.resource_alpha = 0
     self.resource = Resource(2*game_width + game_width/2, game_height/2, {size = 60})
+
+    self.people_alpha = 0
+    self.person = People(3*game_width + game_width/2, game_height/2, {size = 20})
 end
 
 function Intro:update(dt)
@@ -40,8 +44,14 @@ function Intro:draw()
     love.graphics.print("THIS IS A RESOURCE", game_width/2 - w/2 + 2*game_width, game_height/2 + main_font_huge:getHeight())
     love.graphics.setColor(255, 255, 255, 255)
 
+    love.graphics.setColor(32, 32, 32, self.people_alpha)
+    local w = main_font_huge:getWidth("THESE ARE PEOPLE")
+    love.graphics.print("THESE ARE PEOPLE", game_width/2 - w/2 + 3*game_width, game_height/2 + main_font_huge:getHeight())
+    love.graphics.setColor(255, 255, 255, 255)
+
     self.planet:draw()
     self.resource:draw()
+    self.person:draw()
 end
 
 function Intro:mousepressed(x, y, button)
@@ -61,6 +71,13 @@ function Intro:mousepressed(x, y, button)
             self.resource_state = true
             timer:after(2, function()
                 timer:tween(2, self, {resource_alpha = 255}, 'in-out-cubic')
+                timer:after(1.5, function() self.can_click_next = true end)
+            end)
+        elseif self.resource_state then
+            self.resource_state = false
+            self.people_state = true
+            timer:after(2, function()
+                timer:tween(2, self, {people_alpha = 255}, 'in-out-cubic')
                 timer:after(1.5, function() self.can_click_next = true end)
             end)
         end

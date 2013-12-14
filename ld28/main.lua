@@ -17,7 +17,7 @@ function love.load()
     require 'Planet'
     require 'Resource'
     require 'ResourceFader'
-    require 'DrainParticle'
+    require 'People'
 
     t = 0
     uid = 0
