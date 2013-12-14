@@ -28,6 +28,8 @@ function Resource:init(x, y, settings)
     timer:every(self.drain_rate, function()
         table.insert(self.faders, ResourceFader(self.x, self.y, {size = self.size + 4}))
     end)
+
+    self:polygonize(4*self.size)
 end
 
 function Resource:update(dt)
@@ -37,13 +39,9 @@ function Resource:update(dt)
 end
 
 function Resource:polygonize(size)
-    if size then
-        return {self.x - 0.8*size, self.y, self.x, self.y - size, 
-                self.x + 0.8*size, self.y, self.x, self.y + size}
-    else 
-        return {self.x - 0.8*self.size, self.y, self.x, self.y - self.size, 
-                self.x + 0.8*self.size, self.y, self.x, self.y + self.size}
-    end
+    if size then self.points = {self.x - 0.8*size, self.y, self.x, self.y - size, self.x + 0.8*size, self.y, self.x, self.y + size}
+    else self.points = {self.x - 0.8*self.size, self.y, self.x, self.y - self.size, self.x + 0.8*self.size, self.y, self.x, self.y + self.size} end
+    return self.points
 end
 
 function Resource:draw()

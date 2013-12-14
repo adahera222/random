@@ -19,6 +19,7 @@ function love.load()
     require 'ResourceFader'
     require 'People'
     require 'PeopleFader'
+    require 'MouseFader'
 
     t = 0
     uid = 0
@@ -32,12 +33,20 @@ function love.load()
 
     love.graphics.setBackgroundColor(232, 232, 232)
     love.graphics.setFont(main_font_huge)
+    love.mouse.setVisible(false)
+    mouse = {x = 0, y = 0, radius = 4, color = {32, 32, 32}, pressed = false}
+    mouse.x, mouse.y = love.mouse.getPosition()
+    mouse_faders = {}
 
     intro = Intro()
 end
 
 function love.update(dt)
     t = t + dt
+    mouse.x, mouse.y = love.mouse.getPosition()
+    for i = #mouse_faders, 1, -1 do
+        if mouse_faders[i].dead then table.remove(mouse_faders, i) end
+    end
     timer:update(dt)
     intro:update(dt)
 end
@@ -46,14 +55,54 @@ function love.draw()
     camera:attach()
     intro:draw()
     camera:detach()
+    love.graphics.setColor(mouse.color[1], mouse.color[2], mouse.color[3])
+    love.graphics.setLineWidth(2)
+    love.graphics.circle('line', mouse.x, mouse.y, mouse.radius, 360)
+    if not mouse.pressed then mouse.color = {32, 32, 32} end
+    for _, mouse_fader in ipairs(mouse_faders) do mouse_fader:draw() end
 end
 
 function love.mousepressed(x, y, button)
+    if button == 'l' or button == 'r' then
+        mouse.pressed = true
+        timer:tween(0.25, mouse, {radius = 2}, 'out-elastic')
+    end
     intro:mousepressed(x, y, button)
 end
 
 function love.mousereleased(x, y, button)
+    if button == 'l' or button == 'r' then
+        mouse.pressed = false
+        timer:tween(0.5, mouse, {radius = 4}, 'out-elastic')
+        table.insert(mouse_faders, MouseFader(mouse.x, mouse.y, {color = mouse.color}))
+    end
     intro:mousereleased(x, y, button)
+end
+
+function mouseCollidingPerson(person)
+    local x, y = camera:worldCoords(mouse.x, mouse.y)
+    local d = Vector.distance(Vector(x, y), Vector(person.x, person.y))
+    if d <= person.size then return true end
+    return false
+end
+
+function mouseCollidingResource(resource)
+    local x, y = camera:worldCoords(mouse.x, mouse.y)
+    local nvert = #resource.points/2
+    local xvert, yvert = {}, {}
+    for i = 1, #resource.points do
+        if i % 2 ~= 0 then table.insert(xvert, resource.points[i]) end
+        if i % 2 == 0 then table.insert(yvert, resource.points[i]) end
+    end
+    local result = false
+    local j = nvert
+    for i = 1, nvert do
+        if ((yvert[i] > y) ~= (yvert[j] > y)) and (x < (xvert[j]-xvert[i])*(y-yvert[i])/(yvert[j]-yvert[i]) + xvert[i]) then
+            result = not result
+        end
+        j = i
+    end
+    return result 
 end
 
 -- 0.8

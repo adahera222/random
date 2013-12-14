@@ -29,8 +29,8 @@ function Intro:init()
 
     self.connect_alpha = 0
     self.connect2_alpha = 0
-    self.connect_resource = Resource(4*game_width + game_width/2 - game_width/4, game_height/2, {size = 40})
-    self.connect_person = People(4*game_width + game_width/2 + game_width/4, game_height/2, {size = 40})
+    self.connect_person = People(4*game_width + game_width/2 - game_width/4, game_height/2, {size = 40, pulse = 2.5})
+    self.connect_resource = Resource(4*game_width + game_width/2 + game_width/4, game_height/2, {size = 40})
 end
 
 function Intro:update(dt)
@@ -43,6 +43,8 @@ function Intro:update(dt)
     self.person_5:update(dt)
     self.connect_resource:update(dt)
     self.connect_person:update(dt)
+
+    if mouseCollidingPerson(self.connect_person) or mouseCollidingResource(self.connect_resource) then mouse.color = {232, 32, 32} end
 end
 
 function Intro:draw()
@@ -90,6 +92,8 @@ function Intro:draw()
 end
 
 function Intro:mousepressed(x, y, button)
+    if button ~= "l" and button ~= "r" then return end
+
     if self.can_click_next then
         timer:tween(2, camera, {x = camera.x + game_width}, 'in-out-cubic')
         self.can_click_next = false
