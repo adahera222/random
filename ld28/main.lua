@@ -15,13 +15,17 @@ function love.load()
     require 'Entity'
     require 'Intro'
     require 'Planet'
+    require 'Resource'
+    require 'ResourceFader'
+    require 'DrainParticle'
 
     t = 0
     uid = 0
-    timer = GTimer.new()
-    camera = Camera()
     game_width = love.graphics.getWidth()
     game_height = love.graphics.getHeight()
+    timer = GTimer.new()
+    -- camera = Camera(2.5*game_width, game_height/2)
+    camera = Camera()
     main_font_huge = love.graphics.newFont('Moon Flower.ttf', 128)
 
     love.graphics.setBackgroundColor(232, 232, 232)
