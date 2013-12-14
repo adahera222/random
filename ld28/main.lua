@@ -34,7 +34,7 @@ function love.load()
     love.graphics.setBackgroundColor(232, 232, 232)
     love.graphics.setFont(main_font_huge)
     love.mouse.setVisible(false)
-    mouse = {x = 0, y = 0, radius = 4, color = {32, 32, 32}, pressed = false}
+    mouse = {x = 0, y = 0, radius = 4, color = {32, 32, 32}, pressed = false, active = false}
     mouse.x, mouse.y = love.mouse.getPosition()
     mouse_faders = {}
 
@@ -58,8 +58,12 @@ function love.draw()
     love.graphics.setColor(mouse.color[1], mouse.color[2], mouse.color[3])
     love.graphics.setLineWidth(2)
     love.graphics.circle('line', mouse.x, mouse.y, mouse.radius, 360)
-    if not mouse.pressed then mouse.color = {32, 32, 32} end
+    if not mouse.pressed then 
+        mouse.active = false
+        mouse.color = {32, 32, 32} 
+    end
     for _, mouse_fader in ipairs(mouse_faders) do mouse_fader:draw() end
+    print(mouse.active)
 end
 
 function love.mousepressed(x, y, button)
@@ -88,6 +92,9 @@ end
 
 function mouseCollidingResource(resource)
     local x, y = camera:worldCoords(mouse.x, mouse.y)
+    local d = Vector.distance(Vector(x, y), Vector(resource.x, resource.y))
+    if d > resource.size then return false end
+
     local nvert = #resource.points/2
     local xvert, yvert = {}, {}
     for i = 1, #resource.points do

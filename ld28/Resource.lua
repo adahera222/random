@@ -29,7 +29,7 @@ function Resource:init(x, y, settings)
         table.insert(self.faders, ResourceFader(self.x, self.y, {size = self.size + 4}))
     end)
 
-    self:polygonize(4*self.size)
+    self:polygonize()
 end
 
 function Resource:update(dt)

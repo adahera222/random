@@ -44,7 +44,10 @@ function Intro:update(dt)
     self.connect_resource:update(dt)
     self.connect_person:update(dt)
 
-    if mouseCollidingPerson(self.connect_person) or mouseCollidingResource(self.connect_resource) then mouse.color = {232, 32, 32} end
+    if mouseCollidingPerson(self.connect_person) or mouseCollidingResource(self.connect_resource) then 
+        mouse.active = true
+        mouse.color = {64, 96, 232} 
+    end
 end
 
 function Intro:draw()
