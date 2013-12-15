@@ -23,8 +23,8 @@ function Resource:init(x, y, settings)
     self:polygonize()
     self.consumers = {}
     self.nsc = 1
-    self.n_size_changes_t = {{216, 216, 216, 8}, {200, 200, 200, 7.5}, {184, 184, 184, 7}, {168, 168, 168, 6.5}, {152, 152, 152, 6},
-                             {136, 136, 136, 5.5}, {120, 120, 120, 5}, {104, 104, 104, 4.5}, {88, 88, 88, 4}, {72, 72, 72, 3}}
+    self.n_size_changes_t = {{216, 216, 216, 12}, {200, 200, 200, 11}, {184, 184, 184, 10}, {168, 168, 168, 9}, {152, 152, 152, 8},
+                             {136, 136, 136, 7}, {120, 120, 120, 6}, {104, 104, 104, 5}, {88, 88, 88, 4}, {72, 72, 72, 3}}
 end
 
 function Resource:update(dt)
@@ -61,7 +61,7 @@ function Resource:changeSize(new_size, time)
     end
     if self.nsc < 9 then self.nsc = self.nsc + 1 end
     if self.consumers then
-        if #self.consumers >= 5 then
+        if #self.consumers >= 4 then
             local n = 1
             for _, consumer in ipairs(self.consumers) do
                 if consumer.resources then
@@ -70,7 +70,7 @@ function Resource:changeSize(new_size, time)
                     end
                 end
             end
-            if n >= 4 then table.insert(game.cities, City(self.x, self.y, {size = 7.5*self.init_size})) end
+            if n >= 4 then table.insert(game.cities, City(self.x, self.y, {size = 5*self.init_size, ref = Vector(self.x, self.y)})) end
         end
     end
 end
@@ -103,8 +103,8 @@ function Resource:addConsumer(consumer)
         if c.id == consumer.id then return end
     end
     table.insert(self.consumers, consumer)
-    self:changeSize(self.size - consumer.size/4)
-    self:changePulse(self.pulse_time - 0.05)
+    self:changeSize(self.size - consumer.size/math.prandom(2, 3.5))
+    self:changePulse(self.pulse_time - 0.1)
 end
 
 function Resource:draw()

@@ -89,9 +89,10 @@ function People:addResource(resource)
     for _, r in ipairs(self.resources) do
         if r.id == resource.id then return end
     end
+    if #self.resources >= 6 then return end
     table.insert(self.resources, resource)
     self:changeSize(self.size + resource.size/4)
-    self:changePulse(self.pulse_time + 0.05)
+    self:changePulse(self.pulse_time + 0.1)
     self:updateTarget()
 end
 

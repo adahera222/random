@@ -42,17 +42,21 @@ function love.load()
     love.graphics.setFont(main_font_huge)
     love.mouse.setVisible(false)
     love.mouse.setGrabbed(true)
-    camerat = {actual_zoom = 1, zoom = 1, can_zoom = false, v = Vector(0, 0), a = Vector(0, 0), v_multiplier = 0.05, 
+    camerat = {actual_zoom = 1, zoom = 1, can_zoom = false, v = Vector(0, 0), a = Vector(0, 0), v_multiplier = 0.1, 
                moving = {left = false, right = false, up = false, down = false}, damping = 0.95}
     mouse = {x = 0, y = 0, radius = 4, color = {32, 32, 32}, pressed = false, active = false}
     mouse.x, mouse.y = love.mouse.getPosition()
     mouse_faders = {}
 
+    lost = false
+    timer_lost = false
+    won = false
+    end_g = {alpha = 0}
     in_intro = true
     in_game = false
     intro = Intro()
     game_intro = {alpha = 255}
-    -- createGame()
+    createGame()
 end
 
 function createGame()
@@ -63,6 +67,33 @@ function createGame()
     in_intro = false
     in_game = true
     game = Game()
+end
+
+function lostGame()
+    lost = true
+    timer:cancel(game.timer_lost_tid)
+    timer:tween(4, end_g, {alpha = 255}, 'in-out-cubic')
+    timer:tween(4, game, {game_drain_alpha = 255}, 'in-out-cubic')
+    timer:tween(4, bg_color, {32, 32, 32}, 'in-out-cubic')
+    timer:after(8, function() love.event.push('quit') end)
+end
+
+function timerLost()
+    timer_lost = true
+    timer:cancel(game.timer_lost_tid)
+    timer:tween(4, end_g, {alpha = 255}, 'in-out-cubic')
+    timer:tween(4, game, {game_drain_alpha = 255}, 'in-out-cubic')
+    timer:tween(4, bg_color, {32, 32, 32}, 'in-out-cubic')
+    timer:after(8, function() love.event.push('quit') end)
+end
+
+function wonGame()
+    won = true
+    timer:cancel(game.timer_lost_tid)
+    timer:tween(4, end_g, {alpha = 255}, 'in-out-cubic')
+    timer:tween(4, game, {game_drain_alpha = 255}, 'in-out-cubic')
+    timer:tween(4, bg_color, {32, 32, 32}, 'in-out-cubic')
+    timer:after(8, function() love.event.push('quit') end)
 end
 
 function love.update(dt)
@@ -95,6 +126,30 @@ function love.draw()
         love.graphics.setColor(32, 32, 32, game.people_left_alpha)
         love.graphics.print("#BEINGS ALIVE: " .. #game.people .. " (MINIMUM: " .. game.alive_min .. ")", 10, 10)
         love.graphics.setColor(255, 255, 255, 255)
+
+        if lost then
+            love.graphics.setFont(main_font_huge)
+            love.graphics.setColor(232, 232, 232, end_g.alpha)
+            local w = main_font_huge:getWidth("NOT ENOUGH BEINGS SURVIVED")
+            love.graphics.print("NOT ENOUGH BEINGS SURVIVED", game_width/2 - w/2, game_height/2 - main_font_huge:getHeight()/2)
+            love.graphics.setColor(255, 255, 255, 255)
+        elseif won then
+            love.graphics.setFont(main_font_big)
+            love.graphics.setColor(232, 232, 232, end_g.alpha)
+            local w = main_font_big:getWidth("CIVILIZATION THRIVED")
+            love.graphics.print("CIVILIZATION THRIVED", game_width/2 - w/2, game_height/2 - 1.5*main_font_big:getHeight())
+            local w = main_font_big:getWidth("AT THE COST OF ONE PLANET'S RESOURCES")
+            love.graphics.print("AT THE COST OF ONE PLANET'S RESOURCES", game_width/2 - w/2, game_height/2 - main_font_big:getHeight()/2)
+            local w = main_font_big:getWidth("MERRY CHRISTMAS! CAPITALISM, HOHOHO!")
+            love.graphics.print("MERRY CHRISTMAS! CAPITALISM, HOHOHO!", game_width/2 - w/2, game_height/2 + main_font_big:getHeight())
+        elseif timer_lost then
+            love.graphics.setFont(main_font_huge)
+            love.graphics.setColor(232, 232, 232, end_g.alpha)
+            local w = main_font_huge:getWidth("THE SMOG CAME")
+            love.graphics.print("THE SMOG CAME", game_width/2 - w/2, game_height/2 - 1.5*main_font_huge:getHeight())
+            local w = main_font_huge:getWidth("AND ALL BEINGS DIED")
+            love.graphics.print("AND ALL BEINGS DIED", game_width/2 - w/2, game_height/2 + main_font_huge:getHeight()/2)
+        end
     end
     love.graphics.setColor(mouse.color[1], mouse.color[2], mouse.color[3])
     love.graphics.setLineWidth(2)

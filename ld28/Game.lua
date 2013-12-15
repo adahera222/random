@@ -1,10 +1,11 @@
 Game = class('Game')
 
 function Game:init()
-    self.planet = Planet(game_width/2, game_height/2, {radius = 2345, line_width = 8})
+    self.planet = Planet(game_width/2, game_height/2, {radius = 2000, line_width = 8})
 
     self.intro_text_alpha = 0
     self.people_left_alpha = 0
+    self.game_drain_alpha = 0
     timer:after(4, function()
         timer:tween(2, self, {intro_text_alpha = 255}, 'in-out-cubic')
         timer:tween(2, self, {people_left_alpha = 255}, 'in-out-cubic')
@@ -21,11 +22,14 @@ function Game:init()
     self.cities = {}
     table.insert(self.resources, Resource(game_width/2, game_height/2, {size = 120}))
 
-    self:spawnResources(math.random(20, 30))
-    self:spawnPeople(math.random(40, 50))
+    self:spawnResources(math.random(16, 24))
+    self:spawnPeople(math.random(45, 45))
 
-    self.alive_min = 10
-    timer:every(15, function() self.alive_min = self.alive_min + 1 end)
+    self.end_game = false
+    self.alive_min = 14
+    timer:every(25, function() self.alive_min = self.alive_min + 1 end)
+    self.timer_lost_tid = timer:tween(300, self, {game_drain_alpha = 232}, 'in-out-cubic')
+    timer:after(300, function() timerLost() end)
 end
 
 function Game:update(dt)
@@ -53,6 +57,13 @@ function Game:update(dt)
     if not camerat.moving.left and not camerat.moving.right then camerat.v.x = camerat.v.x*camerat.damping end
     if not camerat.moving.up and not camerat.moving.down then camerat.v.y = camerat.v.y*camerat.damping end
 
+    if self.people then
+        if not self.end_game then
+            if #self.people - self.alive_min < 0 then self.end_game = true; lostGame() end
+            if #self.people >= 40 then self.end_game = true; wonGame() end
+        end
+    end
+    
     self.planet:update(dt)
     self.active_line:update(dt)
     local mouse_color = false
@@ -157,6 +168,8 @@ function Game:draw()
     for _, resource in ipairs(self.resources) do resource:draw() end
     for _, connect_line in ipairs(self.connect_lines) do connect_line:draw() end
     for _, city in ipairs(self.cities) do city:draw() end
+    love.graphics.setColor(32, 32, 32, self.game_drain_alpha)
+    love.graphics.circle('fill', self.planet.x, self.planet.y, self.planet.radius, 360)
 end
 
 function Game:mousepressed(x, y, button)
@@ -200,6 +213,7 @@ function Game:mousereleased(x, y, button)
     for _, person in ipairs(self.people) do
         for _, resource in ipairs(self.resources) do
             if mouseCollidingPerson(person) and xyCollidingResource(self.active_line.x, self.active_line.y, resource) then
+                if #person.resources >= 6 then return end
                 table.insert(self.connect_lines, ConnectLine(0, 0, {src = resource, dst = person}))
                 resource:addConsumer(person)
                 person:addResource(resource)
@@ -209,6 +223,7 @@ function Game:mousereleased(x, y, button)
     for _, resource in ipairs(self.resources) do
         for _, person in ipairs(self.people) do
             if mouseCollidingResource(resource) and xyCollidingPerson(self.active_line.x, self.active_line.y, person) then
+                if #person.resources >= 6 then return end
                 table.insert(self.connect_lines, ConnectLine(0, 0, {dst = resource, src = person}))
                 resource:addConsumer(person)
                 person:addResource(resource)
