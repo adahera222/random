@@ -20,14 +20,16 @@ function love.load()
     require 'People'
     require 'PeopleFader'
     require 'MouseFader'
+    require 'ActiveLine'
+    require 'ConnectLine'
 
     t = 0
     uid = 0
     game_width = love.graphics.getWidth()
     game_height = love.graphics.getHeight()
     timer = GTimer.new()
-    -- camera = Camera(3.5*game_width, game_height/2)
-    camera = Camera()
+    camera = Camera(4.5*game_width, game_height/2)
+    -- camera = Camera()
     main_font_huge = love.graphics.newFont('Moon Flower.ttf', 128)
     main_font_big = love.graphics.newFont('Moon Flower.ttf', 96)
 
@@ -58,12 +60,7 @@ function love.draw()
     love.graphics.setColor(mouse.color[1], mouse.color[2], mouse.color[3])
     love.graphics.setLineWidth(2)
     love.graphics.circle('line', mouse.x, mouse.y, mouse.radius, 360)
-    if not mouse.pressed then 
-        mouse.active = false
-        mouse.color = {32, 32, 32} 
-    end
     for _, mouse_fader in ipairs(mouse_faders) do mouse_fader:draw() end
-    print(mouse.active)
 end
 
 function love.mousepressed(x, y, button)

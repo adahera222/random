@@ -31,6 +31,8 @@ function Intro:init()
     self.connect2_alpha = 0
     self.connect_person = People(4*game_width + game_width/2 - game_width/4, game_height/2, {size = 40, pulse = 2.5})
     self.connect_resource = Resource(4*game_width + game_width/2 + game_width/4, game_height/2, {size = 40})
+    self.connect_line = nil
+    self.active_line = ActiveLine(0, 0)
 end
 
 function Intro:update(dt)
@@ -41,12 +43,16 @@ function Intro:update(dt)
     self.person_3:update(dt)
     self.person_4:update(dt)
     self.person_5:update(dt)
+    self.active_line:update(dt)
+    if self.connect_line then self.connect_line:update(dt) end
     self.connect_resource:update(dt)
     self.connect_person:update(dt)
 
     if mouseCollidingPerson(self.connect_person) or mouseCollidingResource(self.connect_resource) then 
-        mouse.active = true
         mouse.color = {64, 96, 232} 
+    else
+        mouse.color = {32, 32, 32}
+        if not mouse.pressed then mouse.active = false end
     end
 end
 
@@ -90,12 +96,21 @@ function Intro:draw()
     self.person_3:draw()
     self.person_4:draw()
     self.person_5:draw()
+    self.active_line:draw()
+    if self.connect_line then self.connect_line:draw() end
     self.connect_resource:draw()
     self.connect_person:draw()
 end
 
 function Intro:mousepressed(x, y, button)
     if button ~= "l" and button ~= "r" then return end
+
+    if mouseCollidingPerson(self.connect_person) or mouseCollidingResource(self.connect_resource) then 
+        mouse.active = true
+        local wx, wy = camera:worldCoords(x, y)
+        self.active_line.x = wx
+        self.active_line.y = wy
+    end
 
     if self.can_click_next then
         timer:tween(2, camera, {x = camera.x + game_width}, 'in-out-cubic')
@@ -136,5 +151,14 @@ function Intro:mousepressed(x, y, button)
 end
 
 function Intro:mousereleased(x, y, button)
-    
+    mouse.active = false
+    if mouseCollidingPerson(self.connect_person) then
+        self.connect_line = ConnectLine(0, 0, {src = self.connect_resource, dst = self.connect_person})
+        self.connect_person:setConsume()
+        self.connect_resource:addConsumer(self.connect_person)
+    elseif mouseCollidingResource(self.connect_resource) then
+        self.connect_line = ConnectLine(0, 0, {dst = self.connect_resource, src = self.connect_person})
+        self.connect_person:setConsume()
+        self.connect_resource:addConsumer(self.connect_person)
+    end
 end

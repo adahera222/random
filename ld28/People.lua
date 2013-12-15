@@ -39,6 +39,16 @@ function People:update(dt)
     end
 end
 
+function People:setConsume(consume_rate)
+    self.consuming = true
+    if self.consuming then
+        self.consume_rate = consume_rate or self.pulse_time - self.pulse_time/2
+        timer:every(self.consume_rate, function() 
+            table.insert(self.faders, PeopleFader(self.x, self.y, {size = self.size}))
+        end)
+    end
+end
+
 function People:draw()
     for _, fader in ipairs(self.faders) do fader:draw() end
 

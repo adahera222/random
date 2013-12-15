@@ -30,6 +30,7 @@ function Resource:init(x, y, settings)
     end)
 
     self:polygonize()
+    self.consumers = {}
 end
 
 function Resource:update(dt)
@@ -42,6 +43,11 @@ function Resource:polygonize(size)
     if size then self.points = {self.x - 0.8*size, self.y, self.x, self.y - size, self.x + 0.8*size, self.y, self.x, self.y + size}
     else self.points = {self.x - 0.8*self.size, self.y, self.x, self.y - self.size, self.x + 0.8*self.size, self.y, self.x, self.y + self.size} end
     return self.points
+end
+
+function Resource:addConsumer(consumer)
+    table.insert(self.consumers, consumer)
+    self.drain_rate = 0.5
 end
 
 function Resource:draw()
