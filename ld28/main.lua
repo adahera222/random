@@ -14,6 +14,7 @@ function love.load()
 
     require 'Entity'
     require 'Intro'
+    require 'Game'
     require 'Planet'
     require 'Resource'
     require 'ResourceFader'
@@ -41,7 +42,17 @@ function love.load()
     mouse.x, mouse.y = love.mouse.getPosition()
     mouse_faders = {}
 
+    in_intro = true
+    in_game = false
     intro = Intro()
+    createGame()
+end
+
+function createGame()
+    camera:zoomTo(0.2)
+    game = Game()
+    in_intro = false
+    in_game = true
 end
 
 function love.update(dt)
@@ -51,13 +62,15 @@ function love.update(dt)
         if mouse_faders[i].dead then table.remove(mouse_faders, i) end
     end
     timer:update(dt)
-    intro:update(dt)
+    if in_intro then intro:update(dt) end
+    if in_game then game:update(dt) end
 end
 
 function love.draw()
     love.graphics.setBackgroundColor(bg_color[1], bg_color[2], bg_color[3])
     camera:attach()
-    intro:draw()
+    if in_intro then intro:draw() end
+    if in_game then game:draw() end
     for _, mouse_fader in ipairs(mouse_faders) do mouse_fader:draw() end
     camera:detach()
     love.graphics.setColor(mouse.color[1], mouse.color[2], mouse.color[3])
@@ -70,7 +83,8 @@ function love.mousepressed(x, y, button)
         mouse.pressed = true
         timer:tween(0.25, mouse, {radius = 2}, 'out-elastic')
     end
-    intro:mousepressed(x, y, button)
+    if in_intro then intro:mousepressed(x, y, button) end
+    if in_game then game:mousepressed(x, y, button) end
 end
 
 function love.mousereleased(x, y, button)
@@ -80,7 +94,14 @@ function love.mousereleased(x, y, button)
         local wx, wy = camera:worldCoords(mouse.x, mouse.y)
         table.insert(mouse_faders, MouseFader(wx, wy, {color = mouse.color}))
     end
-    intro:mousereleased(x, y, button)
+    if in_intro then intro:mousereleased(x, y, button) end
+    if in_game then game:mousereleased(x, y, button) end
+end
+
+function xyCollidingPerson(x, y, person)
+    local d = Vector.distance(Vector(x, y), Vector(person.x, person.y))
+    if d <= person.size then return true end
+    return false
 end
 
 function mouseCollidingPerson(person)
@@ -88,6 +109,27 @@ function mouseCollidingPerson(person)
     local d = Vector.distance(Vector(x, y), Vector(person.x, person.y))
     if d <= person.size then return true end
     return false
+end
+
+function xyCollidingResource(x, y, resource)
+    local d = Vector.distance(Vector(x, y), Vector(resource.x, resource.y))
+    if d > resource.size then return false end
+    
+    local nvert = #resource.points/2
+    local xvert, yvert = {}, {}
+    for i = 1, #resource.points do
+        if i % 2 ~= 0 then table.insert(xvert, resource.points[i]) end
+        if i % 2 == 0 then table.insert(yvert, resource.points[i]) end
+    end
+    local result = false
+    local j = nvert
+    for i = 1, nvert do
+        if ((yvert[i] > y) ~= (yvert[j] > y)) and (x < (xvert[j]-xvert[i])*(y-yvert[i])/(yvert[j]-yvert[i]) + xvert[i]) then
+            result = not result
+        end
+        j = i
+    end
+    return result 
 end
 
 function mouseCollidingResource(resource)

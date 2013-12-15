@@ -8,6 +8,7 @@ function Intro:init()
     self.connect_state = false
     self.create_state = false
     self.death_state = false
+    self.goal_state = false
     self.drain_state = false
     self.can_click_next = false
 
@@ -48,6 +49,7 @@ function Intro:init()
     self.death_alpha = 0
     self.death_person = People(6*game_width + game_width/2, game_height/2, {size = 30})
 
+    self.goal_alpha = 0
     self.drain_alpha = 0
 end
 
@@ -123,9 +125,14 @@ function Intro:draw()
     love.graphics.print("WITH NO RESOURCES PEOPLE DIE", game_width/2 - w/2 + 6*game_width, game_height/2 - 2*main_font_huge:getHeight())
     love.graphics.setColor(255, 255, 255, 255)
 
+    love.graphics.setColor(32, 32, 32, self.goal_alpha)
+    local w = main_font_huge:getWidth("ENSURE SOCIETY THRIVES")
+    love.graphics.print("ENSURE SOCIETY THRIVES", game_width/2 - w/2 + 7*game_width, game_height/2 - main_font_huge:getHeight()/2)
+    love.graphics.setColor(255, 255, 255, 255)
+
     love.graphics.setColor(232, 232, 232, self.drain_alpha)
     local w = main_font_huge:getWidth("DRAIN")
-    love.graphics.print("DRAIN", game_width/2 - w/2 + 7*game_width, game_height/2 - main_font_huge:getHeight()/2)
+    love.graphics.print("DRAIN", game_width/2 - w/2 + 8*game_width, game_height/2 - main_font_huge:getHeight()/2)
     love.graphics.setColor(255, 255, 255, 255)
 
     self.planet:draw()
@@ -213,11 +220,26 @@ function Intro:mousepressed(x, y, button)
                 timer:after(4, function() self.can_click_next = true end)
             end)
         elseif self.death_state then
-            self.death_state = false
+            self.death_state = false 
+            self.goal_state = true
+            timer:after(2, function()
+                timer:tween(2, self, {goal_alpha = 255}, 'in-out-cubic')
+                timer:after(1.5, function() self.can_click_next = true end)
+            end)
+        elseif self.goal_state then
+            self.goal_state = false
             self.drain_state = true
             timer:after(2, function()
                 timer:tween(4, self, {drain_alpha = 255}, 'in-out-cubic')
                 timer:tween(4, bg_color, {32, 32, 32}, 'in-out-cubic')
+                timer:after(4, function()
+                    timer:tween(4, self, {drain_alpha = 0}, 'in-out-cubic')
+                    timer:tween(4, bg_color, {232, 232, 232}, 'in-out-cubic')
+                    timer:after(4, function()
+                        in_intro = false
+                        createGame()
+                    end)
+                end)
             end)
         end
     end
@@ -225,12 +247,14 @@ end
 
 function Intro:mousereleased(x, y, button)
     mouse.active = false
-    if mouseCollidingPerson(self.connect_person) then
+    if mouseCollidingPerson(self.connect_person) and 
+       xyCollidingResource(self.active_line.x, self.active_line.y, self.connect_resource) then
         self.connect_line = ConnectLine(0, 0, {src = self.connect_resource, dst = self.connect_person})
         self.connect_person:setConsume()
         self.connect_resource:addConsumer(self.connect_person)
         self.can_click_next = true
-    elseif mouseCollidingResource(self.connect_resource) then
+    elseif mouseCollidingResource(self.connect_resource) and 
+           xyCollidingPerson(self.active_line.x, self.active_line.y, self.connect_person) then
         self.connect_line = ConnectLine(0, 0, {dst = self.connect_resource, src = self.connect_person})
         self.connect_person:setConsume()
         self.connect_resource:addConsumer(self.connect_person)
