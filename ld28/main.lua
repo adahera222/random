@@ -38,6 +38,9 @@ function love.load()
     love.graphics.setBackgroundColor(bg_color[1], bg_color[2], bg_color[3])
     love.graphics.setFont(main_font_huge)
     love.mouse.setVisible(false)
+    love.mouse.setGrab(true)
+    camerat = {actual_zoom = 1, zoom = 1, can_zoom = true, v = Vector(0, 0), a = Vector(0, 0), v_multiplier = 0.05, 
+               moving = {left = false, right = false, up = false, down = false}, damping = 0.95}
     mouse = {x = 0, y = 0, radius = 4, color = {32, 32, 32}, pressed = false, active = false}
     mouse.x, mouse.y = love.mouse.getPosition()
     mouse_faders = {}
@@ -49,7 +52,6 @@ function love.load()
 end
 
 function createGame()
-    camera:zoomTo(0.2)
     game = Game()
     in_intro = false
     in_game = true
@@ -76,6 +78,10 @@ function love.draw()
     love.graphics.setColor(mouse.color[1], mouse.color[2], mouse.color[3])
     love.graphics.setLineWidth(2)
     love.graphics.circle('line', mouse.x, mouse.y, mouse.radius, 360)
+end
+
+function love.keypressed(key)
+    if key == 'escape' or key == 'q' then love.event.push('quit') end
 end
 
 function love.mousepressed(x, y, button)
