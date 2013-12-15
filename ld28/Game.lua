@@ -21,6 +21,9 @@ function Game:init()
 
     self:spawnResources(math.random(20, 30))
     self:spawnPeople(math.random(40, 50))
+
+    self.alive_min = 10
+    timer:every(15, function() self.alive_min = self.alive_min + 1 end)
 end
 
 function Game:update(dt)

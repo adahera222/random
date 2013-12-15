@@ -40,6 +40,20 @@ function People:update(dt)
     for i = #self.faders, 1, -1 do
         if self.faders[i].dead then table.remove(self.faders, i) end
     end
+    if self.resources then
+        for i = #self.resources, 1, -1 do
+            if self.resources[i].dead then table.remove(self.resources, i) end
+        end
+    end
+
+    local x, y = 0, 0
+    if self.resources then
+        for i = 1, #self.resources do
+            x = x + self.resources[i].x
+            y = y + self.resources[i].y
+        end
+        self.target = Vector(x/#self.resources, y/#self.resources)
+    end
 end
 
 function People:addResource(resource)
@@ -73,8 +87,15 @@ function People:setConsume(consume_rate)
     end
 end
 
+function People:reproduce()
+    self:changePulse(2*self.pulse_time)
+    self:changeSize(self.size/2)
+    table.insert(game.people, People(self.x + math.prandom(60, 100), self.y + math.prandom(40, 100), {size = self.size/2}))
+end
+
 function People:changeSize(new_size, time)
     if new_size <= 8 then self:die() end
+    if new_size >= 80 then self:reproduce() end
     timer:tween(time or 1, self, {size = new_size}, 'out-elastic')
     timer:tween(self.pulse_tween_time, self, {outer_ring = new_size/6}, 'out-elastic')
     timer:tween(self.pulse_tween_time, self, {mid_ring = new_size/4 + new_size/8}, 'out-elastic')

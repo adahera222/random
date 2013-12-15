@@ -12,7 +12,7 @@ function ConnectLine:init(x, y, settings)
 end
 
 function ConnectLine:update(dt)
-    print(self.alpha)
+
 end
 
 function ConnectLine:die()

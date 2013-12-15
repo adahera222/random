@@ -21,6 +21,7 @@ function love.load()
     require 'MouseFader'
     require 'ActiveLine'
     require 'ConnectLine'
+    require 'Drain'
 
     t = 0
     uid = 0
@@ -90,7 +91,7 @@ function love.draw()
     camera:detach()
     love.graphics.setFont(main_font_small)
     love.graphics.setColor(32, 32, 32, game.people_left_alpha)
-    love.graphics.print("#PEOPLE ALIVE: " .. #game.people .. " (must be >15)", 10, game_height - main_font_small:getHeight())
+    love.graphics.print("#PEOPLE ALIVE: " .. #game.people .. " (must be >" .. game.alive_min .. ")", 10, game_height - main_font_small:getHeight())
     love.graphics.setColor(255, 255, 255, 255)
     love.graphics.setColor(mouse.color[1], mouse.color[2], mouse.color[3])
     love.graphics.setLineWidth(2)
@@ -125,6 +126,15 @@ function randomInCircle(r)
     local x = math.prandom(0, 1)*2*r - r
     local y = math.prandom(0, 1)*math.sqrt(r*r - x*x)*2-math.sqrt(r*r - x*x)
     return x, y
+end
+
+function lineLineColliding(x1, y1, x2, y2, x3, y3, x4, y4)
+    local d = (x2 - x1)*(y4 - y3) - (y2 - y1)*(x4 - x3)
+    local n1 = (y1 - y3)*(x4 - x3) - (x1 - x3)*(y4 - y3)
+    local n2 = (y1 - y3)*(x2 - x1) - (x1 - x3)*(y2 - y1)
+    if d == 0 then return (n1 == 0 and n2 == 0) end
+    local r, s = n1/d, n2/d
+    return (r >= 0 and r <= 1) and (s >= 0 and s <= 1)
 end
 
 function xyCollidingPerson(x, y, person)
