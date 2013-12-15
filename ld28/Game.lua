@@ -17,7 +17,8 @@ function Game:init()
     self.people = {}
     self.resources = {}
     self.connect_lines = {}
-    table.insert(self.resources, Resource(game_width/2, game_height/2, {size = 80}))
+    self.drains = {}
+    table.insert(self.resources, Resource(game_width/2, game_height/2, {size = 120}))
 
     self:spawnResources(math.random(20, 30))
     self:spawnPeople(math.random(40, 50))
@@ -65,6 +66,7 @@ function Game:update(dt)
     for _, connect_line in ipairs(self.connect_lines) do 
         connect_line:update(dt) 
     end
+    for _, drain in ipairs(self.drains) do drain:update(dt) end
     if mouse_color then mouse.color = {64, 96, 232}
     else
         mouse.color = {32, 32, 32}
@@ -140,6 +142,7 @@ function Game:spawnPeople(n)
 end
 
 function Game:draw()
+    for _, drain in ipairs(self.drains) do drain:draw() end
     love.graphics.setFont(main_font_big)
     love.graphics.setColor(32, 32, 32, self.intro_text_alpha)
     local w = main_font_big:getWidth("(MOUSE WHEEL TO ZOOM IN/OUT)")

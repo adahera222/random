@@ -34,6 +34,17 @@ function People:init(x, y, settings)
             end
         end
     end)
+
+    self.velocity = Vector(0, 0)
+    self.desired_velocity = Vector(0, 0)
+    self.mass = 1
+    self.acceleration = Vector(0, 0)
+    self.steering = Vector(0, 0)
+    self.steering_force = Vector(0, 0)
+    self.max_velocity = math.prandom(30, 50)
+    self.max_force = 100
+    self.target = Vector(self.x, self.y)
+    self:updateTarget()
 end
 
 function People:update(dt)
@@ -46,14 +57,30 @@ function People:update(dt)
         end
     end
 
-    local x, y = 0, 0
+    self:seek()
+    self.steering_force = self.steering:min(self.max_force)
+    self.acceleration = self.steering_force/self.mass
+    self.velocity = (self.velocity + self.acceleration*dt):min(self.max_velocity)
+    self.x = self.x + self.velocity.x*dt
+    self.y = self.y + self.velocity.y*dt
+end
+
+function People:updateTarget()
+    local x, y = self.x, self.y
     if self.resources then
-        for i = 1, #self.resources do
-            x = x + self.resources[i].x
-            y = y + self.resources[i].y
-        end
-        self.target = Vector(x/#self.resources, y/#self.resources)
-    end
+        if #self.resources > 0 then
+            for i = 1, #self.resources do
+                x = x + self.resources[i].x
+                y = y + self.resources[i].y
+            end
+            self.target = Vector(x/(#self.resources+1), y/(#self.resources+1))
+        else self.target = Vector(self.x, self.y) end
+    else self.target = Vector(self.x, self.y) end
+end
+
+function People:seek()
+    self.desired_velocity = (self.target - Vector(self.x, self.y)):normalized()*self.max_velocity
+    self.steering = self.desired_velocity - self.velocity
 end
 
 function People:addResource(resource)
@@ -63,6 +90,7 @@ function People:addResource(resource)
     table.insert(self.resources, resource)
     self:changeSize(self.size + resource.size/4)
     self:changePulse(self.pulse_time + 0.05)
+    self:updateTarget()
 end
 
 function People:die()
@@ -129,4 +157,5 @@ function People:draw()
     love.graphics.setLineWidth(self.size/9)
     love.graphics.circle('line', self.x, self.y, self.size - self.mid_ring, 360)
     love.graphics.setColor(255, 255, 255)
+    -- love.graphics.circle('line', self.target.x, self.target.y, 5)
 end

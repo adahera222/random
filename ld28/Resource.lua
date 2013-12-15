@@ -21,6 +21,9 @@ function Resource:init(x, y, settings)
     timer:tween(2, self, {alpha = 255}, 'in-out-cubic')
     self:polygonize()
     self.consumers = {}
+    self.nsc = 1
+    self.n_size_changes_t = {{216, 216, 216, 8}, {200, 200, 200, 7.5}, {184, 184, 184, 7}, {168, 168, 168, 6.5}, {152, 152, 152, 6},
+                             {136, 136, 136, 5.5}, {120, 120, 120, 5}, {104, 104, 104, 4.5}, {88, 88, 88, 4}, {72, 72, 72, 3}}
 end
 
 function Resource:update(dt)
@@ -51,6 +54,9 @@ function Resource:changeSize(new_size, time)
     timer:tween(time or 1, self, {size = new_size}, 'out-elastic')
     timer:tween(self.pulse_tween_time, self, {outer_ring = new_size + new_size/8}, 'out-elastic')
     timer:tween(self.pulse_tween_time, self, {mid_ring = new_size/1.5 + new_size/10}, 'out-elastic')
+    table.insert(game.drains, Drain(self.x, self.y, {size = self.n_size_changes_t[self.nsc][4]*new_size, 
+                                                     color = {self.n_size_changes_t[self.nsc][1], self.n_size_changes_t[self.nsc][2], self.n_size_changes_t[self.nsc][3]}}))
+    if self.nsc < 9 then self.nsc = self.nsc + 1 end
 end
 
 function Resource:changePulse(new_pulse, new_pulse_tween)
