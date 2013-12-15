@@ -1,8 +1,16 @@
 Game = class('Game')
 
 function Game:init()
-    self.planet = Planet(game_width/2, game_height/2, {radius = 2345, line_width = 16})
+    self.planet = Planet(game_width/2, game_height/2, {radius = 2345, line_width = 8})
     self.ref = Resource(game_width/2, game_height/2, {size = 80})
+
+    self.intro_text_alpha = 0
+    timer:after(4, function()
+        timer:tween(2, self, {intro_text_alpha = 255}, 'in-out-cubic')
+        timer:after(6, function()
+            timer:tween(2, self, {intro_text_alpha = 0}, 'in-out-cubic')
+        end)
+    end)
 end
 
 function Game:update(dt)
@@ -40,7 +48,30 @@ function Game:update(dt)
     camerat.moving.down = false
 end
 
+function Game:spawnIsolatedResource()
+    
+end
+
+function Game:spawnResourceGroup()
+    
+end
+
+function Game:spawnPerson()
+    
+end
+
+function Game:spawnPeople()
+    
+end
+
 function Game:draw()
+    love.graphics.setFont(main_font_big)
+    love.graphics.setColor(32, 32, 32, self.intro_text_alpha)
+    local w = main_font_big:getWidth("(MOUSE WHEEL TO ZOOM IN/OUT)")
+    love.graphics.print("(MOUSE WHEEL TO ZOOM IN/OUT)", game_width/2 - w/2, game_height/2 + game_height/8 + main_font_big:getHeight()/2)
+    love.graphics.setColor(255, 255, 255, 255)
+    love.graphics.setFont(main_font_huge)
+
     self.planet:draw()
     self.ref:draw()
 end

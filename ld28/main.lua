@@ -1,6 +1,4 @@
 function love.load()
-    love.graphics.setDefaultImageFilter('nearest', 'nearest')
-
     -- Libraries
     class = require 'libraries/middleclass/middleclass'
     require 'libraries/Vector'
@@ -26,6 +24,7 @@ function love.load()
 
     t = 0
     uid = 0
+    love.window.setMode(1280, 800, {centered = true, display = 1})
     game_width = love.graphics.getWidth()
     game_height = love.graphics.getHeight()
     timer = GTimer.new()
@@ -38,7 +37,7 @@ function love.load()
     love.graphics.setBackgroundColor(bg_color[1], bg_color[2], bg_color[3])
     love.graphics.setFont(main_font_huge)
     love.mouse.setVisible(false)
-    love.mouse.setGrab(true)
+    love.mouse.setGrabbed(true)
     camerat = {actual_zoom = 1, zoom = 1, can_zoom = true, v = Vector(0, 0), a = Vector(0, 0), v_multiplier = 0.05, 
                moving = {left = false, right = false, up = false, down = false}, damping = 0.95}
     mouse = {x = 0, y = 0, radius = 4, color = {32, 32, 32}, pressed = false, active = false}
@@ -48,13 +47,17 @@ function love.load()
     in_intro = true
     in_game = false
     intro = Intro()
-    createGame()
+    game_intro = {alpha = 255}
+    -- createGame()
 end
 
 function createGame()
-    game = Game()
+    camera:lookAt(game_width/2, game_height/2)
+    timer:tween(4, bg_color, {232, 232, 232}, 'in-out-cubic')
+    timer:tween(4, game_intro, {alpha = 0}, 'in-out-cubic') 
     in_intro = false
     in_game = true
+    game = Game()
 end
 
 function love.update(dt)
@@ -72,7 +75,12 @@ function love.draw()
     love.graphics.setBackgroundColor(bg_color[1], bg_color[2], bg_color[3])
     camera:attach()
     if in_intro then intro:draw() end
-    if in_game then game:draw() end
+    if in_game then 
+        love.graphics.setColor(32, 32, 32, game_intro.alpha)
+        love.graphics.rectangle('fill', 0, 0, game_width, game_height)
+        love.graphics.setColor(255, 255, 255, 255)
+        game:draw() 
+    end
     for _, mouse_fader in ipairs(mouse_faders) do mouse_fader:draw() end
     camera:detach()
     love.graphics.setColor(mouse.color[1], mouse.color[2], mouse.color[3])

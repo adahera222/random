@@ -127,7 +127,9 @@ function Intro:draw()
 
     love.graphics.setColor(32, 32, 32, self.goal_alpha)
     local w = main_font_huge:getWidth("ENSURE SOCIETY THRIVES")
-    love.graphics.print("ENSURE SOCIETY THRIVES", game_width/2 - w/2 + 7*game_width, game_height/2 - main_font_huge:getHeight()/2)
+    love.graphics.print("ENSURE SOCIETY THRIVES", game_width/2 - w/2 + 7*game_width, game_height/2 - 2*main_font_huge:getHeight())
+    local w = main_font_huge:getWidth("YOU ONLY GET ONE PLANET")
+    love.graphics.print("YOU ONLY GET ONE PLANET", game_width/2 - w/2 + 7*game_width, game_height/2 + main_font_huge:getHeight())
     love.graphics.setColor(255, 255, 255, 255)
 
     love.graphics.setColor(232, 232, 232, self.drain_alpha)
@@ -234,11 +236,7 @@ function Intro:mousepressed(x, y, button)
                 timer:tween(4, bg_color, {32, 32, 32}, 'in-out-cubic')
                 timer:after(4, function()
                     timer:tween(4, self, {drain_alpha = 0}, 'in-out-cubic')
-                    timer:tween(4, bg_color, {232, 232, 232}, 'in-out-cubic')
-                    timer:after(4, function()
-                        in_intro = false
-                        createGame()
-                    end)
+                    timer:after(4, function() createGame() end)
                 end)
             end)
         end
