@@ -123,7 +123,7 @@ end
 
 function xyCollidingPerson(x, y, person)
     local d = Vector.distance(Vector(x, y), Vector(person.x, person.y))
-    if d <= person.size then return true end
+    if d <= 2*person.size then return true end
     return false
 end
 
@@ -136,23 +136,8 @@ end
 
 function xyCollidingResource(x, y, resource)
     local d = Vector.distance(Vector(x, y), Vector(resource.x, resource.y))
-    if d > resource.size then return false end
-    
-    local nvert = #resource.points/2
-    local xvert, yvert = {}, {}
-    for i = 1, #resource.points do
-        if i % 2 ~= 0 then table.insert(xvert, resource.points[i]) end
-        if i % 2 == 0 then table.insert(yvert, resource.points[i]) end
-    end
-    local result = false
-    local j = nvert
-    for i = 1, nvert do
-        if ((yvert[i] > y) ~= (yvert[j] > y)) and (x < (xvert[j]-xvert[i])*(y-yvert[i])/(yvert[j]-yvert[i]) + xvert[i]) then
-            result = not result
-        end
-        j = i
-    end
-    return result 
+    if d > 2*resource.size then return false end
+    return true    
 end
 
 function mouseCollidingResource(resource)

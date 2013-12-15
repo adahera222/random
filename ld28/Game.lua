@@ -2,7 +2,6 @@ Game = class('Game')
 
 function Game:init()
     self.planet = Planet(game_width/2, game_height/2, {radius = 2345, line_width = 8})
-    self.ref = Resource(game_width/2, game_height/2, {size = 80})
 
     self.intro_text_alpha = 0
     timer:after(4, function()
@@ -14,41 +13,10 @@ function Game:init()
 
     self.people = {}
     self.resources = {}
+    table.insert(self.resources, Resource(game_width/2, game_height/2, {size = 80}))
 
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
-    self:spawnIsolatedResource()
+    self:spawnResources(math.random(20, 40))
+    self:spawnPeople(math.random(40, 60))
 end
 
 function Game:update(dt)
@@ -78,7 +46,7 @@ function Game:update(dt)
         
 
     self.planet:update(dt)
-    self.ref:update(dt)
+    for _, person in ipairs(self.people) do person:update(dt) end
     for _, resource in ipairs(self.resources) do resource:update(dt) end
 
     camerat.moving.left = false
@@ -87,29 +55,54 @@ function Game:update(dt)
     camerat.moving.down = false
 end
 
-function Game:spawnIsolatedResource()
-    local x, y = randomInCircle(self.planet.radius - 200)
-    table.insert(self.resources, Resource(game_width/2 + x, game_height/2 + y, {size = math.prandom(20, 60)}))
-
-    for _, person in ipairs(self.people) do
-
+function Game:spawnResources(n)
+    local added_flag = true 
+    for i = 1, n do
+        added_flag = true
+        local x, y = 0, 0
+        while added_flag do
+            x, y = randomInCircle(self.planet.radius - 200)
+            added_flag = false
+            for _, person in ipairs(self.people) do
+                if xyCollidingPerson(game_width/2 + x, game_height/2 + y, person) then
+                    added_flag = true
+                    break
+                end
+            end
+            for _, resource in ipairs(self.resources) do
+                if xyCollidingResource(game_width/2 + x, game_height/2 + y, resource) then
+                    added_flag = true
+                    break
+                end
+            end
+        end
+        table.insert(self.resources, Resource(game_width/2 + x, game_height/2 + y, {size = math.prandom(20, 60)}))
     end
+end
 
-    for _, resource in ipairs(self.resources) do
-
+function Game:spawnPeople(n)
+    local added_flag = true
+    for i = 1, n do
+        added_flag = true
+        local x, y = 0, 0
+        while added_flag do
+            x, y = randomInCircle(self.planet.radius - 200)
+            added_flag = false
+            for _, person in ipairs(self.people) do
+                if xyCollidingPerson(game_width/2 + x, game_height/2 + y, person) then
+                    added_flag = true
+                    break
+                end
+            end
+            for _, resource in ipairs(self.resources) do
+                if xyCollidingResource(game_width/2 + x, game_height/2 + y, resource) then
+                    added_flag = true
+                    break
+                end
+            end
+        end
+        table.insert(self.people, People(game_width/2 + x, game_height/2 + y, {size = math.prandom(10, 20), pulse = math.prandom(1.6, 2.4)}))
     end
-end
-
-function Game:spawnResourceGroup()
-    
-end
-
-function Game:spawnPerson()
-    
-end
-
-function Game:spawnPeople()
-    
 end
 
 function Game:draw()
@@ -121,7 +114,7 @@ function Game:draw()
     love.graphics.setFont(main_font_huge)
 
     self.planet:draw()
-    self.ref:draw()
+    for _, person in ipairs(self.people) do person:draw() end
     for _, resource in ipairs(self.resources) do resource:draw() end
 end
 
