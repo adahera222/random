@@ -33,7 +33,8 @@ function love.load()
     main_font_huge = love.graphics.newFont('Moon Flower.ttf', 128)
     main_font_big = love.graphics.newFont('Moon Flower.ttf', 96)
 
-    love.graphics.setBackgroundColor(232, 232, 232)
+    bg_color = {232, 232, 232}
+    love.graphics.setBackgroundColor(bg_color[1], bg_color[2], bg_color[3])
     love.graphics.setFont(main_font_huge)
     love.mouse.setVisible(false)
     mouse = {x = 0, y = 0, radius = 4, color = {32, 32, 32}, pressed = false, active = false}
@@ -54,13 +55,14 @@ function love.update(dt)
 end
 
 function love.draw()
+    love.graphics.setBackgroundColor(bg_color[1], bg_color[2], bg_color[3])
     camera:attach()
     intro:draw()
+    for _, mouse_fader in ipairs(mouse_faders) do mouse_fader:draw() end
     camera:detach()
     love.graphics.setColor(mouse.color[1], mouse.color[2], mouse.color[3])
     love.graphics.setLineWidth(2)
     love.graphics.circle('line', mouse.x, mouse.y, mouse.radius, 360)
-    for _, mouse_fader in ipairs(mouse_faders) do mouse_fader:draw() end
 end
 
 function love.mousepressed(x, y, button)
@@ -75,7 +77,8 @@ function love.mousereleased(x, y, button)
     if button == 'l' or button == 'r' then
         mouse.pressed = false
         timer:tween(0.5, mouse, {radius = 4}, 'out-elastic')
-        table.insert(mouse_faders, MouseFader(mouse.x, mouse.y, {color = mouse.color}))
+        local wx, wy = camera:worldCoords(mouse.x, mouse.y)
+        table.insert(mouse_faders, MouseFader(wx, wy, {color = mouse.color}))
     end
     intro:mousereleased(x, y, button)
 end

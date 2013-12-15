@@ -33,12 +33,22 @@ function Intro:init()
     self.connect_alpha = 0
     self.connect2_alpha = 0
     self.connect_person = People(4*game_width + game_width/2 - game_width/4, game_height/2, {size = 40, pulse = 2.5})
-    self.connect_resource = Resource(4*game_width + game_width/2 + game_width/4, game_height/2, {size = 40})
+    self.connect_resource = Resource(4*game_width + game_width/2 + game_width/4, game_height/2, {size = 80})
     self.connect_line = nil
     self.active_line = ActiveLine(0, 0)
 
     self.create_alpha = 0
-    self.create_person = People(5*game_width + game_width/2, game_height/2 + game_height/8, {size = 80, pulse = 1.5, consuming = true, consume_rate = 1})
+    self.create_person = People(5*game_width + game_width/2, game_height/2 + game_height/8, {size = 80, pulse = 1.5})
+    self.created_person = nil
+    self.create_resource_1 = Resource(5*game_width + game_width/2 - game_width/3, game_height/2 + game_height/6, {size = 60})
+    self.create_resource_2 = Resource(5*game_width + game_width/2 - game_width/6, game_height/2 + game_height/3, {size = 40})
+    self.create_line_c1 = ConnectLine(0, 0, {src = self.create_resource_1, dst = self.create_person})
+    self.create_line_c2 = ConnectLine(0, 0, {src = self.create_resource_2, dst = self.create_person})
+
+    self.death_alpha = 0
+    self.death_person = People(6*game_width + game_width/2, game_height/2, {size = 30})
+
+    self.drain_alpha = 0
 end
 
 function Intro:update(dt)
@@ -54,6 +64,12 @@ function Intro:update(dt)
     self.connect_resource:update(dt)
     self.connect_person:update(dt)
     self.create_person:update(dt)
+    if self.created_person then self.created_person:update(dt) end
+    self.create_resource_1:update(dt)
+    self.create_resource_2:update(dt)
+    self.create_line_c1:update(dt)
+    self.create_line_c2:update(dt)
+    self.death_person:update(dt)
 
     if mouseCollidingPerson(self.connect_person) or mouseCollidingResource(self.connect_resource) then mouse.color = {64, 96, 232} 
     else
@@ -102,6 +118,16 @@ function Intro:draw()
     love.graphics.print("NEW PEOPLE ARE CREATED", game_width/2 - w/2 + 5*game_width, game_height/2 - 1.5*main_font_huge:getHeight())
     love.graphics.setColor(255, 255, 255, 255)
 
+    love.graphics.setColor(32, 32, 32, self.death_alpha)
+    local w = main_font_huge:getWidth("WITH NO RESOURCES PEOPLE DIE")
+    love.graphics.print("WITH NO RESOURCES PEOPLE DIE", game_width/2 - w/2 + 6*game_width, game_height/2 - 2*main_font_huge:getHeight())
+    love.graphics.setColor(255, 255, 255, 255)
+
+    love.graphics.setColor(232, 232, 232, self.drain_alpha)
+    local w = main_font_huge:getWidth("DRAIN")
+    love.graphics.print("DRAIN", game_width/2 - w/2 + 7*game_width, game_height/2 - main_font_huge:getHeight()/2)
+    love.graphics.setColor(255, 255, 255, 255)
+
     self.planet:draw()
     self.resource:draw()
     self.person_1:draw()
@@ -114,6 +140,12 @@ function Intro:draw()
     self.connect_resource:draw()
     self.connect_person:draw()
     self.create_person:draw()
+    if self.created_person then self.created_person:draw(dt) end
+    self.create_resource_1:draw()
+    self.create_resource_2:draw()
+    self.create_line_c1:draw()
+    self.create_line_c2:draw()
+    self.death_person:draw()
 end
 
 function Intro:mousepressed(x, y, button)
@@ -165,11 +197,27 @@ function Intro:mousepressed(x, y, button)
             self.create_state = true
             timer:after(2, function()
                 timer:tween(2, self, {create_alpha = 255}, 'in-out-cubic')
-                timer:after(2, function()
+                timer:after(3, function()
                     self.create_person:changeSize(self.create_person.size/2) 
                     self.create_person:changePulse(2*self.create_person.pulse_time)
+                    self.created_person = People(5*game_width + game_width/2 + 75, game_height/2 + game_height/8 + 40, {size = 20})
                 end)
                 timer:after(4, function() self.can_click_next = true end)
+            end)
+        elseif self.create_state then
+            self.create_state = false
+            self.death_state = true
+            timer:after(2, function()
+                timer:tween(2, self, {death_alpha = 255}, 'in-out-cubic')
+                timer:after(3, function() self.death_person:die() end)
+                timer:after(4, function() self.can_click_next = true end)
+            end)
+        elseif self.death_state then
+            self.death_state = false
+            self.drain_state = true
+            timer:after(2, function()
+                timer:tween(4, self, {drain_alpha = 255}, 'in-out-cubic')
+                timer:tween(4, bg_color, {32, 32, 32}, 'in-out-cubic')
             end)
         end
     end
