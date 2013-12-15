@@ -13,6 +13,7 @@ function Game:init()
 
     self.people = {}
     self.resources = {}
+    self.connect_lines = {}
     table.insert(self.resources, Resource(game_width/2, game_height/2, {size = 80}))
 
     self:spawnResources(math.random(20, 40))
@@ -46,8 +47,20 @@ function Game:update(dt)
         
 
     self.planet:update(dt)
-    for _, person in ipairs(self.people) do person:update(dt) end
-    for _, resource in ipairs(self.resources) do resource:update(dt) end
+    local mouse_color = false
+    for _, person in ipairs(self.people) do 
+        person:update(dt) 
+        if mouseCollidingPerson(person) then mouse_color = true end
+    end
+    for _, resource in ipairs(self.resources) do 
+        resource:update(dt) 
+        if mouseCollidingResource(resource) then mouse_color = true end
+    end
+    if mouse_color then mouse.color = {64, 96, 232}
+    else
+        mouse.color = {32, 32, 32}
+        if not mouse.pressed then mouse.active = false end
+    end
 
     camerat.moving.left = false
     camerat.moving.right = false
@@ -119,6 +132,8 @@ function Game:draw()
 end
 
 function Game:mousepressed(x, y, button)
+    if button ~= 'l' and button ~= 'r' and button ~= 'wd' and button ~= 'wu' then return end
+
     if camerat.can_zoom then 
         if button == 'wu' then 
             if camerat.actual_zoom <= 1.4 then
@@ -136,5 +151,5 @@ function Game:mousepressed(x, y, button)
 end
 
 function Game:mousereleased(x, y, button)
-    
+    mouse.active = false
 end

@@ -33,6 +33,10 @@ function People:update(dt)
     end
 end
 
+function People:randomWalk(angle, distance)
+    
+end
+
 function People:die()
     timer:tween(4, self, {size = 2}, 'in-out-cubic')
     timer:tween(2, self, {alpha = 0}, 'in-out-cubic')
