@@ -18,6 +18,7 @@ function Game:init()
     self.resources = {}
     self.connect_lines = {}
     self.drains = {}
+    self.cities = {}
     table.insert(self.resources, Resource(game_width/2, game_height/2, {size = 120}))
 
     self:spawnResources(math.random(20, 30))
@@ -67,6 +68,7 @@ function Game:update(dt)
         connect_line:update(dt) 
     end
     for _, drain in ipairs(self.drains) do drain:update(dt) end
+    for _, city in ipairs(self.cities) do city:update(dt) end
     if mouse_color then mouse.color = {64, 96, 232}
     else
         mouse.color = {32, 32, 32}
@@ -154,6 +156,7 @@ function Game:draw()
     for _, person in ipairs(self.people) do person:draw() end
     for _, resource in ipairs(self.resources) do resource:draw() end
     for _, connect_line in ipairs(self.connect_lines) do connect_line:draw() end
+    for _, city in ipairs(self.cities) do city:draw() end
 end
 
 function Game:mousepressed(x, y, button)

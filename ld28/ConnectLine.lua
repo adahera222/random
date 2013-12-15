@@ -30,5 +30,7 @@ function ConnectLine:draw()
     local x1, y1 = self.src.x - sizes*math.cos(anglesd), self.src.y - sizes*math.sin(anglesd)
     local x2, y2 = self.dst.x - sized*math.cos(angleds), self.dst.y - sized*math.sin(angleds)
     love.graphics.line(x1, y1, x2, y2)
+    love.graphics.circle('line', x1, y1, 2, 360)
+    love.graphics.circle('line', x2, y2, 2, 360)
     love.graphics.setColor(255, 255, 255, 255)
 end

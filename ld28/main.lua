@@ -22,6 +22,7 @@ function love.load()
     require 'ActiveLine'
     require 'ConnectLine'
     require 'Drain'
+    require 'City'
 
     t = 0
     uid = 0
@@ -51,7 +52,7 @@ function love.load()
     in_game = false
     intro = Intro()
     game_intro = {alpha = 255}
-    createGame()
+    -- createGame()
 end
 
 function createGame()
@@ -89,10 +90,12 @@ function love.draw()
     end
     for _, mouse_fader in ipairs(mouse_faders) do mouse_fader:draw() end
     camera:detach()
-    love.graphics.setFont(main_font_small)
-    love.graphics.setColor(32, 32, 32, game.people_left_alpha)
-    love.graphics.print("#PEOPLE ALIVE: " .. #game.people .. " (must be >" .. game.alive_min .. ")", 10, game_height - main_font_small:getHeight())
-    love.graphics.setColor(255, 255, 255, 255)
+    if game then
+        love.graphics.setFont(main_font_small)
+        love.graphics.setColor(32, 32, 32, game.people_left_alpha)
+        love.graphics.print("#BEINGS ALIVE: " .. #game.people .. " (MINIMUM: " .. game.alive_min .. ")", 10, 10)
+        love.graphics.setColor(255, 255, 255, 255)
+    end
     love.graphics.setColor(mouse.color[1], mouse.color[2], mouse.color[3])
     love.graphics.setLineWidth(2)
     love.graphics.circle('line', mouse.x, mouse.y, mouse.radius, 360)

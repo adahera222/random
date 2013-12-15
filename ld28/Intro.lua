@@ -25,21 +25,21 @@ function Intro:init()
     self.resource = Resource(2*game_width + game_width/2, game_height/2, {size = 60})
 
     self.people_alpha = 0
-    self.person_1 = People(3*game_width + game_width/2, game_height/2, {size = 60, pulse = 3.2})
-    self.person_2 = People(3*game_width + game_width/2 - 110, game_height/2, {size = 30, pulse = 2.6})
-    self.person_3 = People(3*game_width + game_width/2 + 100, game_height/2, {size = 20, pulse = 2.2})
-    self.person_4 = People(3*game_width + game_width/2 - 170, game_height/2, {size = 15, pulse = 2})
-    self.person_5 = People(3*game_width + game_width/2 + 150, game_height/2, {size = 15, pulse = 1.8})
+    self.person_1 = People(3*game_width + game_width/2, game_height/2, {size = 60, pulse = 3.2, survive = true})
+    self.person_2 = People(3*game_width + game_width/2 - 110, game_height/2, {size = 30, pulse = 2.6, survive = true})
+    self.person_3 = People(3*game_width + game_width/2 + 100, game_height/2, {size = 20, pulse = 2.2, survive = true})
+    self.person_4 = People(3*game_width + game_width/2 - 170, game_height/2, {size = 15, pulse = 2, survive = true})
+    self.person_5 = People(3*game_width + game_width/2 + 150, game_height/2, {size = 15, pulse = 1.8, survive = true})
 
     self.connect_alpha = 0
     self.connect2_alpha = 0
-    self.connect_person = People(4*game_width + game_width/2 - game_width/4, game_height/2, {size = 40, pulse = 2.5})
+    self.connect_person = People(4*game_width + game_width/2 - game_width/4, game_height/2, {size = 40, pulse = 2.5, survive = true})
     self.connect_resource = Resource(4*game_width + game_width/2 + game_width/4, game_height/2, {size = 40})
     self.connect_line = nil
     self.active_line = ActiveLine(0, 0)
 
     self.create_alpha = 0
-    self.create_person = People(5*game_width + game_width/2, game_height/2 + game_height/8, {size = 80, pulse = 1.5})
+    self.create_person = People(5*game_width + game_width/2, game_height/2 + game_height/8, {size = 80, pulse = 1.5, survive = true})
     self.created_person = nil
     self.create_resource_1 = Resource(5*game_width + game_width/2 - game_width/3, game_height/2 + game_height/6, {size = 60})
     self.create_resource_2 = Resource(5*game_width + game_width/2 - game_width/6, game_height/2 + game_height/3, {size = 40})
@@ -47,9 +47,19 @@ function Intro:init()
     self.create_line_c2 = ConnectLine(0, 0, {src = self.create_resource_2, dst = self.create_person})
 
     self.death_alpha = 0
-    self.death_person = People(6*game_width + game_width/2, game_height/2, {size = 30})
+    self.death_person = People(6*game_width + game_width/2, game_height/2, {size = 30, survive = true})
 
     self.goal_alpha = 0
+    self.goal_resource = Resource(7*game_width + game_width/2, game_height/2, {size = 80})
+    self.goal_person_1 = People(7*game_width + game_width/2 - game_width/4, game_height/2 - game_height/8, {size = 20, survive = true})
+    self.goal_person_2 = People(7*game_width + game_width/2 + game_width/6, game_height/2 - game_height/12, {size = 40, survive = true})
+    self.goal_person_3 = People(7*game_width + game_width/2 + game_width/5, game_height/2 + game_height/10, {size = 30, survive = true})
+    self.goal_person_4 = People(7*game_width + game_width/2 - game_width/5, game_height/2 + game_height/8, {size = 50, survive = true})
+    self.goal_line_c1 = ConnectLine(0, 0, {src = self.goal_resource, dst = self.goal_person_1})
+    self.goal_line_c2 = ConnectLine(0, 0, {src = self.goal_resource, dst = self.goal_person_2})
+    self.goal_line_c3 = ConnectLine(0, 0, {src = self.goal_resource, dst = self.goal_person_3})
+    self.goal_line_c4 = ConnectLine(0, 0, {src = self.goal_resource, dst = self.goal_person_4})
+
     self.drain_alpha = 0
 end
 
@@ -71,6 +81,15 @@ function Intro:update(dt)
     self.create_resource_2:update(dt)
     self.create_line_c1:update(dt)
     self.create_line_c2:update(dt)
+    self.goal_resource:update(dt)
+    self.goal_person_1:update(dt)
+    self.goal_person_2:update(dt)
+    self.goal_person_3:update(dt)
+    self.goal_person_4:update(dt)
+    self.goal_line_c1:update(dt)
+    self.goal_line_c2:update(dt)
+    self.goal_line_c3:update(dt)
+    self.goal_line_c4:update(dt)
     self.death_person:update(dt)
 
     if mouseCollidingPerson(self.connect_person) or mouseCollidingResource(self.connect_resource) then mouse.color = {64, 96, 232} 
@@ -97,13 +116,13 @@ function Intro:draw()
     love.graphics.setColor(255, 255, 255, 255)
 
     love.graphics.setColor(32, 32, 32, self.people_alpha)
-    local w = main_font_huge:getWidth("THESE ARE PEOPLE")
-    love.graphics.print("THESE ARE PEOPLE", game_width/2 - w/2 + 3*game_width, game_height/2 + main_font_huge:getHeight())
+    local w = main_font_huge:getWidth("THESE ARE BEINGS")
+    love.graphics.print("THESE ARE BEINGS", game_width/2 - w/2 + 3*game_width, game_height/2 + main_font_huge:getHeight())
     love.graphics.setColor(255, 255, 255, 255)
 
     love.graphics.setColor(32, 32, 32, self.connect_alpha)
-    local w = main_font_huge:getWidth("PEOPLE NEED RESOURCES TO SURVIVE")
-    love.graphics.print("PEOPLE NEED RESOURCES TO SURVIVE", game_width/2 - w/2 + 4*game_width, game_height/2 - 2*main_font_huge:getHeight())
+    local w = main_font_huge:getWidth("BEINGS NEED RESOURCES TO SURVIVE")
+    love.graphics.print("BEINGS NEED RESOURCES TO SURVIVE", game_width/2 - w/2 + 4*game_width, game_height/2 - 2*main_font_huge:getHeight())
     love.graphics.setColor(255, 255, 255, 255)
 
     love.graphics.setColor(32, 32, 32, self.connect2_alpha)
@@ -116,20 +135,22 @@ function Intro:draw()
     love.graphics.setColor(32, 32, 32, self.create_alpha)
     local w = main_font_huge:getWidth("WITH ENOUGH RESOURCES")
     love.graphics.print("WITH ENOUGH RESOURCES", game_width/2 - w/2 + 5*game_width, game_height/2 - 2.5*main_font_huge:getHeight())
-    local w = main_font_huge:getWidth("NEW PEOPLE ARE CREATED")
-    love.graphics.print("NEW PEOPLE ARE CREATED", game_width/2 - w/2 + 5*game_width, game_height/2 - 1.5*main_font_huge:getHeight())
+    local w = main_font_huge:getWidth("NEW BEINGS ARE CREATED")
+    love.graphics.print("NEW BEINGS ARE CREATED", game_width/2 - w/2 + 5*game_width, game_height/2 - 1.5*main_font_huge:getHeight())
     love.graphics.setColor(255, 255, 255, 255)
 
     love.graphics.setColor(32, 32, 32, self.death_alpha)
-    local w = main_font_huge:getWidth("WITH NO RESOURCES PEOPLE DIE")
-    love.graphics.print("WITH NO RESOURCES PEOPLE DIE", game_width/2 - w/2 + 6*game_width, game_height/2 - 2*main_font_huge:getHeight())
+    local w = main_font_huge:getWidth("WITH NO RESOURCES BEINGS DIE")
+    love.graphics.print("WITH NO RESOURCES BEINGS DIE", game_width/2 - w/2 + 6*game_width, game_height/2 - 2*main_font_huge:getHeight())
     love.graphics.setColor(255, 255, 255, 255)
 
     love.graphics.setColor(32, 32, 32, self.goal_alpha)
-    local w = main_font_huge:getWidth("ENSURE SOCIETY THRIVES")
-    love.graphics.print("ENSURE SOCIETY THRIVES", game_width/2 - w/2 + 7*game_width, game_height/2 - 2*main_font_huge:getHeight())
+    local w = main_font_huge:getWidth("ENSURE CIVILIZATION ADVANCES")
+    love.graphics.print("ENSURE CIVILIZATION ADVANCES", game_width/2 - w/2 + 7*game_width, game_height/2 - 2*main_font_huge:getHeight())
     local w = main_font_huge:getWidth("YOU ONLY GET ONE PLANET")
     love.graphics.print("YOU ONLY GET ONE PLANET", game_width/2 - w/2 + 7*game_width, game_height/2 + main_font_huge:getHeight())
+    love.graphics.setLineWidth(12)
+    love.graphics.circle('line', 7*game_width + game_width/2, game_height/2, 600, 360)
     love.graphics.setColor(255, 255, 255, 255)
 
     love.graphics.setColor(232, 232, 232, self.drain_alpha)
@@ -154,6 +175,15 @@ function Intro:draw()
     self.create_resource_2:draw()
     self.create_line_c1:draw()
     self.create_line_c2:draw()
+    self.goal_resource:draw()
+    self.goal_person_1:draw()
+    self.goal_person_2:draw()
+    self.goal_person_3:draw()
+    self.goal_person_4:draw()
+    self.goal_line_c1:draw()
+    self.goal_line_c2:draw()
+    self.goal_line_c3:draw()
+    self.goal_line_c4:draw()
     self.death_person:draw()
 end
 
@@ -209,7 +239,7 @@ function Intro:mousepressed(x, y, button)
                 timer:after(3, function()
                     self.create_person:changeSize(self.create_person.size/2) 
                     self.create_person:changePulse(2*self.create_person.pulse_time)
-                    self.created_person = People(5*game_width + game_width/2 + 75, game_height/2 + game_height/8 + 40, {size = 20})
+                    self.created_person = People(5*game_width + game_width/2 + 75, game_height/2 + game_height/8 + 40, {size = 20, survive = true})
                 end)
                 timer:after(4, function() self.can_click_next = true end)
             end)

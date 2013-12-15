@@ -30,7 +30,9 @@ function People:init(x, y, settings)
     self.die_tid = timer:every(math.prandom(10, 40), function() 
         if self.resources then
             if #self.resources == 0 then
-                self:changeSize(self.size/2, 3) 
+                if not self.survive then
+                    self:changeSize(self.size/2, 3) 
+                end
             end
         end
     end)

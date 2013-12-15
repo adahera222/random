@@ -11,6 +11,7 @@ function Resource:init(x, y, settings)
     self.pulse_tween_time = settings.pulse or 2
     self:changePulse(self.pulse_time, self.pulse_tween_time)
 
+    self.init_size = self.size
     self.drain_rate = self.pulse_time - self.pulse_time/2 or 1.5
     self.faders = {}
     self.drain_rate_tid = timer:every(self.drain_rate, function()
@@ -54,9 +55,24 @@ function Resource:changeSize(new_size, time)
     timer:tween(time or 1, self, {size = new_size}, 'out-elastic')
     timer:tween(self.pulse_tween_time, self, {outer_ring = new_size + new_size/8}, 'out-elastic')
     timer:tween(self.pulse_tween_time, self, {mid_ring = new_size/1.5 + new_size/10}, 'out-elastic')
-    table.insert(game.drains, Drain(self.x, self.y, {size = self.n_size_changes_t[self.nsc][4]*new_size, 
-                                                     color = {self.n_size_changes_t[self.nsc][1], self.n_size_changes_t[self.nsc][2], self.n_size_changes_t[self.nsc][3]}}))
+    if game then
+        table.insert(game.drains, Drain(self.x, self.y, {size = self.n_size_changes_t[self.nsc][4]*new_size, 
+                                                         color = {self.n_size_changes_t[self.nsc][1], self.n_size_changes_t[self.nsc][2], self.n_size_changes_t[self.nsc][3]}}))
+    end
     if self.nsc < 9 then self.nsc = self.nsc + 1 end
+    if self.consumers then
+        if #self.consumers >= 5 then
+            local n = 1
+            for _, consumer in ipairs(self.consumers) do
+                if consumer.resources then
+                    if #consumer.resources == 1 and consumer.resources[1].id == self.id then
+                        n = n + 1
+                    end
+                end
+            end
+            if n >= 4 then table.insert(game.cities, City(self.x, self.y, {size = 7.5*self.init_size})) end
+        end
+    end
 end
 
 function Resource:changePulse(new_pulse, new_pulse_tween)
