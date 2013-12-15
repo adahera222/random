@@ -23,13 +23,15 @@ function Game:init()
     table.insert(self.resources, Resource(game_width/2, game_height/2, {size = 120}))
 
     self:spawnResources(math.random(16, 24))
-    self:spawnPeople(math.random(45, 45))
+    self:spawnPeople(math.random(35, 45))
 
     self.end_game = false
     self.alive_min = 14
     timer:every(25, function() self.alive_min = self.alive_min + 1 end)
-    self.timer_lost_tid = timer:tween(300, self, {game_drain_alpha = 232}, 'in-out-cubic')
+    self.timer_lost_tid = timer:tween(300, self, {game_drain_alpha = 232}, 'linear')
     timer:after(300, function() timerLost() end)
+    timer:tween(300, pitches, {heart_pitch = 1.3}, 'linear')
+    timer:tween(300, pitches, {base_pitch = 2}, 'linear')
 end
 
 function Game:update(dt)
@@ -60,7 +62,7 @@ function Game:update(dt)
     if self.people then
         if not self.end_game then
             if #self.people - self.alive_min < 0 then self.end_game = true; lostGame() end
-            if #self.people >= 40 then self.end_game = true; wonGame() end
+            if #self.people >= 50 then self.end_game = true; wonGame() end
         end
     end
     

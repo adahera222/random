@@ -26,7 +26,7 @@ function love.load()
 
     t = 0
     uid = 0
-    love.window.setMode(1280, 800, {centered = true, display = 1, fsaa = 4})
+    love.window.setMode(1280, 800, {centered = true, fsaa = 4})
     love.graphics.setLineStyle('rough')
     game_width = love.graphics.getWidth()
     game_height = love.graphics.getHeight()
@@ -56,7 +56,12 @@ function love.load()
     in_game = false
     intro = Intro()
     game_intro = {alpha = 255}
-    createGame()
+    -- createGame()
+    TEsound.playLooping("base.ogg", "base")
+    TEsound.playLooping("heart.ogg", "heart")
+    TEsound.pitch("heart", 0.8)
+    TEsound.pitch("base", 0.8)
+    pitches = {heart_pitch = 0.8, base_pitch = 0.8}
 end
 
 function createGame()
@@ -97,6 +102,7 @@ function wonGame()
 end
 
 function love.update(dt)
+    TEsound.cleanup()
     t = t + dt
     mouse.x, mouse.y = love.mouse.getPosition()
     for i = #mouse_faders, 1, -1 do
@@ -157,7 +163,8 @@ function love.draw()
 end
 
 function love.keypressed(key)
-    if key == 'escape' or key == 'q' then love.event.push('quit') end
+    if key == 'q' then love.event.push('quit') end
+    if in_intro then intro:keypressed(key) end
 end
 
 function love.mousepressed(x, y, button)

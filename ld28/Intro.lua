@@ -10,6 +10,7 @@ function Intro:init()
     self.death_state = false
     self.goal_state = false
     self.drain_state = false
+    self.escaping = false
     self.can_click_next = false
 
     self.first_alpha = 0
@@ -103,8 +104,12 @@ function Intro:draw()
     love.graphics.setColor(32, 32, 32, self.first_alpha)
     local w = main_font_huge:getWidth("CLICK")
     love.graphics.print("CLICK", game_width/2 - w/2, game_height/2 - main_font_huge:getHeight()/2)
+    love.graphics.setFont(main_font_big)
+    local w = main_font_big:getWidth("(ESC TO SKIP)")
+    love.graphics.print("(ESC TO SKIP)", game_width/2 - w/2, game_height/2 + main_font_huge:getHeight())
     love.graphics.setColor(255, 255, 255, 255)
 
+    love.graphics.setFont(main_font_huge)
     love.graphics.setColor(32, 32, 32, self.planet_alpha)
     local w = main_font_huge:getWidth("THIS IS A PLANET")
     love.graphics.print("THIS IS A PLANET", game_width/2 - w/2 + game_width, game_height/2 - main_font_huge:getHeight()/2)
@@ -185,6 +190,23 @@ function Intro:draw()
     self.goal_line_c3:draw()
     self.goal_line_c4:draw()
     self.death_person:draw()
+end
+
+function Intro:keypressed(key)
+    if key == 'escape' then
+        if not self.escaping then
+            self.escaping = true
+            timer:tween(2, camera, {x = 8.5*game_width}, 'in-out-cubic')
+            timer:after(2, function()
+                timer:tween(4, self, {drain_alpha = 255}, 'in-out-cubic')
+                timer:tween(4, bg_color, {32, 32, 32}, 'in-out-cubic')
+                timer:after(4, function()
+                    timer:tween(4, self, {drain_alpha = 0}, 'in-out-cubic')
+                    timer:after(4, function() createGame() end)
+                end)
+            end)
+        end
+    end
 end
 
 function Intro:mousepressed(x, y, button)
