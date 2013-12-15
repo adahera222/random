@@ -6,6 +6,9 @@ function Intro:init()
     self.resource_state = false
     self.people_state = false
     self.connect_state = false
+    self.create_state = false
+    self.death_state = false
+    self.drain_state = false
     self.can_click_next = false
 
     self.first_alpha = 0
@@ -33,6 +36,9 @@ function Intro:init()
     self.connect_resource = Resource(4*game_width + game_width/2 + game_width/4, game_height/2, {size = 40})
     self.connect_line = nil
     self.active_line = ActiveLine(0, 0)
+
+    self.create_alpha = 0
+    self.create_person = People(5*game_width + game_width/2, game_height/2 + game_height/8, {size = 80, pulse = 1.5, consuming = true, consume_rate = 1})
 end
 
 function Intro:update(dt)
@@ -47,9 +53,9 @@ function Intro:update(dt)
     if self.connect_line then self.connect_line:update(dt) end
     self.connect_resource:update(dt)
     self.connect_person:update(dt)
+    self.create_person:update(dt)
 
-    if mouseCollidingPerson(self.connect_person) or mouseCollidingResource(self.connect_resource) then 
-        mouse.color = {64, 96, 232} 
+    if mouseCollidingPerson(self.connect_person) or mouseCollidingResource(self.connect_resource) then mouse.color = {64, 96, 232} 
     else
         mouse.color = {32, 32, 32}
         if not mouse.pressed then mouse.active = false end
@@ -86,7 +92,14 @@ function Intro:draw()
     love.graphics.setFont(main_font_big)
     local w = main_font_big:getWidth("(CLICK AND DRAG TO CONNECT)")
     love.graphics.print("(CLICK AND DRAG TO CONNECT)", game_width/2 - w/2 + 4*game_width, game_height/2 + main_font_huge:getHeight())
+    love.graphics.setColor(255, 255, 255, 255)
+
     love.graphics.setFont(main_font_huge)
+    love.graphics.setColor(32, 32, 32, self.create_alpha)
+    local w = main_font_huge:getWidth("WITH ENOUGH RESOURCES")
+    love.graphics.print("WITH ENOUGH RESOURCES", game_width/2 - w/2 + 5*game_width, game_height/2 - 2.5*main_font_huge:getHeight())
+    local w = main_font_huge:getWidth("NEW PEOPLE ARE CREATED")
+    love.graphics.print("NEW PEOPLE ARE CREATED", game_width/2 - w/2 + 5*game_width, game_height/2 - 1.5*main_font_huge:getHeight())
     love.graphics.setColor(255, 255, 255, 255)
 
     self.planet:draw()
@@ -100,6 +113,7 @@ function Intro:draw()
     if self.connect_line then self.connect_line:draw() end
     self.connect_resource:draw()
     self.connect_person:draw()
+    self.create_person:draw()
 end
 
 function Intro:mousepressed(x, y, button)
@@ -142,9 +156,20 @@ function Intro:mousepressed(x, y, button)
             self.connect_state = true
             timer:after(2, function()
                 timer:tween(2, self, {connect_alpha = 255}, 'in-out-cubic')
-                timer:after(3, function()
+                timer:after(2, function()
                     timer:tween(2, self, {connect2_alpha = 255}, 'in-out-cubic')
                 end)
+            end)
+        elseif self.connect_state then
+            self.connect_state = false
+            self.create_state = true
+            timer:after(2, function()
+                timer:tween(2, self, {create_alpha = 255}, 'in-out-cubic')
+                timer:after(2, function()
+                    self.create_person:changeSize(self.create_person.size/2) 
+                    self.create_person:changePulse(2*self.create_person.pulse_time)
+                end)
+                timer:after(4, function() self.can_click_next = true end)
             end)
         end
     end
@@ -156,9 +181,11 @@ function Intro:mousereleased(x, y, button)
         self.connect_line = ConnectLine(0, 0, {src = self.connect_resource, dst = self.connect_person})
         self.connect_person:setConsume()
         self.connect_resource:addConsumer(self.connect_person)
+        self.can_click_next = true
     elseif mouseCollidingResource(self.connect_resource) then
         self.connect_line = ConnectLine(0, 0, {dst = self.connect_resource, src = self.connect_person})
         self.connect_person:setConsume()
         self.connect_resource:addConsumer(self.connect_person)
+        self.can_click_next = true
     end
 end

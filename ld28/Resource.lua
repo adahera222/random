@@ -47,7 +47,6 @@ end
 
 function Resource:addConsumer(consumer)
     table.insert(self.consumers, consumer)
-    self.drain_rate = 0.5
 end
 
 function Resource:draw()

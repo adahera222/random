@@ -9,24 +9,11 @@ function People:init(x, y, settings)
     self.pulse_time = settings.pulse or 2
     self.pulse_tween_time = settings.pulse or 2
 
-    timer:every(self.pulse_time, function()
-        timer:tween(self.pulse_tween_time, self, {outer_ring = self.size/8}, 'out-elastic')
-        timer:after(self.pulse_time/2, function()
-            timer:tween(self.pulse_tween_time, self, {outer_ring = -self.size/8}, 'in-out-cubic')
-        end)
-    end)
-
-    timer:every(self.pulse_time, function()
-        timer:tween(self.pulse_tween_time, self, {mid_ring = self.size/4 + self.size/10}, 'out-elastic')
-        timer:after(self.pulse_time/2, function()
-            timer:tween(self.pulse_tween_time, self, {mid_ring = self.size/4 - self.size/10}, 'in-out-cubic')
-        end)
-    end)
 
     self.consuming = settings.consuming
     self.faders = {}
     if self.consuming then
-        self.consume_rate = self.pulse_time - self.pulse_time/2 or 1.5
+        self.consume_rate = settings.consume_rate or self.pulse_time - self.pulse_time/2 or 1.5
         timer:every(self.consume_rate, function() 
             table.insert(self.faders, PeopleFader(self.x, self.y, {size = self.size}))
         end)
@@ -47,6 +34,29 @@ function People:setConsume(consume_rate)
             table.insert(self.faders, PeopleFader(self.x, self.y, {size = self.size}))
         end)
     end
+end
+
+function People:changeSize(new_size)
+    timer:tween(1, self, {size = new_size}, 'out-elastic')
+end
+
+function People:changePulse(new_pulse, new_pulse_tween)
+    if self.outer_ring_tid then timer:cancel(self.outer_ring_tid) end
+    if self.mid_ring_tid then timer:cancel(self.mid_ring_tid) end
+
+    self.outer_ring_tid = timer:every(new_pulse, function()
+        timer:tween(new_pulse_tween or new_pulse, self, {outer_ring = self.size/8}, 'out-elastic')
+        timer:after(new_pulse/2, function()
+            timer:tween(self.pulse_tween_time, self, {outer_ring = -self.size/8}, 'in-out-cubic')
+        end)
+    end)
+
+    self.mid_ring_tid = timer:every(new_pulse, function()
+        timer:tween(new_pulse_tween or new_pulse, self, {mid_ring = self.size/4 + self.size/10}, 'out-elastic')
+        timer:after(new_pulse, function()
+            timer:tween(new_pulse_tween or new_pulse, self, {mid_ring = self.size/4 - self.size/10}, 'in-out-cubic')
+        end)
+    end)
 end
 
 function People:draw()
