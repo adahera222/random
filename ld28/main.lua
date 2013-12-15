@@ -24,7 +24,8 @@ function love.load()
 
     t = 0
     uid = 0
-    love.window.setMode(1280, 800, {centered = true, display = 1})
+    love.window.setMode(1280, 800, {centered = true, display = 1, fsaa = 4})
+    love.graphics.setLineStyle('rough')
     game_width = love.graphics.getWidth()
     game_height = love.graphics.getHeight()
     timer = GTimer.new()
@@ -32,6 +33,7 @@ function love.load()
     camera = Camera()
     main_font_huge = love.graphics.newFont('Moon Flower.ttf', 128)
     main_font_big = love.graphics.newFont('Moon Flower.ttf', 96)
+    main_font_small = love.graphics.newFont('Moon Flower.ttf', 48)
 
     bg_color = {232, 232, 232}
     love.graphics.setBackgroundColor(bg_color[1], bg_color[2], bg_color[3])
@@ -86,6 +88,10 @@ function love.draw()
     end
     for _, mouse_fader in ipairs(mouse_faders) do mouse_fader:draw() end
     camera:detach()
+    love.graphics.setFont(main_font_small)
+    love.graphics.setColor(32, 32, 32, game.people_left_alpha)
+    love.graphics.print("#PEOPLE ALIVE: " .. #game.people .. " (must be >15)", 10, game_height - main_font_small:getHeight())
+    love.graphics.setColor(255, 255, 255, 255)
     love.graphics.setColor(mouse.color[1], mouse.color[2], mouse.color[3])
     love.graphics.setLineWidth(2)
     love.graphics.circle('line', mouse.x, mouse.y, mouse.radius, 360)
@@ -144,7 +150,9 @@ function mouseCollidingResource(resource)
     local x, y = camera:worldCoords(mouse.x, mouse.y)
     local d = Vector.distance(Vector(x, y), Vector(resource.x, resource.y))
     if d > resource.size then return false end
+    return true
 
+    --[[
     local nvert = #resource.points/2
     local xvert, yvert = {}, {}
     for i = 1, #resource.points do
@@ -160,6 +168,7 @@ function mouseCollidingResource(resource)
         j = i
     end
     return result 
+    ]]--
 end
 
 -- 0.8

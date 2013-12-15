@@ -17,6 +17,7 @@ function People:init(x, y, settings)
     self.mid_ring_tid = nil
     self:changePulse(self.pulse_time, self.pulse_tween_time) 
 
+    self.resources = {}
     self.consuming = settings.consuming
     self.faders = {}
     if self.consuming then
@@ -25,6 +26,14 @@ function People:init(x, y, settings)
             table.insert(self.faders, PeopleFader(self.x, self.y, {size = self.size}))
         end)
     end
+
+    self.die_tid = timer:every(math.prandom(10, 40), function() 
+        if self.resources then
+            if #self.resources == 0 then
+                self:changeSize(self.size/2, 3) 
+            end
+        end
+    end)
 end
 
 function People:update(dt)
@@ -33,14 +42,25 @@ function People:update(dt)
     end
 end
 
-function People:randomWalk(angle, distance)
-    
+function People:addResource(resource)
+    for _, r in ipairs(self.resources) do
+        if r.id == resource.id then return end
+    end
+    table.insert(self.resources, resource)
+    self:changeSize(self.size + resource.size/4)
+    self:changePulse(self.pulse_time + 0.05)
 end
 
 function People:die()
+    timer:cancel(self.die_tid)
+    if self.outer_ring_tid then timer:cancel(self.outer_ring_tid) end
+    if self.mid_ring_tid then timer:cancel(self.mid_ring_tid) end
     timer:tween(4, self, {size = 2}, 'in-out-cubic')
     timer:tween(2, self, {alpha = 0}, 'in-out-cubic')
-    timer:after(5, function() self.dead = true end)
+    timer:after(5, function() 
+        self.resources = nil
+        self.dead = true 
+    end)
 end
 
 function People:setConsume(consume_rate)
@@ -54,6 +74,7 @@ function People:setConsume(consume_rate)
 end
 
 function People:changeSize(new_size, time)
+    if new_size <= 8 then self:die() end
     timer:tween(time or 1, self, {size = new_size}, 'out-elastic')
     timer:tween(self.pulse_tween_time, self, {outer_ring = new_size/6}, 'out-elastic')
     timer:tween(self.pulse_tween_time, self, {mid_ring = new_size/4 + new_size/8}, 'out-elastic')
