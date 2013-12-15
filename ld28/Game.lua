@@ -11,6 +11,44 @@ function Game:init()
             timer:tween(2, self, {intro_text_alpha = 0}, 'in-out-cubic')
         end)
     end)
+
+    self.people = {}
+    self.resources = {}
+
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
+    self:spawnIsolatedResource()
 end
 
 function Game:update(dt)
@@ -41,6 +79,7 @@ function Game:update(dt)
 
     self.planet:update(dt)
     self.ref:update(dt)
+    for _, resource in ipairs(self.resources) do resource:update(dt) end
 
     camerat.moving.left = false
     camerat.moving.right = false
@@ -49,7 +88,16 @@ function Game:update(dt)
 end
 
 function Game:spawnIsolatedResource()
-    
+    local x, y = randomInCircle(self.planet.radius - 200)
+    table.insert(self.resources, Resource(game_width/2 + x, game_height/2 + y, {size = math.prandom(20, 60)}))
+
+    for _, person in ipairs(self.people) do
+
+    end
+
+    for _, resource in ipairs(self.resources) do
+
+    end
 end
 
 function Game:spawnResourceGroup()
@@ -74,19 +122,22 @@ function Game:draw()
 
     self.planet:draw()
     self.ref:draw()
+    for _, resource in ipairs(self.resources) do resource:draw() end
 end
 
 function Game:mousepressed(x, y, button)
-    if button == 'wu' then 
-        if camerat.actual_zoom <= 1.4 then
-            camerat.actual_zoom = camerat.actual_zoom + 0.1
-            timer:tween(0.35, camerat, {zoom = camerat.zoom + 0.1}, 'in-out-cubic') 
+    if camerat.can_zoom then 
+        if button == 'wu' then 
+            if camerat.actual_zoom <= 1.4 then
+                camerat.actual_zoom = camerat.actual_zoom + 0.1
+                timer:tween(0.35, camerat, {zoom = camerat.zoom + 0.1}, 'in-out-cubic') 
+            end
         end
-    end
-    if button == 'wd' then 
-        if camerat.actual_zoom >= 0.2 then 
-            camerat.actual_zoom = camerat.actual_zoom - 0.1
-            timer:tween(0.35, camerat, {zoom = camerat.zoom - 0.1}, 'in-out-cubic') 
+        if button == 'wd' then 
+            if camerat.actual_zoom >= 0.2 then 
+                camerat.actual_zoom = camerat.actual_zoom - 0.1
+                timer:tween(0.35, camerat, {zoom = camerat.zoom - 0.1}, 'in-out-cubic') 
+            end
         end
     end
 end

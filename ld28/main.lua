@@ -38,7 +38,7 @@ function love.load()
     love.graphics.setFont(main_font_huge)
     love.mouse.setVisible(false)
     love.mouse.setGrabbed(true)
-    camerat = {actual_zoom = 1, zoom = 1, can_zoom = true, v = Vector(0, 0), a = Vector(0, 0), v_multiplier = 0.05, 
+    camerat = {actual_zoom = 1, zoom = 1, can_zoom = false, v = Vector(0, 0), a = Vector(0, 0), v_multiplier = 0.05, 
                moving = {left = false, right = false, up = false, down = false}, damping = 0.95}
     mouse = {x = 0, y = 0, radius = 4, color = {32, 32, 32}, pressed = false, active = false}
     mouse.x, mouse.y = love.mouse.getPosition()
@@ -48,13 +48,14 @@ function love.load()
     in_game = false
     intro = Intro()
     game_intro = {alpha = 255}
-    -- createGame()
+    createGame()
 end
 
 function createGame()
     camera:lookAt(game_width/2, game_height/2)
     timer:tween(4, bg_color, {232, 232, 232}, 'in-out-cubic')
     timer:tween(4, game_intro, {alpha = 0}, 'in-out-cubic') 
+    timer:after(4, function() camerat.can_zoom = true end)
     in_intro = false
     in_game = true
     game = Game()
@@ -77,7 +78,9 @@ function love.draw()
     if in_intro then intro:draw() end
     if in_game then 
         love.graphics.setColor(32, 32, 32, game_intro.alpha)
-        love.graphics.rectangle('fill', 0, 0, game_width, game_height)
+        local wx, wy = camera:pos()
+        wx, wy = wx - game_width/2, wy - game_height/2
+        love.graphics.rectangle('fill', wx, wy, game_width, game_height)
         love.graphics.setColor(255, 255, 255, 255)
         game:draw() 
     end
@@ -110,6 +113,12 @@ function love.mousereleased(x, y, button)
     end
     if in_intro then intro:mousereleased(x, y, button) end
     if in_game then game:mousereleased(x, y, button) end
+end
+
+function randomInCircle(r)
+    local x = math.prandom(0, 1)*2*r - r
+    local y = math.prandom(0, 1)*math.sqrt(r*r - x*x)*2-math.sqrt(r*r - x*x)
+    return x, y
 end
 
 function xyCollidingPerson(x, y, person)
