@@ -33,7 +33,7 @@ function Intro:init()
     self.connect_alpha = 0
     self.connect2_alpha = 0
     self.connect_person = People(4*game_width + game_width/2 - game_width/4, game_height/2, {size = 40, pulse = 2.5})
-    self.connect_resource = Resource(4*game_width + game_width/2 + game_width/4, game_height/2, {size = 80})
+    self.connect_resource = Resource(4*game_width + game_width/2 + game_width/4, game_height/2, {size = 40})
     self.connect_line = nil
     self.active_line = ActiveLine(0, 0)
 
