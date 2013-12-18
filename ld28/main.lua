@@ -26,7 +26,7 @@ function love.load()
 
     t = 0
     uid = 0
-    love.window.setMode(1280, 800, {centered = true, fsaa = 4})
+    love.window.setMode(1280, 800, {centered = true, resizable = true, fsaa = 4})
     love.graphics.setLineStyle('rough')
     game_width = love.graphics.getWidth()
     game_height = love.graphics.getHeight()
@@ -41,10 +41,9 @@ function love.load()
     love.graphics.setBackgroundColor(bg_color[1], bg_color[2], bg_color[3])
     love.graphics.setFont(main_font_huge)
     love.mouse.setVisible(false)
-    love.mouse.setGrabbed(true)
-    camerat = {actual_zoom = 1, zoom = 1, can_zoom = false, v = Vector(0, 0), a = Vector(0, 0), v_multiplier = 0.1, 
+    camerat = {actual_zoom = 1, zoom = 1, can_zoom = false, v = Vector(0, 0), a = Vector(0, 0), v_multiplier = 0.075, 
                moving = {left = false, right = false, up = false, down = false}, damping = 0.95}
-    mouse = {x = 0, y = 0, radius = 4, color = {32, 32, 32}, pressed = false, active = false}
+    mouse = {x = 0, y = 0, prev_x = 0, prev_y = 0, radius = 4, color = {32, 32, 32}, pressed = false, active = false}
     mouse.x, mouse.y = love.mouse.getPosition()
     mouse_faders = {}
 
@@ -56,13 +55,26 @@ function love.load()
     in_game = false
     intro = Intro()
     game_intro = {alpha = 255}
-    -- createGame()
     TEsound.playLooping("base.ogg", "base")
     TEsound.playLooping("heart.ogg", "heart")
     TEsound.pitch("heart", 0.8)
     TEsound.pitch("base", 0.8)
     pitches = {heart_pitch = 0.8, base_pitch = 0.8}
+    createGame()
 end
+
+function love.update(dt)
+    TEsound.cleanup()
+    t = t + dt
+    mouse.x, mouse.y = love.mouse.getPosition()
+    for i = #mouse_faders, 1, -1 do
+        if mouse_faders[i].dead then table.remove(mouse_faders, i) end
+    end
+    timer:update(dt)
+    if in_intro then intro:update(dt) end
+    if in_game then game:update(dt) end
+end
+
 
 function createGame()
     camera:lookAt(game_width/2, game_height/2)
@@ -72,6 +84,7 @@ function createGame()
     in_intro = false
     in_game = true
     game = Game()
+    -- love.mouse.setGrabbed(true)
 end
 
 function lostGame()
@@ -99,18 +112,6 @@ function wonGame()
     timer:tween(4, game, {game_drain_alpha = 255}, 'in-out-cubic')
     timer:tween(4, bg_color, {32, 32, 32}, 'in-out-cubic')
     timer:after(8, function() love.event.push('quit') end)
-end
-
-function love.update(dt)
-    TEsound.cleanup()
-    t = t + dt
-    mouse.x, mouse.y = love.mouse.getPosition()
-    for i = #mouse_faders, 1, -1 do
-        if mouse_faders[i].dead then table.remove(mouse_faders, i) end
-    end
-    timer:update(dt)
-    if in_intro then intro:update(dt) end
-    if in_game then game:update(dt) end
 end
 
 function love.draw()

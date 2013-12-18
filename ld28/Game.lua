@@ -9,7 +9,7 @@ function Game:init()
     timer:after(4, function()
         timer:tween(2, self, {intro_text_alpha = 255}, 'in-out-cubic')
         timer:tween(2, self, {people_left_alpha = 255}, 'in-out-cubic')
-        timer:after(6, function()
+        timer:after(20, function()
             timer:tween(2, self, {intro_text_alpha = 0}, 'in-out-cubic')
         end)
     end)
@@ -37,27 +37,13 @@ end
 function Game:update(dt)
     camera:zoomTo(camerat.zoom)
     local x, y = camera:pos()
-    if mouse.x < 200 then 
-        camerat.moving.left = true
-        camerat.a.x = -(200-mouse.x)*camerat.actual_zoom 
-    end
-    if mouse.x > game_width-200 then 
-        camerat.moving.right = true
-        camerat.a.x = (mouse.x-(game_width-200))*camerat.actual_zoom 
-    end
-    if mouse.y < 150 then 
-        camerat.moving.up = true
-        camerat.a.y = -(150-mouse.y)*camerat.actual_zoom 
-    end
-    if mouse.y > game_height-150 then 
-        camerat.moving.down = true
-        camerat.a.y = (mouse.y-(game_height-150))*camerat.actual_zoom 
-    end
-    camerat.v.x = math.min(camerat.v.x + camerat.a.x*dt, 200)
-    camerat.v.y = math.min(camerat.v.y + camerat.a.y*dt, 200)
+    if love.mouse.isDown('r') then
+        local mouse_d = Vector(mouse.x - game_width/2, mouse.y - game_height/2)
+        camerat.a = mouse_d
+    else camerat.a = Vector(0, 0) end
+    camerat.v = camerat.v + camerat.a*dt
     camera:move(camerat.v.x*camerat.v_multiplier, camerat.v.y*camerat.v_multiplier)
-    if not camerat.moving.left and not camerat.moving.right then camerat.v.x = camerat.v.x*camerat.damping end
-    if not camerat.moving.up and not camerat.moving.down then camerat.v.y = camerat.v.y*camerat.damping end
+    camerat.v = camerat.v*camerat.damping
 
     if self.people then
         if not self.end_game then
@@ -99,11 +85,6 @@ function Game:update(dt)
         end
         if self.connect_lines[i].dead then table.remove(self.connect_lines, i) end
     end
-
-    camerat.moving.left = false
-    camerat.moving.right = false
-    camerat.moving.up = false
-    camerat.moving.down = false
 end
 
 function Game:spawnResources(n)
@@ -162,6 +143,8 @@ function Game:draw()
     love.graphics.setColor(32, 32, 32, self.intro_text_alpha)
     local w = main_font_big:getWidth("(MOUSE WHEEL TO ZOOM IN/OUT)")
     love.graphics.print("(MOUSE WHEEL TO ZOOM IN/OUT)", game_width/2 - w/2, game_height/2 + game_height/8 + main_font_big:getHeight()/2)
+    local w = main_font_big:getWidth("(HOLD RMB TO MOVE THE CAMERA)")
+    love.graphics.print("(HOLD RMB TO MOVE THE CAMERA)", game_width/2 - w/2, game_height/2 + game_height/8 + 1.5*main_font_big:getHeight())
     love.graphics.setColor(255, 255, 255, 255)
 
     self.planet:draw()
