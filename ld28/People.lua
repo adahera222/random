@@ -6,8 +6,8 @@ function People:init(x, y, settings)
     self.target_size = settings.size
     self.size = 12
     self.alpha = 0
-    timer:tween(2, self, {size = self.target_size}, 'out-elastic')
-    timer:tween(2, self, {alpha = 255}, 'in-out-cubic')
+    timer:tween(4, self, {size = self.target_size}, 'out-elastic')
+    timer:tween(4, self, {alpha = 255}, 'in-out-cubic')
     self.outer_ring = 0
     self.mid_ring = self.size/4
     self.inner_ring = self.size/2
@@ -16,6 +16,10 @@ function People:init(x, y, settings)
     self.outer_ring_tid = nil
     self.mid_ring_tid = nil
     self:changePulse(self.pulse_time, self.pulse_tween_time) 
+
+    timer:every(0.05, function()
+        table.insert(self.death_particles, PeopleParticle(self.x, self.y, {size = math.prandom(self.size/2, self.size)}))
+    end, 20)
 
     self.death_particles = {}
     self.resources = {}
