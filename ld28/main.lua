@@ -80,7 +80,7 @@ function createGame()
     camera:lookAt(game_width/2, game_height/2)
     timer:tween(4, bg_color, {232, 232, 232}, 'in-out-cubic')
     timer:tween(4, game_intro, {alpha = 0}, 'in-out-cubic') 
-    timer:after(4, function() camerat.can_zoom = true end)
+    camerat.can_zoom = true
     in_intro = false
     in_game = true
     game = Game()
@@ -120,9 +120,7 @@ function love.draw()
     if in_intro then intro:draw() end
     if in_game then 
         love.graphics.setColor(32, 32, 32, game_intro.alpha)
-        local wx, wy = camera:pos()
-        wx, wy = wx - game_width/2, wy - game_height/2
-        love.graphics.rectangle('fill', wx, wy, game_width, game_height)
+        love.graphics.rectangle('fill', -10*game_width, -10*game_height, 20*game_width, 20*game_height)
         love.graphics.setColor(255, 255, 255, 255)
         game:draw() 
     end
@@ -134,6 +132,9 @@ function love.draw()
         love.graphics.print("#BEINGS ALIVE: " .. #game.people .. " (MINIMUM: " .. game.alive_min .. ")", 10, 10)
         love.graphics.setColor(255, 255, 255, 255)
 
+        love.graphics.setColor(32, 32, 32, end_g.alpha)
+        love.graphics.rectangle('fill', -10*game_width, -10*game_height, 20*game_width, 20*game_height)
+        love.graphics.setColor(255, 255, 255, 255)
         if lost then
             love.graphics.setFont(main_font_huge)
             love.graphics.setColor(232, 232, 232, end_g.alpha)

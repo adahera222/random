@@ -44,7 +44,7 @@ function Resource:die()
     if self.outer_ring_tid then timer:cancel(self.outer_ring_tid) end
     if self.mid_ring_tid then timer:cancel(self.mid_ring_tid) end
     timer:tween(2, self, {alpha = 0}, 'in-out-cubic')
-    timer:after(5, function()
+    timer:after(2, function()
         self.people = nil
         self.dead = true
     end)

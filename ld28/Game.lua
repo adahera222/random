@@ -27,7 +27,7 @@ function Game:init()
 
     self.end_game = false
     self.alive_min = 14
-    timer:every(25, function() self.alive_min = self.alive_min + 1 end)
+    timer:every(40, function() self.alive_min = self.alive_min + 1 end)
     self.timer_lost_tid = timer:tween(300, self, {game_drain_alpha = 232}, 'linear')
     timer:after(300, function() timerLost() end)
     timer:tween(300, pitches, {heart_pitch = 1.3}, 'linear')
@@ -158,7 +158,7 @@ function Game:draw()
 end
 
 function Game:mousepressed(x, y, button)
-    if button ~= 'l' and button ~= 'r' and button ~= 'wd' and button ~= 'wu' then return end
+    if button ~= 'l' and button ~= 'wd' and button ~= 'wu' then return end
 
     for _, person in ipairs(self.people) do
         if mouseCollidingPerson(person) then

@@ -18,17 +18,17 @@ end
 function ConnectLine:die()
     self.dying = true
     timer:tween(2, self, {alpha = 0}, 'in-out-cubic')
-    timer:after(3, function() self.dead = true end)
+    timer:after(2, function() self.dead = true end)
 end
 
 function ConnectLine:draw()
     love.graphics.setLineWidth(self.line_width)
     love.graphics.setColor(32, 32, 32, self.alpha)
     local d = Vector.distance(Vector(self.src.x, self.src.y), Vector(self.dst.x, self.dst.y))
-    if d < 1.5*self.src.size + 1.5*self.dst.size then return end
+    if d < self.src.size + self.dst.size then return end
     local anglesd = Vector(self.src.x - self.dst.x, self.src.y - self.dst.y):angle()
     local angleds = Vector(self.dst.x - self.src.x, self.dst.y - self.src.y):angle()
-    local sizes, sized = 1.5*self.src.size, 1.5*self.dst.size
+    local sizes, sized = self.src.size, self.dst.size
     local x1, y1 = self.src.x - sizes*math.cos(anglesd), self.src.y - sizes*math.sin(anglesd)
     local x2, y2 = self.dst.x - sized*math.cos(angleds), self.dst.y - sized*math.sin(angleds)
     love.graphics.line(x1, y1, x2, y2)
