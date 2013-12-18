@@ -23,6 +23,7 @@ function love.load()
     require 'ConnectLine'
     require 'Drain'
     require 'City'
+    require 'PeopleParticle'
 
     t = 0
     uid = 0
@@ -60,7 +61,7 @@ function love.load()
     TEsound.pitch("heart", 0.8)
     TEsound.pitch("base", 0.8)
     pitches = {heart_pitch = 0.8, base_pitch = 0.8}
-    createGame()
+    -- createGame()
 end
 
 function love.update(dt)

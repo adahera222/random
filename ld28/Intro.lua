@@ -48,7 +48,7 @@ function Intro:init()
     self.create_line_c2 = ConnectLine(0, 0, {src = self.create_resource_2, dst = self.create_person})
 
     self.death_alpha = 0
-    self.death_person = People(6*game_width + game_width/2, game_height/2, {size = 30, survive = true})
+    self.death_person = People(6*game_width + game_width/2, game_height/2, {size = 15, survive = true})
 
     self.goal_alpha = 0
     self.goal_resource = Resource(7*game_width + game_width/2, game_height/2 + game_height/8, {size = 80})
@@ -97,7 +97,7 @@ function Intro:draw()
     local w = main_font_huge:getWidth("CLICK")
     love.graphics.print("CLICK", game_width/2 - w/2, game_height/2 - main_font_huge:getHeight()/2)
     love.graphics.setFont(main_font_big)
-    love.graphics.setColor(200, 200, 200, self.first_alpha)
+    love.graphics.setColor(136, 136, 136, self.first_alpha)
     local w = main_font_big:getWidth("(ESC TO SKIP TUTORIAL)")
     love.graphics.print("(ESC TO SKIP TUTORIAL)", game_width/2 - w/2, game_height/2 + main_font_huge:getHeight()/2)
     love.graphics.setColor(255, 255, 255, 255)

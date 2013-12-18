@@ -17,6 +17,7 @@ function People:init(x, y, settings)
     self.mid_ring_tid = nil
     self:changePulse(self.pulse_time, self.pulse_tween_time) 
 
+    self.death_particles = {}
     self.resources = {}
     self.consuming = settings.consuming
     self.faders = {}
@@ -57,6 +58,10 @@ function People:update(dt)
         for i = #self.resources, 1, -1 do
             if self.resources[i].dead then table.remove(self.resources, i) end
         end
+    end
+    for i = #self.death_particles, 1, -1 do
+        self.death_particles[i]:update(dt)
+        if self.death_particles[i].dead then table.remove(self.death_particles, i) end
     end
 
     self:seek()
@@ -100,9 +105,13 @@ function People:die()
     timer:cancel(self.die_tid)
     if self.outer_ring_tid then timer:cancel(self.outer_ring_tid) end
     if self.mid_ring_tid then timer:cancel(self.mid_ring_tid) end
+
+    timer:every(0.05, function()
+        table.insert(self.death_particles, PeopleParticle(self.x, self.y, {size = math.prandom(5, 15)}))
+    end, 20)
     timer:tween(4, self, {size = 2}, 'in-out-cubic')
     timer:tween(2, self, {alpha = 0}, 'in-out-cubic')
-    timer:after(5, function() 
+    timer:after(4, function() 
         self.resources = nil
         self.dead = true 
     end)
@@ -153,6 +162,7 @@ end
 
 function People:draw()
     for _, fader in ipairs(self.faders) do fader:draw() end
+    for _, dp in ipairs(self.death_particles) do dp:draw() end
 
     love.graphics.setColor(32, 32, 32, self.alpha)
     love.graphics.setLineWidth(self.size/5)

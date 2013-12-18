@@ -25,10 +25,10 @@ function ConnectLine:draw()
     love.graphics.setLineWidth(self.line_width)
     love.graphics.setColor(32, 32, 32, self.alpha)
     local d = Vector.distance(Vector(self.src.x, self.src.y), Vector(self.dst.x, self.dst.y))
-    if d < self.src.size + self.dst.size then return end
+    if d < 1.25*self.src.size + 1.25*self.dst.size then return end
     local anglesd = Vector(self.src.x - self.dst.x, self.src.y - self.dst.y):angle()
     local angleds = Vector(self.dst.x - self.src.x, self.dst.y - self.src.y):angle()
-    local sizes, sized = self.src.size, self.dst.size
+    local sizes, sized = 1.25*self.src.size, 1.25*self.dst.size
     local x1, y1 = self.src.x - sizes*math.cos(anglesd), self.src.y - sizes*math.sin(anglesd)
     local x2, y2 = self.dst.x - sized*math.cos(angleds), self.dst.y - sized*math.sin(angleds)
     love.graphics.line(x1, y1, x2, y2)
