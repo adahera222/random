@@ -25,6 +25,7 @@ function People:init(x, y, settings)
     self.resources = {}
     self.consuming = settings.consuming
     self.faders = {}
+    self.cities = {}
     if self.consuming then
         self.consume_rate = settings.consume_rate or self.pulse_time - self.pulse_time/2 or 1.5
         timer:every(self.consume_rate, function() 
@@ -34,7 +35,7 @@ function People:init(x, y, settings)
 
     self.die_tid = timer:every(math.prandom(10, 40), function() 
         if self.resources then
-            if #self.resources == 0 then
+            if #self.resources == 0 and #self.cities == 0 then
                 if not self.survive then
                     self:changeSize(self.size/2, 3) 
                 end
@@ -87,6 +88,23 @@ function People:updateTarget()
             self.target = Vector(x/(#self.resources+1), y/(#self.resources+1))
         else self.target = Vector(self.x, self.y) end
     else self.target = Vector(self.x, self.y) end
+    local x, y = self.x, self.y
+    if self.cities then
+        if #self.cities > 0 then
+            for i = 1, #self.cities do
+                x = x + self.cities[i].x
+                y = y + self.cities[i].y
+            end
+            self.target = self.target + Vector(x/(#self.cities+1), y/(#self.cities+1))
+            self.target = self.target/2
+        else
+            self.target = self.target + Vector(self.x, self.y)
+            self.target = self.target/2
+        end
+    else
+        self.target = Vector(self.x, self.y) 
+        self.target = self.target/2
+    end
 end
 
 function People:seek()
@@ -102,6 +120,14 @@ function People:addResource(resource)
     table.insert(self.resources, resource)
     self:changeSize(self.size + resource.size/4)
     self:changePulse(self.pulse_time + 0.1)
+    self:updateTarget()
+end
+
+function People:addCity(city)
+    for _, c in ipairs(self.cities) do
+        if c.id == city.id then return end
+    end
+    table.insert(self.cities, city)   
     self:updateTarget()
 end
 

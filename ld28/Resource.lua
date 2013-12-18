@@ -25,6 +25,7 @@ function Resource:init(x, y, settings)
     self.nsc = 1
     self.n_size_changes_t = {{216, 216, 216, 12}, {200, 200, 200, 11}, {184, 184, 184, 10}, {168, 168, 168, 9}, {152, 152, 152, 8},
                              {136, 136, 136, 7}, {120, 120, 120, 6}, {104, 104, 104, 5}, {88, 88, 88, 4}, {72, 72, 72, 3}}
+    self.city_created = false
 end
 
 function Resource:update(dt)
@@ -70,7 +71,10 @@ function Resource:changeSize(new_size, time)
                     end
                 end
             end
-            if n >= 4 then table.insert(game.cities, City(self.x, self.y, {size = 5*self.init_size, ref = Vector(self.x, self.y)})) end
+            if n >= 4 and not self.city_created then 
+                table.insert(game.cities, City(self.x, self.y, {size = 5*self.init_size, ref = Vector(self.x, self.y)})) 
+                self.city_created = true
+            end
         end
     end
 end

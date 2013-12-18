@@ -176,6 +176,14 @@ function Game:mousepressed(x, y, button)
             self.active_line.y = wy
         end
     end
+    for _, city in ipairs(self.cities) do
+        if mouseCollidingCity(city) then
+            mouse.active = true
+            local wx, wy = camera:worldCoords(x, y)
+            self.active_line.x = wx
+            self.active_line.y = wy
+        end
+    end
 
     if camerat.can_zoom then 
         if button == 'wu' then 
@@ -212,6 +220,13 @@ function Game:mousereleased(x, y, button)
                 table.insert(self.connect_lines, ConnectLine(0, 0, {dst = resource, src = person}))
                 resource:addConsumer(person)
                 person:addResource(resource)
+            end
+        end
+    end
+    for _, city in ipairs(self.cities) do
+        for _, other_city in ipairs(self.cities) do
+            if mouseCollidingCity(city) and xyCollidingCity(self.active_line.x, self.active_line.y, other_city) then
+                table.insert(self.connect_lines, ConnectLine(0, 0, {src = city, dst = other_city, city = true}))
             end
         end
     end

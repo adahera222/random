@@ -61,7 +61,7 @@ function love.load()
     TEsound.pitch("heart", 0.8)
     TEsound.pitch("base", 0.8)
     pitches = {heart_pitch = 0.8, base_pitch = 0.8}
-    -- createGame()
+    createGame()
 end
 
 function love.update(dt)
@@ -203,6 +203,19 @@ function lineLineColliding(x1, y1, x2, y2, x3, y3, x4, y4)
     if d == 0 then return (n1 == 0 and n2 == 0) end
     local r, s = n1/d, n2/d
     return (r >= 0 and r <= 1) and (s >= 0 and s <= 1)
+end
+
+function mouseCollidingCity(city)
+    local x, y = camera:worldCoords(mouse.x, mouse.y)
+    local d = Vector.distance(Vector(x, y), Vector(city.x, city.y))
+    if d <= 1.1*city.size and d >= 0.9*city.size then return true end
+    return false
+end
+
+function xyCollidingCity(x, y, city)
+    local d = Vector.distance(Vector(x, y), Vector(city.x, city.y))
+    if d <= 1.1*city.size and d >= 0.9*city.size then return true end
+    return false 
 end
 
 function xyCollidingPerson(x, y, person)
