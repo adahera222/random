@@ -24,10 +24,21 @@ function love.load()
     require 'Drain'
     require 'City'
     require 'PeopleParticle'
+    require 'House'
 
+    love.window.setMode(1280, 800, {centered = true, resizable = true, fsaa = 4})
+    TEsound.playLooping("base.ogg", "base")
+    TEsound.playLooping("heart.ogg", "heart")
+    TEsound.pitch("heart", 0.8)
+    TEsound.pitch("base", 0.8)
+    pitches = {heart_pitch = 0.8, base_pitch = 0.8}
+
+    init()
+end
+
+function init()
     t = 0
     uid = 0
-    love.window.setMode(1280, 800, {centered = true, resizable = true, fsaa = 4})
     love.graphics.setLineStyle('rough')
     game_width = love.graphics.getWidth()
     game_height = love.graphics.getHeight()
@@ -56,12 +67,10 @@ function love.load()
     in_game = false
     intro = Intro()
     game_intro = {alpha = 255}
-    TEsound.playLooping("base.ogg", "base")
-    TEsound.playLooping("heart.ogg", "heart")
     TEsound.pitch("heart", 0.8)
     TEsound.pitch("base", 0.8)
     pitches = {heart_pitch = 0.8, base_pitch = 0.8}
-    createGame()
+    -- createGame()
 end
 
 function love.update(dt)
@@ -94,7 +103,7 @@ function lostGame()
     timer:tween(4, end_g, {alpha = 255}, 'in-out-cubic')
     timer:tween(4, game, {game_drain_alpha = 255}, 'in-out-cubic')
     timer:tween(4, bg_color, {32, 32, 32}, 'in-out-cubic')
-    timer:after(8, function() love.event.push('quit') end)
+    timer:after(8, function() init() end)
 end
 
 function timerLost()
@@ -103,7 +112,7 @@ function timerLost()
     timer:tween(4, end_g, {alpha = 255}, 'in-out-cubic')
     timer:tween(4, game, {game_drain_alpha = 255}, 'in-out-cubic')
     timer:tween(4, bg_color, {32, 32, 32}, 'in-out-cubic')
-    timer:after(8, function() love.event.push('quit') end)
+    timer:after(8, function() init() end)
 end
 
 function wonGame()
@@ -112,7 +121,7 @@ function wonGame()
     timer:tween(4, end_g, {alpha = 255}, 'in-out-cubic')
     timer:tween(4, game, {game_drain_alpha = 255}, 'in-out-cubic')
     timer:tween(4, bg_color, {32, 32, 32}, 'in-out-cubic')
-    timer:after(8, function() love.event.push('quit') end)
+    timer:after(8, function() init() end)
 end
 
 function love.draw()

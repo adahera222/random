@@ -22,12 +22,12 @@ function Game:init()
     self.cities = {}
     table.insert(self.resources, Resource(game_width/2, game_height/2, {size = 120}))
 
-    self:spawnResources(math.random(16, 24))
-    self:spawnPeople(math.random(35, 45))
+    self:spawnResources(math.random(24, 32))
+    self:spawnPeople(math.random(30, 40))
 
     self.end_game = false
     self.alive_min = 14
-    timer:every(40, function() self.alive_min = self.alive_min + 1 end)
+    timer:every(20, function() self.alive_min = self.alive_min + 1 end)
     self.timer_lost_tid = timer:tween(300, self, {game_drain_alpha = 232}, 'linear')
     timer:after(300, function() timerLost() end)
     timer:tween(300, pitches, {heart_pitch = 1.3}, 'linear')
@@ -227,6 +227,8 @@ function Game:mousereleased(x, y, button)
         for _, other_city in ipairs(self.cities) do
             if mouseCollidingCity(city) and xyCollidingCity(self.active_line.x, self.active_line.y, other_city) then
                 table.insert(self.connect_lines, ConnectLine(0, 0, {src = city, dst = other_city, city = true}))
+                city:addCity(other_city)
+                other_city:addCity(city)
             end
         end
     end

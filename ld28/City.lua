@@ -25,7 +25,7 @@ function City:init(x, y, settings)
     end)
     self.tid_1 = nil
     self.tid_2 = nil
-    self.people = {}
+    self.cities = {}
 end
 
 function City:update(dt)
@@ -46,12 +46,12 @@ function City:update(dt)
     end
 end
 
-function City:addPerson(person)
-    for _, p in ipairs(self.people) do
-        if p.id == person.id then return end
+function City:addCity(city)
+    for _, c in ipairs(self.cities) do
+        if c.id == city.id then return end
     end
-    table.insert(self.people, person)
-    self:changeSize(self.size + person.size)
+    table.insert(self.cities, city)
+    self:changeSize(self.size + city.size/4)
 end
 
 function City:changeSize(new_size, time)
