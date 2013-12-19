@@ -93,6 +93,8 @@ function reinit()
     in_intro = false
     in_game = true 
     game_intro = {alpha = 255}
+    TEsound.stop("base")
+    TEsound.stop("heart")
     TEsound.playLooping("base.ogg", "base")
     TEsound.playLooping("heart.ogg", "heart")
     TEsound.pitch("heart", 0.8)
