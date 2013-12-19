@@ -67,10 +67,38 @@ function init()
     in_game = false
     intro = Intro()
     game_intro = {alpha = 255}
+    TEsound.playLooping("base.ogg", "base")
+    TEsound.playLooping("heart.ogg", "heart")
     TEsound.pitch("heart", 0.8)
     TEsound.pitch("base", 0.8)
     pitches = {heart_pitch = 0.8, base_pitch = 0.8}
     -- createGame()
+end
+
+function reinit()
+    timer = GTimer.new()
+    bg_color = {232, 232, 232}
+    love.graphics.setBackgroundColor(bg_color[1], bg_color[2], bg_color[3])
+    love.graphics.setFont(main_font_huge)
+    camerat = {actual_zoom = 1, zoom = 1, can_zoom = false, v = Vector(0, 0), a = Vector(0, 0), v_multiplier = 0.075, 
+               moving = {left = false, right = false, up = false, down = false}, damping = 0.95}
+    mouse = {x = 0, y = 0, prev_x = 0, prev_y = 0, radius = 4, color = {32, 32, 32}, pressed = false, active = false}
+    mouse.x, mouse.y = love.mouse.getPosition()
+    mouse_faders = {}
+    
+    lost = false
+    timer_lost = false
+    won = false
+    end_g = {alpha = 0}
+    in_intro = false
+    in_game = true 
+    game_intro = {alpha = 255}
+    TEsound.playLooping("base.ogg", "base")
+    TEsound.playLooping("heart.ogg", "heart")
+    TEsound.pitch("heart", 0.8)
+    TEsound.pitch("base", 0.8)
+    pitches = {heart_pitch = 0.8, base_pitch = 0.8}
+    createGame()
 end
 
 function love.update(dt)
@@ -84,7 +112,6 @@ function love.update(dt)
     if in_intro then intro:update(dt) end
     if in_game then game:update(dt) end
 end
-
 
 function createGame()
     camera:lookAt(game_width/2, game_height/2)
@@ -103,7 +130,11 @@ function lostGame()
     timer:tween(4, end_g, {alpha = 255}, 'in-out-cubic')
     timer:tween(4, game, {game_drain_alpha = 255}, 'in-out-cubic')
     timer:tween(4, bg_color, {32, 32, 32}, 'in-out-cubic')
-    timer:after(8, function() init() end)
+    timer:after(6, function()
+        timer:tween(4, bg_color, {232, 232, 232}, 'in-out-cubic')
+        timer:tween(4, end_g, {alpha = 0}, 'in-out-cubic')
+    end)
+    timer:after(10, function() reinit() end)
 end
 
 function timerLost()
@@ -112,7 +143,11 @@ function timerLost()
     timer:tween(4, end_g, {alpha = 255}, 'in-out-cubic')
     timer:tween(4, game, {game_drain_alpha = 255}, 'in-out-cubic')
     timer:tween(4, bg_color, {32, 32, 32}, 'in-out-cubic')
-    timer:after(8, function() init() end)
+    timer:after(6, function()
+        timer:tween(4, bg_color, {232, 232, 232}, 'in-out-cubic')
+        timer:tween(4, end_g, {alpha = 0}, 'in-out-cubic')
+    end)
+    timer:after(10, function() reinit() end)
 end
 
 function wonGame()
@@ -121,7 +156,11 @@ function wonGame()
     timer:tween(4, end_g, {alpha = 255}, 'in-out-cubic')
     timer:tween(4, game, {game_drain_alpha = 255}, 'in-out-cubic')
     timer:tween(4, bg_color, {32, 32, 32}, 'in-out-cubic')
-    timer:after(8, function() init() end)
+    timer:after(6, function()
+        timer:tween(4, bg_color, {232, 232, 232}, 'in-out-cubic')
+        timer:tween(4, end_g, {alpha = 0}, 'in-out-cubic')
+    end)
+    timer:after(10, function() reinit() end)
 end
 
 function love.draw()
@@ -141,6 +180,7 @@ function love.draw()
         love.graphics.setColor(32, 32, 32, game.people_left_alpha)
         love.graphics.print("#BEINGS ALIVE: " .. #game.people .. " (MINIMUM: " .. game.alive_min .. ")", 10, 10)
         love.graphics.setColor(255, 255, 255, 255)
+        love.graphics.setFont(main_font_huge)
 
         love.graphics.setColor(32, 32, 32, end_g.alpha)
         love.graphics.rectangle('fill', -10*game_width, -10*game_height, 20*game_width, 20*game_height)
