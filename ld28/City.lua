@@ -8,11 +8,11 @@ function City:init(x, y, settings)
     self.hovering = false
     self.color = {32, 32, 32}
     timer:tween(4, self, {alpha = 255}, 'in-out-cubic')
-    timer:every(math.prandom(20, 40), function()
+    timer:every(math.prandom(15, 35), function()
         local x, y = randomInCircle(self.size)
         table.insert(game.resources, Resource(self.ref.x + x, self.ref.y + y, {size = math.prandom(10, self.size/10)}))
     end)
-    timer:after(math.prandom(15, 30), function()
+    timer:after(math.prandom(15, 35), function()
         local x, y = randomInCircle(self.size)
         table.insert(game.people, People(self.ref.x + x, self.ref.y + y, {size = math.prandom(10, self.size/10)}))
     end)
@@ -50,6 +50,7 @@ function City:addCity(city)
     for _, c in ipairs(self.cities) do
         if c.id == city.id then return end
     end
+    if city.id == self.id then return end
     table.insert(self.cities, city)
     self:changeSize(self.size + city.size/4)
 end

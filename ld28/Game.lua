@@ -23,7 +23,7 @@ function Game:init()
     table.insert(self.resources, Resource(game_width/2, game_height/2, {size = 120}))
 
     self:spawnResources(math.random(24, 32))
-    self:spawnPeople(math.random(30, 40))
+    self:spawnPeople(math.random(30, 35))
 
     self.end_game = false
     self.alive_min = 14
@@ -48,7 +48,7 @@ function Game:update(dt)
     if self.people then
         if not self.end_game then
             if #self.people - self.alive_min < 0 then self.end_game = true; lostGame() end
-            if #self.people >= 50 then self.end_game = true; wonGame() end
+            if #self.people >= 40 then self.end_game = true; wonGame() end
         end
     end
     
@@ -160,28 +160,30 @@ end
 function Game:mousepressed(x, y, button)
     if button ~= 'l' and button ~= 'wd' and button ~= 'wu' then return end
 
-    for _, person in ipairs(self.people) do
-        if mouseCollidingPerson(person) then
-            mouse.active = true
-            local wx, wy = camera:worldCoords(x, y)
-            self.active_line.x = wx
-            self.active_line.y = wy
+    if button == 'l' then
+        for _, person in ipairs(self.people) do
+            if mouseCollidingPerson(person) then
+                mouse.active = true
+                local wx, wy = camera:worldCoords(x, y)
+                self.active_line.x = wx
+                self.active_line.y = wy
+            end
         end
-    end
-    for _, resource in ipairs(self.resources) do
-        if mouseCollidingResource(resource) then
-            mouse.active = true
-            local wx, wy = camera:worldCoords(x, y)
-            self.active_line.x = wx
-            self.active_line.y = wy
+        for _, resource in ipairs(self.resources) do
+            if mouseCollidingResource(resource) then
+                mouse.active = true
+                local wx, wy = camera:worldCoords(x, y)
+                self.active_line.x = wx
+                self.active_line.y = wy
+            end
         end
-    end
-    for _, city in ipairs(self.cities) do
-        if mouseCollidingCity(city) then
-            mouse.active = true
-            local wx, wy = camera:worldCoords(x, y)
-            self.active_line.x = wx
-            self.active_line.y = wy
+        for _, city in ipairs(self.cities) do
+            if mouseCollidingCity(city) then
+                mouse.active = true
+                local wx, wy = camera:worldCoords(x, y)
+                self.active_line.x = wx
+                self.active_line.y = wy
+            end
         end
     end
 
@@ -202,33 +204,35 @@ function Game:mousepressed(x, y, button)
 end
 
 function Game:mousereleased(x, y, button)
-    mouse.active = false
-    for _, person in ipairs(self.people) do
-        for _, resource in ipairs(self.resources) do
-            if mouseCollidingPerson(person) and xyCollidingResource(self.active_line.x, self.active_line.y, resource) then
-                if #person.resources >= 6 then return end
-                table.insert(self.connect_lines, ConnectLine(0, 0, {src = resource, dst = person}))
-                resource:addConsumer(person)
-                person:addResource(resource)
-            end
-        end
-    end
-    for _, resource in ipairs(self.resources) do
+    if button == 'l' then
+        mouse.active = false
         for _, person in ipairs(self.people) do
-            if mouseCollidingResource(resource) and xyCollidingPerson(self.active_line.x, self.active_line.y, person) then
-                if #person.resources >= 6 then return end
-                table.insert(self.connect_lines, ConnectLine(0, 0, {dst = resource, src = person}))
-                resource:addConsumer(person)
-                person:addResource(resource)
+            for _, resource in ipairs(self.resources) do
+                if mouseCollidingPerson(person) and xyCollidingResource(self.active_line.x, self.active_line.y, resource) then
+                    if #person.resources >= 6 then return end
+                    table.insert(self.connect_lines, ConnectLine(0, 0, {src = resource, dst = person}))
+                    resource:addConsumer(person)
+                    person:addResource(resource)
+                end
             end
         end
-    end
-    for _, city in ipairs(self.cities) do
-        for _, other_city in ipairs(self.cities) do
-            if mouseCollidingCity(city) and xyCollidingCity(self.active_line.x, self.active_line.y, other_city) then
-                table.insert(self.connect_lines, ConnectLine(0, 0, {src = city, dst = other_city, city = true}))
-                city:addCity(other_city)
-                other_city:addCity(city)
+        for _, resource in ipairs(self.resources) do
+            for _, person in ipairs(self.people) do
+                if mouseCollidingResource(resource) and xyCollidingPerson(self.active_line.x, self.active_line.y, person) then
+                    if #person.resources >= 6 then return end
+                    table.insert(self.connect_lines, ConnectLine(0, 0, {dst = resource, src = person}))
+                    resource:addConsumer(person)
+                    person:addResource(resource)
+                end
+            end
+        end
+        for _, city in ipairs(self.cities) do
+            for _, other_city in ipairs(self.cities) do
+                if mouseCollidingCity(city) and xyCollidingCity(self.active_line.x, self.active_line.y, other_city) then
+                    table.insert(self.connect_lines, ConnectLine(0, 0, {src = city, dst = other_city, city = true}))
+                    city:addCity(other_city)
+                    other_city:addCity(city)
+                end
             end
         end
     end

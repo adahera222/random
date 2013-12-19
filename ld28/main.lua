@@ -63,6 +63,7 @@ function init()
     timer_lost = false
     won = false
     end_g = {alpha = 0}
+    end_w = {alpha = 0}
     in_intro = true
     in_game = false
     intro = Intro()
@@ -72,7 +73,7 @@ function init()
     TEsound.pitch("heart", 0.8)
     TEsound.pitch("base", 0.8)
     pitches = {heart_pitch = 0.8, base_pitch = 0.8}
-    -- createGame()
+    createGame()
 end
 
 function reinit()
@@ -90,6 +91,7 @@ function reinit()
     timer_lost = false
     won = false
     end_g = {alpha = 0}
+    end_w = {alpha = 0}
     in_intro = false
     in_game = true 
     game_intro = {alpha = 255}
@@ -130,11 +132,12 @@ function lostGame()
     lost = true
     timer:cancel(game.timer_lost_tid)
     timer:tween(4, end_g, {alpha = 255}, 'in-out-cubic')
+    timer:tween(4, end_w, {alpha = 255}, 'in-out-cubic')
     timer:tween(4, game, {game_drain_alpha = 255}, 'in-out-cubic')
     timer:tween(4, bg_color, {32, 32, 32}, 'in-out-cubic')
     timer:after(6, function()
         timer:tween(4, bg_color, {232, 232, 232}, 'in-out-cubic')
-        timer:tween(4, end_g, {alpha = 0}, 'in-out-cubic')
+        timer:tween(4, end_w, {alpha = 0}, 'in-out-cubic')
     end)
     timer:after(10, function() reinit() end)
 end
@@ -143,11 +146,12 @@ function timerLost()
     timer_lost = true
     timer:cancel(game.timer_lost_tid)
     timer:tween(4, end_g, {alpha = 255}, 'in-out-cubic')
+    timer:tween(4, end_w, {alpha = 255}, 'in-out-cubic')
     timer:tween(4, game, {game_drain_alpha = 255}, 'in-out-cubic')
     timer:tween(4, bg_color, {32, 32, 32}, 'in-out-cubic')
     timer:after(6, function()
         timer:tween(4, bg_color, {232, 232, 232}, 'in-out-cubic')
-        timer:tween(4, end_g, {alpha = 0}, 'in-out-cubic')
+        timer:tween(4, end_w, {alpha = 0}, 'in-out-cubic')
     end)
     timer:after(10, function() reinit() end)
 end
@@ -156,11 +160,12 @@ function wonGame()
     won = true
     timer:cancel(game.timer_lost_tid)
     timer:tween(4, end_g, {alpha = 255}, 'in-out-cubic')
+    timer:tween(4, end_w, {alpha = 255}, 'in-out-cubic')
     timer:tween(4, game, {game_drain_alpha = 255}, 'in-out-cubic')
     timer:tween(4, bg_color, {32, 32, 32}, 'in-out-cubic')
     timer:after(6, function()
         timer:tween(4, bg_color, {232, 232, 232}, 'in-out-cubic')
-        timer:tween(4, end_g, {alpha = 0}, 'in-out-cubic')
+        timer:tween(4, end_w, {alpha = 0}, 'in-out-cubic')
     end)
     timer:after(10, function() reinit() end)
 end
@@ -189,26 +194,26 @@ function love.draw()
         love.graphics.setColor(255, 255, 255, 255)
         if lost then
             love.graphics.setFont(main_font_huge)
-            love.graphics.setColor(232, 232, 232, end_g.alpha)
+            love.graphics.setColor(232, 232, 232, end_w.alpha)
             local w = main_font_huge:getWidth("NOT ENOUGH BEINGS SURVIVED")
             love.graphics.print("NOT ENOUGH BEINGS SURVIVED", game_width/2 - w/2, game_height/2 - main_font_huge:getHeight()/2)
             love.graphics.setColor(255, 255, 255, 255)
         elseif won then
             love.graphics.setFont(main_font_big)
-            love.graphics.setColor(232, 232, 232, end_g.alpha)
+            love.graphics.setColor(232, 232, 232, end_w.alpha)
             local w = main_font_big:getWidth("CIVILIZATION THRIVED")
             love.graphics.print("CIVILIZATION THRIVED", game_width/2 - w/2, game_height/2 - 1.5*main_font_big:getHeight())
-            local w = main_font_big:getWidth("AT THE COST OF ONE PLANET'S RESOURCES")
-            love.graphics.print("AT THE COST OF ONE PLANET'S RESOURCES", game_width/2 - w/2, game_height/2 - main_font_big:getHeight()/2)
-            local w = main_font_big:getWidth("MERRY CHRISTMAS! CAPITALISM, HOHOHO!")
-            love.graphics.print("MERRY CHRISTMAS! CAPITALISM, HOHOHO!", game_width/2 - w/2, game_height/2 + main_font_big:getHeight())
+            local w = main_font_big:getWidth("BUT THEY FAILED TO SEE THE RELATIONS")
+            love.graphics.print("BUT THEY FAILED TO SEE THE RELATIONS", game_width/2 - w/2, game_height/2 - main_font_big:getHeight()/2)
+            local w = main_font_big:getWidth("BETWEEN THEIR LIVES AND RESOURCE STARVATION")
+            love.graphics.print("BETWEEN THEIR LIVES AND RESOURCE STARVATION", game_width/2 - w/2, game_height/2 + main_font_big:getHeight()/2)
         elseif timer_lost then
             love.graphics.setFont(main_font_huge)
-            love.graphics.setColor(232, 232, 232, end_g.alpha)
+            love.graphics.setColor(232, 232, 232, end_w.alpha)
             local w = main_font_huge:getWidth("THE SMOG CAME")
             love.graphics.print("THE SMOG CAME", game_width/2 - w/2, game_height/2 - 1.5*main_font_huge:getHeight())
-            local w = main_font_huge:getWidth("AND ALL BEINGS DIED")
-            love.graphics.print("AND ALL BEINGS DIED", game_width/2 - w/2, game_height/2 + main_font_huge:getHeight()/2)
+            local w = main_font_huge:getWidth("AND ALL LIFE WAS LOST")
+            love.graphics.print("AND ALL LIFE WAS LOST", game_width/2 - w/2, game_height/2 + main_font_huge:getHeight()/2)
         end
     end
     love.graphics.setColor(mouse.color[1], mouse.color[2], mouse.color[3])
